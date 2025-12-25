@@ -15,10 +15,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [lang, setLang] = useState<Language>('ko');
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
-
-  useEffect(() => {
-    fetchMentors();
-  }, []);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   const fetchMentors = async () => {
     setLoading(true);
@@ -27,7 +24,8 @@ export default function Home() {
       .from('mentors')
       .select('*')
       .eq('is_active', true)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: true });
 
     if (error) {
       console.error('Error fetching mentors:', error);
@@ -37,6 +35,10 @@ export default function Home() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    fetchMentors();
+  }, []);
+
   const filteredMentors = mentors.filter(mentor => {
     const query = search.toLowerCase();
     
@@ -44,30 +46,13 @@ export default function Home() {
     const supportedLangs = (mentor.languages || []).map(l => l.toLowerCase());
     const isKorean = lang === 'ko';
     
-    // Check if mentor supports the selected language
-    // If languages is empty, we might show them or hide them? 
-    // Prompt says "Show only Korean mentors... when show '한국어'". 
-    // I'll assume strictly filtering if the languages field is populated. 
-    // If empty, maybe show? Or hide? 
-    // Safer to show if empty? No, "Show only...". 
-    // Let's assume if 'languages' has data, we filter. If null/empty, maybe allow?
-    // Let's stick to strict: must include.
-    
+    // Strict filtering: Mentors must explicitly contain the selected language
     const matchesLang = isKorean 
-      ? supportedLangs.some(l => l === 'korean' || l === '한국어' || l === 'ko') 
-      : supportedLangs.some(l => l === 'english' || l === '영어' || l === 'en');
+      ? supportedLangs.some(l => l.includes('korean') || l.includes('한국어') || l.includes('ko'))
+      : supportedLangs.some(l => l.includes('english') || l.includes('영어') || l.includes('en'));
 
-    // If no languages defined, maybe show all? Or hide?
-    // Given the explicit requirement, let's strictly filter if languages are present.
-    // If languages is null/empty, let's treat it as "unknown" and maybe show them?
-    // But usually "Show only..." means hide others.
-    // Let's assume if languages is populated, we filter. If empty, we show (fallback).
-    // Actually, user likely will populate "Korean, English" for everyone.
-    // If I hide empty ones, existing mentors (who have null languages) will disappear.
-    // I should probably treat null/empty as "show".
-    
-    const hasLangData = supportedLangs.length > 0;
-    if (hasLangData && !matchesLang) return false;
+    // If language data is missing or doesn't match, hide the mentor
+    if (!matchesLang) return false;
 
     const name = (lang === 'en' ? mentor.name_en : mentor.name_ko) || '';
     const location = (lang === 'en' ? mentor.location_en : mentor.location_ko) || '';
@@ -189,12 +174,14 @@ export default function Home() {
             </div>
 
             <div className="relative h-64 w-full bg-gray-200 shrink-0">
-              {selectedMentor.picture_url ? (
+              {selectedMentor.picture_url && !imageErrors.has(selectedMentor.picture_url) ? (
                 <Image
                   src={selectedMentor.picture_url}
                   alt={getMentorDisplay(selectedMentor).name}
                   fill
                   className="object-cover"
+                  unoptimized={selectedMentor.picture_url.includes('supabase.co')}
+                  onError={() => setImageErrors(prev => new Set(prev).add(selectedMentor.picture_url!))}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400 text-lg">

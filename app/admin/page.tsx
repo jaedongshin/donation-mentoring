@@ -6,7 +6,7 @@ import { Mentor } from '@/types/mentor';
 import { translations, Language } from '@/utils/i18n';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Edit2, Plus, Upload, X } from 'lucide-react';
+import { Trash2, Edit2, Plus, X } from 'lucide-react';
 
 export default function AdminPage() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
@@ -15,7 +15,6 @@ export default function AdminPage() {
   const [editingMentor, setEditingMentor] = useState<Partial<Mentor> | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
 
   // Form state - flattened for easier handling of dual languages
   const [formData, setFormData] = useState({
@@ -36,20 +35,18 @@ export default function AdminPage() {
     languages: '',
     tags: '',
     is_active: true,
+    session_time_minutes: '',
+    session_price_usd: '',
   });
 
   const t = translations[lang];
-
-  useEffect(() => {
-    fetchMentors();
-  }, []);
 
   const fetchMentors = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('mentors')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('name_ko', { ascending: true });
 
     if (error) {
       console.error('Error fetching mentors:', error);
@@ -59,24 +56,9 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleSync = async () => {
-    setSyncing(true);
-    try {
-      const response = await fetch('/api/notion/sync', { method: 'POST' });
-      const result = await response.json();
-      if (result.success) {
-        alert('Sync successful!');
-        fetchMentors();
-      } else {
-        alert(`Sync failed: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Sync error:', error);
-      alert('An error occurred during sync');
-    } finally {
-      setSyncing(false);
-    }
-  };
+  useEffect(() => {
+    fetchMentors();
+  }, []);
 
   const handleEdit = (mentor: Mentor) => {
     setEditingMentor(mentor);
@@ -98,6 +80,8 @@ export default function AdminPage() {
       languages: mentor.languages ? mentor.languages.join(', ') : '',
       tags: mentor.tags ? mentor.tags.join(', ') : '',
       is_active: mentor.is_active,
+      session_time_minutes: mentor.session_time_minutes?.toString() || '',
+      session_price_usd: mentor.session_price_usd?.toString() || '',
     });
     setIsFormOpen(true);
   };
@@ -140,11 +124,27 @@ export default function AdminPage() {
     setUploading(false);
   };
 
+  const toggleActive = async (mentor: Mentor) => {
+    const newStatus = !mentor.is_active;
+    const { error } = await supabase
+      .from('mentors')
+      .update({ is_active: newStatus })
+      .eq('id', mentor.id);
+
+    if (error) {
+      alert('Error updating status');
+    } else {
+      setMentors(mentors.map(m => m.id === mentor.id ? { ...m, is_active: newStatus } : m));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
     const languagesArray = formData.languages.split(',').map(l => l.trim()).filter(l => l !== '');
+    const sessionTimeMinutes = formData.session_time_minutes ? parseInt(formData.session_time_minutes, 10) : null;
+    const sessionPriceUsd = formData.session_price_usd ? parseFloat(formData.session_price_usd) : null;
 
     const mentorData = {
       name_en: formData.name_en,
@@ -164,6 +164,8 @@ export default function AdminPage() {
       languages: languagesArray,
       tags: tagsArray,
       is_active: formData.is_active,
+      session_time_minutes: sessionTimeMinutes,
+      session_price_usd: sessionPriceUsd,
     };
 
     if (editingMentor && editingMentor.id) {
@@ -208,6 +210,8 @@ export default function AdminPage() {
       languages: '',
       tags: '',
       is_active: true,
+      session_time_minutes: '',
+      session_price_usd: '',
     });
     setIsFormOpen(true);
   };
@@ -235,14 +239,6 @@ export default function AdminPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-end mb-6 gap-4">
           <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
-          >
-            <Upload size={20} />
-            {syncing ? 'Syncing...' : 'Sync from Notion'}
-          </button>
-          <button
             onClick={openNewForm}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
@@ -259,23 +255,40 @@ export default function AdminPage() {
                 <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 relative bg-gray-200 rounded-full overflow-hidden">
-                      {mentor.picture_url && (
-                        <Image src={mentor.picture_url} alt={mentor.name_en || 'Mentor'} fill className="object-cover" />
-                      )}
+                      {mentor.picture_url ? (
+                        <Image 
+                          src={mentor.picture_url} 
+                          alt={mentor.name_en || 'Mentor'} 
+                          fill 
+                          className="object-cover"
+                          unoptimized={mentor.picture_url.includes('supabase.co')}
+                        />
+                      ) : null}
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-blue-600">
                         {mentor.name_ko} / {mentor.name_en}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {mentor.position_ko} / {mentor.position_en}
-                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${mentor.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {mentor.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    <button 
+                      onClick={() => toggleActive(mentor)}
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md hover:shadow-lg ${
+                        mentor.is_active 
+                          ? 'bg-green-500 focus:ring-green-500' 
+                          : 'bg-gray-400 focus:ring-gray-400'
+                      }`}
+                      role="switch"
+                      aria-checked={mentor.is_active}
+                      aria-label={mentor.is_active ? 'Deactivate mentor' : 'Activate mentor'}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${
+                          mentor.is_active ? 'translate-x-8' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
                     <button onClick={() => handleEdit(mentor)} className="text-gray-400 hover:text-gray-600">
                       <Edit2 size={20} />
                     </button>
@@ -307,7 +320,7 @@ export default function AdminPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               
               {/* Names */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t.name} (KO)</label>
                   <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.name_ko} onChange={e => setFormData({...formData, name_ko: e.target.value})} />
@@ -319,7 +332,7 @@ export default function AdminPage() {
               </div>
 
               {/* Company */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Company (KO)</label>
                   <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.company_ko} onChange={e => setFormData({...formData, company_ko: e.target.value})} />
@@ -331,7 +344,7 @@ export default function AdminPage() {
               </div>
 
               {/* Positions */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t.position} (KO)</label>
                   <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.position_ko} onChange={e => setFormData({...formData, position_ko: e.target.value})} />
@@ -343,7 +356,7 @@ export default function AdminPage() {
               </div>
 
               {/* Descriptions */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t.description} (KO)</label>
                   <textarea rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.description_ko} onChange={e => setFormData({...formData, description_ko: e.target.value})} />
@@ -355,7 +368,7 @@ export default function AdminPage() {
               </div>
 
               {/* Locations */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t.location} (KO)</label>
                   <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.location_ko} onChange={e => setFormData({...formData, location_ko: e.target.value})} />
@@ -367,7 +380,7 @@ export default function AdminPage() {
               </div>
 
               {/* URLs */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">LinkedIn URL</label>
                   <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} />
@@ -378,7 +391,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
                   <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
@@ -386,6 +399,33 @@ export default function AdminPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Languages (comma separated)</label>
                   <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="Korean, English" />
+                </div>
+              </div>
+
+              {/* Session Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Session Time (minutes)</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" 
+                    value={formData.session_time_minutes} 
+                    onChange={e => setFormData({...formData, session_time_minutes: e.target.value})} 
+                    placeholder="60"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Session Price (USD)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    min="0"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" 
+                    value={formData.session_price_usd} 
+                    onChange={e => setFormData({...formData, session_price_usd: e.target.value})} 
+                    placeholder="30.00"
+                  />
                 </div>
               </div>
 
@@ -405,7 +445,13 @@ export default function AdminPage() {
                 <div className="mt-1 flex items-center gap-4">
                   {formData.picture_url && (
                     <div className="relative h-16 w-16 bg-gray-200 rounded overflow-hidden">
-                      <Image src={formData.picture_url} alt="Preview" fill className="object-cover" />
+                      <Image 
+                        src={formData.picture_url} 
+                        alt="Preview" 
+                        fill 
+                        className="object-cover"
+                        unoptimized={formData.picture_url.includes('supabase.co')}
+                      />
                     </div>
                   )}
                   <label className="cursor-pointer bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center justify-center text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm">

@@ -1,7 +1,8 @@
 import { Mentor } from '@/types/mentor';
-import { MapPin, Briefcase, Building2, Linkedin, Calendar, Mail } from 'lucide-react';
+import { MapPin, Briefcase, Building2, Linkedin, Calendar, Mail, Clock, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 import { Language } from '@/utils/i18n';
+import { useState } from 'react';
 
 interface MentorCardProps {
   mentor: Mentor;
@@ -10,6 +11,7 @@ interface MentorCardProps {
 }
 
 export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
+  const [imageError, setImageError] = useState(false);
   const name = lang === 'en' ? mentor.name_en : mentor.name_ko;
   const description = lang === 'en' ? mentor.description_en : mentor.description_ko;
   const position = lang === 'en' ? mentor.position_en : mentor.position_ko;
@@ -34,12 +36,14 @@ export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer flex flex-col h-full"
     >
       <div className="relative h-64 w-full bg-gray-200 flex-shrink-0">
-        {mentor.picture_url ? (
+        {mentor.picture_url && !imageError ? (
           <Image
             src={mentor.picture_url}
             alt={displayName}
             fill
             className="object-cover"
+            unoptimized={mentor.picture_url.includes('supabase.co')}
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">
@@ -65,6 +69,22 @@ export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
             <MapPin size={16} className="mr-2 text-gray-400 flex-shrink-0" />
             <span>{displayLocation}</span>
           </div>
+          {(mentor.session_time_minutes || mentor.session_price_usd) && (
+            <div className="flex items-center gap-4 pt-1 border-t border-gray-100">
+              {mentor.session_time_minutes && (
+                <div className="flex items-center text-sm font-medium text-green-600">
+                  <Clock size={16} className="mr-1.5 text-green-600 flex-shrink-0" />
+                  <span>{mentor.session_time_minutes} min</span>
+                </div>
+              )}
+              {mentor.session_price_usd && (
+                <div className="flex items-center text-sm font-medium text-green-600">
+                  <DollarSign size={16} className="mr-1.5 text-green-600 flex-shrink-0" />
+                  <span>{mentor.session_price_usd.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <p className="text-gray-600 text-sm line-clamp-3 mb-4 flex-grow">
@@ -79,7 +99,7 @@ export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
           ))}
         </div>
 
-        <div className="flex gap-3 pt-3 border-t border-gray-100 mt-auto">
+        <div className="flex flex-wrap gap-3 pt-3 border-t border-gray-100 mt-auto">
           {mentor.linkedin_url && (
             <a 
               href={ensureProtocol(mentor.linkedin_url)} 
