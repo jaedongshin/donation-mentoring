@@ -1,0 +1,47 @@
+export const translations = {
+  en: {
+    title: "Donation Mentoring",
+    subtitle: "Connect with mentors for donation-based sessions",
+    searchPlaceholder: "Search by name, tags, location, or position...",
+    adminTitle: "Mentor Management",
+    name: "Name",
+    description: "Description",
+    location: "Location",
+    position: "Position",
+    photo: "Photo",
+    tags: "Tags (comma separated)",
+    enabled: "Enabled",
+    save: "Save",
+    upload: "Upload",
+    edit: "Edit",
+    delete: "Delete",
+    viewAdmin: "Go to Admin",
+    viewHome: "Go to Home",
+    noMentors: "No mentors found.",
+    loading: "Loading...",
+  },
+  ko: {
+    title: "기부 멘토링",
+    subtitle: "기부를 통해 멘토와 연결되세요",
+    searchPlaceholder: "이름, 태그, 위치, 직무로 검색하세요...",
+    adminTitle: "멘토 관리",
+    name: "이름",
+    description: "설명",
+    location: "위치",
+    position: "직무",
+    photo: "사진",
+    tags: "태그 (콤마로 구분)",
+    enabled: "활성화",
+    save: "저장",
+    upload: "업로드",
+    edit: "수정",
+    delete: "삭제",
+    viewAdmin: "관리자 페이지로 이동",
+    viewHome: "홈으로 이동",
+    noMentors: "멘토를 찾을 수 없습니다.",
+    loading: "로딩 중...",
+  }
+};
+
+export type Language = 'en' | 'ko';
+export type TranslationKey = keyof typeof translations.en;
