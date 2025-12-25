@@ -17,5 +17,7 @@ export interface Mentor {
   languages: string[] | null;
   tags: string[] | null;
   is_active: boolean;
+  session_time_minutes: number | null;
+  session_price_usd: number | null;
   created_at: string;
 }
