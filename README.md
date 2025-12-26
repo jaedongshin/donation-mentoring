@@ -2,7 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, set the environment variables. In the local development, you can set them in .env.local file. You can ask me the variable values to me, Jaedong Shin.
+
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+Second, run the development server:
 
 ```bash
 npm run dev
