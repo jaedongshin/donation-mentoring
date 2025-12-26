@@ -72,7 +72,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t.title}</h1>
             
@@ -144,7 +144,7 @@ export default function Home() {
 
       {/* About Section */}
       <section id="about" className="bg-white border-b border-gray-100 py-12 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">{t.mentoringTitle}</h2>
@@ -164,7 +164,7 @@ export default function Home() {
 
       {/* Values Section */}
       <section id="values" className="bg-gray-50 py-12 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">{t.mentorValueTitle}</h2>
@@ -263,11 +263,11 @@ export default function Home() {
       </div>
 
       {/* Mentors Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
         {loading ? (
           <div className="text-center py-12 text-gray-500">{t.loading}</div>
         ) : filteredMentors.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredMentors.map((mentor) => (
               <MentorCard 
                 key={mentor.id} 

@@ -83,7 +83,7 @@ export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
           )}
         </div>
 
-        <p className="text-gray-600 text-sm line-clamp-3 mb-4 flex-grow">
+        <p className="text-gray-600 text-sm line-clamp-5 mb-4 flex-grow">
           {displayDescription}
         </p>
         
