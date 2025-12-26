@@ -5,6 +5,7 @@ import { supabase } from '@/utils/supabase';
 import { Mentor } from '@/types/mentor';
 import MentorCard from '@/app/components/MentorCard';
 import { translations, Language } from '@/utils/i18n';
+import { ensureProtocol, getMentorDisplay, scrollToElement } from '@/utils/helpers';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, X, Briefcase, MapPin, Building2, Linkedin, Calendar, Mail } from 'lucide-react';
@@ -19,7 +20,6 @@ export default function Home() {
 
   const fetchMentors = async () => {
     setLoading(true);
-    // Query based on the actual schema: is_active instead of enabled
     const { data, error } = await supabase
       .from('mentors')
       .select('*')
@@ -54,45 +54,18 @@ export default function Home() {
     // If language data is missing or doesn't match, hide the mentor
     if (!matchesLang) return false;
 
-    const name = (lang === 'en' ? mentor.name_en : mentor.name_ko) || '';
-    const location = (lang === 'en' ? mentor.location_en : mentor.location_ko) || '';
-    const position = (lang === 'en' ? mentor.position_en : mentor.position_ko) || '';
     const tags = mentor.tags || [];
-
-    // Fallback search in other language if primary is empty? 
-    // For now, let's search across both languages to be safe
     const allText = [
       mentor.name_en, mentor.name_ko,
       mentor.location_en, mentor.location_ko,
       mentor.position_en, mentor.position_ko,
-      ...(tags)
+      ...tags
     ].filter(Boolean).join(' ').toLowerCase();
 
     return allText.includes(query);
   });
 
   const t = translations[lang];
-
-  const getMentorDisplay = (mentor: Mentor) => {
-    const name = lang === 'en' ? mentor.name_en : mentor.name_ko;
-    const description = lang === 'en' ? mentor.description_en : mentor.description_ko;
-    const position = lang === 'en' ? mentor.position_en : mentor.position_ko;
-    const location = lang === 'en' ? mentor.location_en : mentor.location_ko;
-    const company = lang === 'en' ? mentor.company_en : mentor.company_ko;
-
-    return {
-      name: name || mentor.name_en || mentor.name_ko || 'No Name',
-      description: description || mentor.description_en || mentor.description_ko || '',
-      position: position || mentor.position_en || mentor.position_ko || '',
-      location: location || mentor.location_en || mentor.location_ko || '',
-      company: company || mentor.company_en || mentor.company_ko || '',
-    };
-  };
-
-  const ensureProtocol = (url: string) => {
-    if (!url) return '';
-    return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
@@ -106,7 +79,7 @@ export default function Home() {
                 href="#how-to-donate"
                 onClick={(e) => {
                   e.preventDefault();
-                  document.getElementById('how-to-donate')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  scrollToElement('how-to-donate');
                 }}
                 className="px-3 py-2 text-sm sm:text-base font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-200 hover:border-blue-300"
               >
@@ -116,7 +89,7 @@ export default function Home() {
                 href="#mentors"
                 onClick={(e) => {
                   e.preventDefault();
-                  document.getElementById('mentors')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  scrollToElement('mentors');
                 }}
                 className="px-3 py-2 text-sm sm:text-base font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-200 hover:border-blue-300"
               >
@@ -230,60 +203,62 @@ export default function Home() {
       </main>
 
       {/* Detail Popup Modal */}
-      {selectedMentor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setSelectedMentor(null)}></div>
-          
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
-            <div className="absolute top-4 right-4 z-10">
-              <button 
-                onClick={() => setSelectedMentor(null)}
-                className="p-2 bg-white/80 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <X size={24} className="text-gray-500" />
-              </button>
-            </div>
-
-            <div className="relative h-64 w-full bg-gray-200 shrink-0">
-              {selectedMentor.picture_url && !imageErrors.has(selectedMentor.picture_url) ? (
-                <Image
-                  src={selectedMentor.picture_url}
-                  alt={getMentorDisplay(selectedMentor).name}
-                  fill
-                  className="object-cover"
-                  unoptimized={selectedMentor.picture_url.includes('supabase.co')}
-                  onError={() => setImageErrors(prev => new Set(prev).add(selectedMentor.picture_url!))}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 text-lg">
-                  No Image
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 sm:p-8">
-              <div className="mb-6">
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-2">{getMentorDisplay(selectedMentor).name}</h2>
-                <div className="flex flex-col gap-2 text-gray-600">
-                  <div className="flex items-center text-lg">
-                    <Briefcase className="mr-2 text-blue-600 w-5 h-5" />
-                    <span className="font-medium">{getMentorDisplay(selectedMentor).position}</span>
-                  </div>
-                  {getMentorDisplay(selectedMentor).company && (
-                    <div className="flex items-center text-lg">
-                      <Building2 className="mr-2 text-blue-600 w-5 h-5" />
-                      <span>{getMentorDisplay(selectedMentor).company}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center text-gray-500">
-                    <MapPin className="mr-2 text-gray-400 w-5 h-5" />
-                    <span>{getMentorDisplay(selectedMentor).location}</span>
-                  </div>
-                </div>
+      {selectedMentor && (() => {
+        const display = getMentorDisplay(selectedMentor, lang);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true">
+            <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setSelectedMentor(null)}></div>
+            
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+              <div className="absolute top-4 right-4 z-10">
+                <button 
+                  onClick={() => setSelectedMentor(null)}
+                  className="p-2 bg-white/80 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <X size={24} className="text-gray-500" />
+                </button>
               </div>
 
+              <div className="relative h-64 w-full bg-gray-200 shrink-0">
+                {selectedMentor.picture_url && !imageErrors.has(selectedMentor.picture_url) ? (
+                  <Image
+                    src={selectedMentor.picture_url}
+                    alt={display.name}
+                    fill
+                    className="object-cover"
+                    unoptimized={selectedMentor.picture_url.includes('supabase.co')}
+                    onError={() => setImageErrors(prev => new Set(prev).add(selectedMentor.picture_url!))}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400 text-lg">
+                    No Image
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 sm:p-8">
+                <div className="mb-6">
+                  <h2 className="text-3xl font-extrabold text-gray-900 mb-2">{display.name}</h2>
+                  <div className="flex flex-col gap-2 text-gray-600">
+                    <div className="flex items-center text-lg">
+                      <Briefcase className="mr-2 text-blue-600 w-5 h-5" />
+                      <span className="font-medium">{display.position}</span>
+                    </div>
+                    {display.company && (
+                      <div className="flex items-center text-lg">
+                        <Building2 className="mr-2 text-blue-600 w-5 h-5" />
+                        <span>{display.company}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center text-gray-500">
+                      <MapPin className="mr-2 text-gray-400 w-5 h-5" />
+                      <span>{display.location}</span>
+                    </div>
+                  </div>
+                </div>
+
               <div className="flex flex-wrap gap-2 mb-6">
-                {selectedMentor.tags && selectedMentor.tags.map((tag, index) => (
+                {selectedMentor.tags?.map((tag, index) => (
                   <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full">
                     {tag}
                   </span>
@@ -291,7 +266,7 @@ export default function Home() {
               </div>
 
               <div className="prose prose-blue max-w-none text-gray-600 mb-8 whitespace-pre-line leading-relaxed">
-                {getMentorDisplay(selectedMentor).description}
+                {display.description}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
@@ -330,7 +305,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

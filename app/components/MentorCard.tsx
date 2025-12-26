@@ -2,6 +2,7 @@ import { Mentor } from '@/types/mentor';
 import { MapPin, Briefcase, Building2, Linkedin, Calendar, Mail, Clock, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 import { Language } from '@/utils/i18n';
+import { ensureProtocol } from '@/utils/helpers';
 import { useState } from 'react';
 
 interface MentorCardProps {
@@ -24,11 +25,6 @@ export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
   const displayPosition = position || mentor.position_en || mentor.position_ko || '';
   const displayLocation = location || mentor.location_en || mentor.location_ko || '';
   const displayCompany = company || mentor.company_en || mentor.company_ko || '';
-
-  const ensureProtocol = (url: string) => {
-    if (!url) return '';
-    return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
-  };
 
   return (
     <div 
