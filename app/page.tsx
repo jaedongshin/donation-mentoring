@@ -72,63 +72,72 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <nav className="flex items-center gap-2 sm:gap-3">
-              <a
-                href="#about"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToElement('about');
-                }}
-                className="px-3 py-2 text-sm sm:text-base font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-200 hover:border-blue-300"
-              >
-                {t.navAbout}
-              </a>
-              <a
-                href="#values"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToElement('values');
-                }}
-                className="px-3 py-2 text-sm sm:text-base font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-200 hover:border-blue-300"
-              >
-                {t.navValues}
-              </a>
-              <a
-                href="#how-to-donate"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToElement('how-to-donate');
-                }}
-                className="px-3 py-2 text-sm sm:text-base font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-200 hover:border-blue-300"
-              >
-                {t.navHowTo}
-              </a>
-              <a
-                href="#search-mentors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToElement('search-mentors');
-                }}
-                className="px-3 py-2 text-sm sm:text-base font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-200 hover:border-blue-300"
-              >
-                {t.navMentors}
-              </a>
-            </nav>
-            <button
-              onClick={() => setLang(lang === 'en' ? 'ko' : 'en')}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
-            >
-              {lang === 'en' ? '🇰🇷 한국어' : '🇺🇸 English'}
-            </button>
-            <Link
-              href="/admin"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
-            >
-              {t.viewAdmin}
-            </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t.title}</h1>
+            
+            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4">
+              <nav className="flex items-center gap-1 sm:gap-2">
+                <a
+                  href="#about"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToElement('about');
+                  }}
+                  className="px-2 py-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-100"
+                >
+                  {t.navAbout}
+                </a>
+                <a
+                  href="#values"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToElement('values');
+                  }}
+                  className="px-2 py-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-100"
+                >
+                  {t.navValues}
+                </a>
+                <a
+                  href="#how-to-donate"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToElement('how-to-donate');
+                  }}
+                  className="px-2 py-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-100"
+                >
+                  {t.navHowTo}
+                </a>
+                <a
+                  href="#search-mentors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToElement('search-mentors');
+                  }}
+                  className="px-2 py-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all border border-blue-100"
+                >
+                  {t.navMentors}
+                </a>
+              </nav>
+
+              <div className="flex items-center gap-2 border-l pl-2 border-gray-200">
+                <select
+                  value={lang}
+                  onChange={(e) => setLang(e.target.value as Language)}
+                  className="text-xs sm:text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="ko">🇰🇷 KO</option>
+                  <option value="en">🇺🇸 EN</option>
+                </select>
+
+                <Link
+                  href="/admin"
+                  className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-500"
+                >
+                  {t.viewAdmin}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </header>
