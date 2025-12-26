@@ -7,13 +7,11 @@ Donation Mentoring is a platform to connect mentors and mentees for donation-bas
 - Framework: Next.js
 - Styling: Tailwind CSS
 - Database & Storage: Supabase
-- CMS (Source): Notion
 
 ## Key Features
 - Homepage: Display list of mentors with search/filter (name, tags, location, position).
 - Admin Page: Manage mentor profiles (add/edit, upload photos).
 - Multi-language Support: English and Korean via i18n.
-- Data Sync: Fetch initial data from Notion (Manual entry via Admin page supported as Notion API/Scraping was limited).
 
 ## Setup & Run
 
