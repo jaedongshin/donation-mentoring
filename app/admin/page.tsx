@@ -217,22 +217,22 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-12">
+    <div className="min-h-screen bg-warm-50 pb-12">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-warm-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t.adminTitle}</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-warm-900">{t.adminTitle}</h1>
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value as Language)}
-              className="text-xs sm:text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="text-xs sm:text-sm font-medium text-warm-600 bg-warm-50 border border-warm-200 rounded-full px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-300"
             >
               <option value="ko">🇰🇷 KO</option>
               <option value="en">🇺🇸 EN</option>
             </select>
           </div>
-          <Link href="/" className="text-blue-600 hover:text-blue-500">
+          <Link href="/" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
             {t.viewHome}
           </Link>
         </div>
@@ -242,7 +242,7 @@ export default function AdminPage() {
         <div className="flex justify-end mb-6 gap-4">
           <button
             onClick={openNewForm}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="flex items-center gap-2 btn-primary px-5 py-2.5 rounded-xl font-semibold"
           >
             <Plus size={20} />
             Add Mentor
@@ -250,36 +250,41 @@ export default function AdminPage() {
         </div>
 
         {/* List */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
+        <div className="bg-white shadow-sm border border-warm-100 overflow-hidden rounded-2xl">
+          <ul className="divide-y divide-warm-100">
             {mentors.map((mentor) => (
-              <li key={mentor.id}>
-                <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
+              <li key={mentor.id} className="hover:bg-warm-50 transition-colors">
+                <div className="px-5 py-4 sm:px-6 flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 relative bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-shrink-0 h-12 w-12 relative bg-warm-100 rounded-xl overflow-hidden">
                       {mentor.picture_url ? (
-                        <Image 
-                          src={mentor.picture_url} 
-                          alt={mentor.name_en || 'Mentor'} 
-                          fill 
+                        <Image
+                          src={mentor.picture_url}
+                          alt={mentor.name_en || 'Mentor'}
+                          fill
                           className="object-cover"
                           unoptimized={mentor.picture_url.includes('supabase.co')}
                         />
-                      ) : null}
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-warm-400 text-lg">👤</div>
+                      )}
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-blue-600">
+                      <div className="text-sm font-semibold text-warm-900">
                         {mentor.name_ko} / {mentor.name_en}
+                      </div>
+                      <div className="text-xs text-warm-500 mt-0.5">
+                        {mentor.position_ko || mentor.position_en}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <button 
+                    <button
                       onClick={() => toggleActive(mentor)}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md hover:shadow-lg ${
-                        mentor.is_active 
-                          ? 'bg-green-500 focus:ring-green-500' 
-                          : 'bg-gray-400 focus:ring-gray-400'
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-md ${
+                        mentor.is_active
+                          ? 'bg-secondary-500 focus:ring-secondary-400'
+                          : 'bg-warm-300 focus:ring-warm-400'
                       }`}
                       role="switch"
                       aria-checked={mentor.is_active}
@@ -291,18 +296,18 @@ export default function AdminPage() {
                         }`}
                       />
                     </button>
-                    <button onClick={() => handleEdit(mentor)} className="text-gray-400 hover:text-gray-600">
-                      <Edit2 size={20} />
+                    <button onClick={() => handleEdit(mentor)} className="p-2 text-warm-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                      <Edit2 size={18} />
                     </button>
-                    <button onClick={() => handleDelete(mentor.id)} className="text-red-400 hover:text-red-600">
-                      <Trash2 size={20} />
+                    <button onClick={() => handleDelete(mentor.id)} className="p-2 text-warm-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
               </li>
             ))}
             {mentors.length === 0 && !loading && (
-              <li className="px-4 py-4 text-center text-gray-500">No mentors found.</li>
+              <li className="px-6 py-12 text-center text-warm-500">No mentors found.</li>
             )}
           </ul>
         </div>
@@ -310,132 +315,132 @@ export default function AdminPage() {
 
       {/* Modal/Form Overlay */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">{editingMentor ? t.edit : 'Add Mentor'}</h2>
-              <button onClick={() => setIsFormOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
+        <div className="fixed inset-0 bg-warm-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-warm-900">{editingMentor ? t.edit : 'Add Mentor'}</h2>
+              <button onClick={() => setIsFormOpen(false)} className="p-2 text-warm-400 hover:text-warm-600 hover:bg-warm-100 rounded-full transition-all">
+                <X size={22} />
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
+            <form onSubmit={handleSubmit} className="space-y-5">
+
               {/* Names */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.name} (KO)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.name_ko} onChange={e => setFormData({...formData, name_ko: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.name} (KO)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.name_ko} onChange={e => setFormData({...formData, name_ko: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.name} (EN)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.name} (EN)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} />
                 </div>
               </div>
 
               {/* Company */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company (KO)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.company_ko} onChange={e => setFormData({...formData, company_ko: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Company (KO)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.company_ko} onChange={e => setFormData({...formData, company_ko: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company (EN)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.company_en} onChange={e => setFormData({...formData, company_en: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Company (EN)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.company_en} onChange={e => setFormData({...formData, company_en: e.target.value})} />
                 </div>
               </div>
 
               {/* Positions */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.position} (KO)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.position_ko} onChange={e => setFormData({...formData, position_ko: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.position} (KO)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.position_ko} onChange={e => setFormData({...formData, position_ko: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.position} (EN)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.position_en} onChange={e => setFormData({...formData, position_en: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.position} (EN)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.position_en} onChange={e => setFormData({...formData, position_en: e.target.value})} />
                 </div>
               </div>
 
               {/* Descriptions */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.description} (KO)</label>
-                  <textarea rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.description_ko} onChange={e => setFormData({...formData, description_ko: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.description} (KO)</label>
+                  <textarea rows={3} className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.description_ko} onChange={e => setFormData({...formData, description_ko: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.description} (EN)</label>
-                  <textarea rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.description_en} onChange={e => setFormData({...formData, description_en: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.description} (EN)</label>
+                  <textarea rows={3} className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.description_en} onChange={e => setFormData({...formData, description_en: e.target.value})} />
                 </div>
               </div>
 
               {/* Locations */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.location} (KO)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.location_ko} onChange={e => setFormData({...formData, location_ko: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.location} (KO)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.location_ko} onChange={e => setFormData({...formData, location_ko: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t.location} (EN)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.location_en} onChange={e => setFormData({...formData, location_en: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.location} (EN)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.location_en} onChange={e => setFormData({...formData, location_en: e.target.value})} />
                 </div>
               </div>
 
               {/* URLs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">LinkedIn URL</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">LinkedIn URL</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Calendly URL</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.calendly_url} onChange={e => setFormData({...formData, calendly_url: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Calendly URL</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.calendly_url} onChange={e => setFormData({...formData, calendly_url: e.target.value})} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Email</label>
+                  <input type="email" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Languages (comma separated)</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="Korean, English" />
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Languages (comma separated)</label>
+                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="Korean, English" />
                 </div>
               </div>
 
               {/* Session Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Session Time (minutes)</label>
-                  <input 
-                    type="number" 
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Session Time (minutes)</label>
+                  <input
+                    type="number"
                     min="0"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" 
-                    value={formData.session_time_minutes} 
-                    onChange={e => setFormData({...formData, session_time_minutes: e.target.value})} 
+                    className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
+                    value={formData.session_time_minutes}
+                    onChange={e => setFormData({...formData, session_time_minutes: e.target.value})}
                     placeholder="60"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Session Price (USD)</label>
-                  <input 
-                    type="number" 
+                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Session Price (USD)</label>
+                  <input
+                    type="number"
                     step="0.01"
                     min="0"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white" 
-                    value={formData.session_price_usd} 
-                    onChange={e => setFormData({...formData, session_price_usd: e.target.value})} 
+                    className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
+                    value={formData.session_price_usd}
+                    onChange={e => setFormData({...formData, session_price_usd: e.target.value})}
                     placeholder="30.00"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t.tags}</label>
+                <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.tags}</label>
                 <input
                   type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-gray-900 bg-white"
+                  className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
                   value={formData.tags}
                   onChange={e => setFormData({...formData, tags: e.target.value})}
                   placeholder="Java, Spring, Career"
@@ -443,20 +448,20 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t.photo}</label>
-                <div className="mt-1 flex items-center gap-4">
+                <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.photo}</label>
+                <div className="flex items-center gap-4">
                   {formData.picture_url && (
-                    <div className="relative h-16 w-16 bg-gray-200 rounded overflow-hidden">
-                      <Image 
-                        src={formData.picture_url} 
-                        alt="Preview" 
-                        fill 
+                    <div className="relative h-16 w-16 bg-warm-100 rounded-xl overflow-hidden">
+                      <Image
+                        src={formData.picture_url}
+                        alt="Preview"
+                        fill
                         className="object-cover"
                         unoptimized={formData.picture_url.includes('supabase.co')}
                       />
                     </div>
                   )}
-                  <label className="cursor-pointer bg-white border border-gray-300 rounded-md py-2 px-3 flex items-center justify-center text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm">
+                  <label className="cursor-pointer bg-white border-2 border-dashed border-warm-200 rounded-xl py-3 px-4 flex items-center justify-center text-sm font-medium text-warm-600 hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all">
                     {uploading ? t.loading : t.upload}
                     <input type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                   </label>
@@ -467,26 +472,26 @@ export default function AdminPage() {
                 <input
                   id="enabled"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-warm-300 rounded-md"
                   checked={formData.is_active}
                   onChange={e => setFormData({...formData, is_active: e.target.checked})}
                 />
-                <label htmlFor="enabled" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="enabled" className="ml-2 block text-sm text-warm-800 font-medium">
                   {t.enabled}
                 </label>
               </div>
 
-              <div className="pt-4 flex justify-end gap-3">
+              <div className="pt-5 flex justify-end gap-3 border-t border-warm-100">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                  className="py-2.5 px-5 border border-warm-200 rounded-xl text-sm font-medium text-warm-700 hover:bg-warm-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
+                  className="btn-primary py-2.5 px-6 rounded-xl text-sm font-semibold"
                 >
                   {t.save}
                 </button>

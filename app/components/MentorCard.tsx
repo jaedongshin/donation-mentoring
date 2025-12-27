@@ -1,8 +1,7 @@
 import { Mentor } from '@/types/mentor';
-import { MapPin, Briefcase, Building2, Linkedin, Calendar, Mail, Clock, DollarSign } from 'lucide-react';
+import { Building2, MapPin, Clock, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 import { Language } from '@/utils/i18n';
-import { ensureProtocol } from '@/utils/helpers';
 import { useState } from 'react';
 
 interface MentorCardProps {
@@ -14,123 +13,133 @@ interface MentorCardProps {
 export default function MentorCard({ mentor, lang, onClick }: MentorCardProps) {
   const [imageError, setImageError] = useState(false);
   const name = lang === 'en' ? mentor.name_en : mentor.name_ko;
-  const description = lang === 'en' ? mentor.description_en : mentor.description_ko;
   const position = lang === 'en' ? mentor.position_en : mentor.position_ko;
   const location = lang === 'en' ? mentor.location_en : mentor.location_ko;
   const company = lang === 'en' ? mentor.company_en : mentor.company_ko;
+  const description = lang === 'en' ? mentor.description_en : mentor.description_ko;
 
   // Fallback if current language is empty
   const displayName = name || mentor.name_en || mentor.name_ko || 'No Name';
-  const displayDescription = description || mentor.description_en || mentor.description_ko || '';
   const displayPosition = position || mentor.position_en || mentor.position_ko || '';
   const displayLocation = location || mentor.location_en || mentor.location_ko || '';
   const displayCompany = company || mentor.company_en || mentor.company_ko || '';
+  const displayDescription = description || mentor.description_en || mentor.description_ko || '';
 
   return (
-    <div 
+    <div
       onClick={() => onClick(mentor)}
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer flex flex-col h-full"
+      className="group cursor-pointer bg-white rounded-xl overflow-hidden border border-warm-100
+        hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full flex flex-col"
     >
-      <div className="relative h-64 w-full bg-gray-200 flex-shrink-0">
+      {/* Image with Overlay */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
         {mentor.picture_url && !imageError ? (
-          <Image
-            src={mentor.picture_url}
-            alt={displayName}
-            fill
-            className="object-cover"
-            unoptimized={mentor.picture_url.includes('supabase.co')}
-            onError={() => setImageError(true)}
-          />
+          <>
+            <Image
+              src={mentor.picture_url}
+              alt={displayName}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              unoptimized={mentor.picture_url.includes('supabase.co')}
+              onError={() => setImageError(true)}
+            />
+            {/* Gradient overlay - stronger for better readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+            {/* Name and Position on image */}
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <h3 className="text-lg font-semibold text-white mb-0.5"
+                style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                {displayName}
+              </h3>
+              <p className="text-sm text-white/90 line-clamp-2"
+                style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                {displayPosition}
+              </p>
+            </div>
+          </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No Image
+          <div className="flex items-center justify-center h-full bg-warm-100 text-warm-400">
+            <div className="text-center">
+              <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-warm-200 flex items-center justify-center">
+                <span className="text-3xl text-warm-400">👤</span>
+              </div>
+              <p className="text-lg font-semibold text-warm-600">{displayName}</p>
+              <p className="text-sm text-warm-500">{displayPosition}</p>
+            </div>
           </div>
         )}
       </div>
-      <div className="p-5 flex flex-col flex-grow">
-        <h3 className="text-2xl font-extrabold text-gray-900 mb-2">{displayName}</h3>
-        
-        <div className="flex flex-col gap-1.5 mb-3">
-          <div className="flex items-center text-sm font-medium text-gray-700">
-            <Briefcase size={16} className="mr-2 text-blue-600 flex-shrink-0" />
-            <span>{displayPosition}</span>
-          </div>
+
+      {/* Card Content */}
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
+        {/* Company and Location */}
+        <div className="flex items-center flex-wrap gap-x-1 text-sm text-warm-700">
           {displayCompany && (
-            <div className="flex items-center text-sm font-medium text-gray-700">
-              <Building2 size={16} className="mr-2 text-blue-600 flex-shrink-0" />
-              <span>{displayCompany}</span>
+            <div className="flex items-center">
+              <Building2 size={14} className="mr-1 text-warm-400 flex-shrink-0" />
+              <span className="truncate">{displayCompany}</span>
             </div>
           )}
-          <div className="flex items-center text-sm text-gray-500">
-            <MapPin size={16} className="mr-2 text-gray-400 flex-shrink-0" />
-            <span>{displayLocation}</span>
+          {displayCompany && displayLocation && (
+            <span className="text-warm-300">·</span>
+          )}
+          {displayLocation && (
+            <div className="flex items-center">
+              <MapPin size={14} className="mr-1 text-warm-400 flex-shrink-0" />
+              <span className="truncate">{displayLocation}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Session info */}
+        {(mentor.session_time_minutes || mentor.session_price_usd) && (
+          <div className="flex items-center text-sm font-medium text-secondary-600">
+            {mentor.session_time_minutes && (
+              <div className="flex items-center">
+                <Clock size={14} className="mr-1 text-secondary-500" />
+                <span>{mentor.session_time_minutes}min</span>
+              </div>
+            )}
+            {mentor.session_time_minutes && mentor.session_price_usd && (
+              <span className="mx-2 text-warm-300">·</span>
+            )}
+            {mentor.session_price_usd && (
+              <div className="flex items-center">
+                <DollarSign size={14} className="mr-0.5 text-secondary-500" />
+                <span>{mentor.session_price_usd.toFixed(0)}</span>
+              </div>
+            )}
           </div>
-          {(mentor.session_time_minutes || mentor.session_price_usd) && (
-            <div className="flex items-center gap-4 pt-1 border-t border-gray-100">
-              {mentor.session_time_minutes && (
-                <div className="flex items-center text-sm font-medium text-green-600">
-                  <Clock size={16} className="mr-1.5 text-green-600 flex-shrink-0" />
-                  <span>{mentor.session_time_minutes} min</span>
-                </div>
-              )}
-              {mentor.session_price_usd && (
-                <div className="flex items-center text-sm font-medium text-green-600">
-                  <DollarSign size={16} className="mr-1.5 text-green-600 flex-shrink-0" />
-                  <span>{mentor.session_price_usd.toFixed(2)}</span>
-                </div>
-              )}
-            </div>
+        )}
+
+        {/* Description */}
+        <div className="flex-1">
+          {displayDescription && (
+            <p className="text-sm text-warm-600 line-clamp-3 leading-relaxed">
+              {displayDescription}
+            </p>
           )}
         </div>
 
-        <p className="text-gray-600 text-sm line-clamp-5 mb-4 flex-grow">
-          {displayDescription}
-        </p>
-        
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {mentor.tags && mentor.tags.map((tag, index) => (
-            <span key={index} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full border border-gray-200">
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-3 pt-3 border-t border-gray-100 mt-auto">
-          {mentor.linkedin_url && (
-            <a 
-              href={ensureProtocol(mentor.linkedin_url)} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0A66C2] transition-colors"
-            >
-              <Linkedin size={16} />
-              LinkedIn
-            </a>
-          )}
-          {mentor.calendly_url && (
-            <a 
-              href={ensureProtocol(mentor.calendly_url)} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              <Calendar size={16} />
-              Book Session
-            </a>
-          )}
-          {mentor.email && (
-            <a 
-              href={`mailto:${mentor.email}`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              <Mail size={16} />
-              Email
-            </a>
-          )}
-        </div>
+        {/* Tags (1-2 only) */}
+        {mentor.tags && mentor.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1 mt-auto">
+            {mentor.tags.slice(0, 2).map((tag, index) => (
+              <span
+                key={index}
+                className="px-2.5 py-1 bg-primary-50 text-primary-700 text-xs font-medium rounded-full border border-primary-100"
+              >
+                {tag}
+              </span>
+            ))}
+            {mentor.tags.length > 2 && (
+              <span className="px-2.5 py-1 bg-warm-100 text-warm-500 text-xs font-medium rounded-full">
+                +{mentor.tags.length - 2}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
