@@ -6,10 +6,11 @@ import { Mentor } from '@/types/mentor';
 import MentorCard from '@/app/components/MentorCard';
 import FilterSidebar from '@/app/components/FilterSidebar';
 import MentorModal from '@/app/components/MentorModal';
+import MentorApplicationModal from '@/app/components/MentorApplicationModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray } from '@/utils/helpers';
 import Link from 'next/link';
-import { Search, X, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, ArrowDown, Moon, Sun, User } from 'lucide-react';
+import { Search, X, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, Plus, User } from 'lucide-react';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
 // Charcoal & Dusty Blue theme - locked in
@@ -39,6 +40,7 @@ export default function Home() {
   const [showDetailedSteps, setShowDetailedSteps] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [scrollY, setScrollY] = useState(0);
+  const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const mentorsSectionRef = useRef<HTMLElement>(null);
 
   // Persist dark mode across site
@@ -186,7 +188,14 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Language selector */}
+              <button
+                onClick={() => setIsMentorModalOpen(true)}
+                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
+              >
+                <Plus size={18} />
+                {t.addMentor}
+              </button>
+
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value as Language)}
@@ -240,6 +249,54 @@ export default function Home() {
         <div className="max-w-6xl mx-auto relative">
           {/* How it Works - Bento Card */}
           <div className={`${dm.bgCardAlt} rounded-2xl p-3 sm:p-4 md:p-6 shadow-sm border ${dm.border} transition-all`}>
+            {/* About Section - Bento Cards - Always visible */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 sm:mb-4 md:mb-6">
+              <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.mentoringTitle}</h3>
+                <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.mentoringDesc}</p>
+              </div>
+              <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.donationMentoringTitle}</h3>
+                <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.donationMentoringDesc}</p>
+              </div>
+            </div>
+
+            {/* Values Section - Bento Cards - Always visible */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 sm:mb-4 md:mb-6">
+              <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
+                    <Users size={14} className={theme.primaryText} />
+                  </span>
+                  <span className={`text-sm font-medium ${dm.text}`}>{t.mentorValueTitle}</span>
+                </div>
+                <ul className="space-y-1.5">
+                  {t.mentorValuePoints.map((point, i) => (
+                    <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
+                      <span className={`${theme.bullet} mt-0.5`}>•</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
+                    <Heart size={14} className={theme.accentText} />
+                  </span>
+                  <span className={`text-sm font-medium ${dm.text}`}>{t.menteeValueTitle}</span>
+                </div>
+                <ul className="space-y-1.5">
+                  {t.menteeValuePoints.map((point, i) => (
+                    <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
+                      <span className={`${theme.bullet} mt-0.5`}>•</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
             <h2 className={`text-base sm:text-lg md:text-xl font-bold ${dm.text} mb-3 sm:mb-4 md:mb-6 text-center`}>{t.howToDonate}</h2>
 
             {/* 4 Steps - Icons use primary, Numbers use accent */}
@@ -294,60 +351,12 @@ export default function Home() {
               onClick={() => setShowDetailedSteps(!showDetailedSteps)}
               className={`mx-auto flex items-center gap-1 text-xs ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors cursor-pointer`}
             >
-              <span>{t.learnMoreAbout}</span>
+              <span>{t.moreDetails}</span>
               {showDetailedSteps ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
             {showDetailedSteps && (
               <div className={`${dm.bgCard} rounded-xl p-4 mt-3 border ${dm.border} space-y-4`}>
-                {/* About Section - Bento Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-                    <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.mentoringTitle}</h3>
-                    <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.mentoringDesc}</p>
-                  </div>
-                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-                    <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.donationMentoringTitle}</h3>
-                    <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.donationMentoringDesc}</p>
-                  </div>
-                </div>
-
-                {/* Values Section - Bento Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
-                        <Users size={14} className={theme.primaryText} />
-                      </span>
-                      <span className={`text-sm font-medium ${dm.text}`}>{t.mentorValueTitle}</span>
-                    </div>
-                    <ul className="space-y-1.5">
-                      {t.mentorValuePoints.map((point, i) => (
-                        <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
-                          <span className={`${theme.bullet} mt-0.5`}>•</span>
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
-                        <Heart size={14} className={theme.accentText} />
-                      </span>
-                      <span className={`text-sm font-medium ${dm.text}`}>{t.menteeValueTitle}</span>
-                    </div>
-                    <ul className="space-y-1.5">
-                      {t.menteeValuePoints.map((point, i) => (
-                        <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
-                          <span className={`${theme.bullet} mt-0.5`}>•</span>
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
                 {/* Detailed steps */}
                 <div className={`pt-3 border-t ${dm.border}`}>
                   <h4 className={`text-xs font-medium ${dm.textMuted} mb-3`}>{t.howToDetailedTitle}</h4>
@@ -388,16 +397,7 @@ export default function Home() {
 
           </div>
 
-          {/* CTA Button - Outside the bento box */}
-          <div className="text-center mt-3 sm:mt-4 md:mt-6">
-            <button
-              onClick={scrollToMentors}
-              className={`inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 ${theme.accentBg} ${theme.accentHover} text-white text-sm font-medium rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] group`}
-            >
-              <span>{t.findMentors}</span>
-              <ArrowDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
-            </button>
-          </div>
+
         </div>
       </section>
 
@@ -431,6 +431,7 @@ export default function Home() {
               lang={lang}
               isMobileOpen={mobileFilterOpen}
               onMobileClose={() => setMobileFilterOpen(false)}
+              darkMode={darkMode}
             />
 
             <main className="flex-1 min-w-0">
@@ -486,6 +487,13 @@ export default function Home() {
           darkMode={dm}
         />
       )}
+
+      <MentorApplicationModal
+        isOpen={isMentorModalOpen}
+        onClose={() => setIsMentorModalOpen(false)}
+        lang={lang}
+        darkMode={darkMode}
+      />
 
       {/* Footer */}
       <footer className={`${dm.bg} border-t ${dm.border} py-6 transition-colors duration-300`}>

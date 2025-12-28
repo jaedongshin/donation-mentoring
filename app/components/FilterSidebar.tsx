@@ -13,6 +13,7 @@ interface FilterSidebarProps {
   lang: Language;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
+  darkMode?: boolean;
 }
 
 const SESSION_LENGTHS = [30, 45, 60];
@@ -26,12 +27,25 @@ export default function FilterSidebar({
   lang,
   isMobileOpen = false,
   onMobileClose,
+  darkMode = false,
 }: FilterSidebarProps) {
   const t = translations[lang];
   const [showAllTags, setShowAllTags] = useState(false);
 
   const visibleTags = showAllTags ? availableTags : availableTags.slice(0, INITIAL_TAGS_SHOWN);
   const hasMoreTags = availableTags.length > INITIAL_TAGS_SHOWN;
+
+  // Dark mode styles
+  const dm = {
+    bg: darkMode ? 'bg-gray-800' : 'bg-white',
+    text: darkMode ? 'text-gray-100' : 'text-gray-900',
+    textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
+    textSubtle: darkMode ? 'text-gray-300' : 'text-gray-800',
+    border: darkMode ? 'border-gray-600' : 'border-gray-300',
+    hover: darkMode ? 'hover:text-gray-200' : 'hover:text-black',
+    checkbox: darkMode ? 'border-gray-500 bg-gray-700' : 'border-gray-600 bg-white',
+    input: darkMode ? 'bg-gray-700 border-gray-500 text-gray-100' : 'bg-white border-gray-400',
+  };
 
   const handleExpertiseToggle = (tag: string) => {
     const newExpertise = filters.expertise.includes(tag)
@@ -83,11 +97,11 @@ export default function FilterSidebar({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">{t.filterTitle}</h3>
+        <h3 className={`text-lg font-semibold ${dm.text}`}>{t.filterTitle}</h3>
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="text-sm text-sky-600 hover:text-sky-800 font-medium"
           >
             {t.filterClearAll}
           </button>
@@ -97,7 +111,7 @@ export default function FilterSidebar({
       {/* Expertise Filter - 2 columns with show more */}
       {availableTags.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">{t.filterExpertise}</h4>
+          <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterExpertise}</h4>
           <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
             {visibleTags.map((tag) => (
               <label key={tag} className="flex items-center cursor-pointer group">
@@ -105,9 +119,9 @@ export default function FilterSidebar({
                   type="checkbox"
                   checked={filters.expertise.includes(tag)}
                   onChange={() => handleExpertiseToggle(tag)}
-                  className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className={`w-3.5 h-3.5 text-sky-600 rounded focus:ring-sky-500 ${dm.checkbox}`}
                 />
-                <span className="ml-1.5 text-xs text-gray-600 group-hover:text-gray-900 truncate">
+                <span className={`ml-1.5 text-xs ${dm.textMuted} ${dm.hover} truncate`}>
                   {tag}
                 </span>
               </label>
@@ -116,7 +130,7 @@ export default function FilterSidebar({
           {hasMoreTags && (
             <button
               onClick={() => setShowAllTags(!showAllTags)}
-              className="mt-2 flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+              className="mt-2 flex items-center gap-1 text-xs text-sky-600 hover:text-sky-800 font-medium cursor-pointer"
             >
               {showAllTags ? (
                 <>
@@ -137,7 +151,7 @@ export default function FilterSidebar({
       {/* Location Filter - 2 columns */}
       {availableLocations.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">{t.filterLocation}</h4>
+          <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterLocation}</h4>
           <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
             {availableLocations.map((location) => (
               <label key={location} className="flex items-center cursor-pointer group">
@@ -145,9 +159,9 @@ export default function FilterSidebar({
                   type="checkbox"
                   checked={filters.locations.includes(location)}
                   onChange={() => handleLocationToggle(location)}
-                  className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className={`w-3.5 h-3.5 text-sky-600 rounded focus:ring-sky-500 ${dm.checkbox}`}
                 />
-                <span className="ml-1.5 text-xs text-gray-600 group-hover:text-gray-900 truncate">
+                <span className={`ml-1.5 text-xs ${dm.textMuted} ${dm.hover} truncate`}>
                   {location}
                 </span>
               </label>
@@ -158,7 +172,7 @@ export default function FilterSidebar({
 
       {/* Session Length Filter */}
       <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-3">{t.filterSessionLength}</h4>
+        <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterSessionLength}</h4>
         <div className="space-y-2">
           <label className="flex items-center cursor-pointer group">
             <input
@@ -166,9 +180,9 @@ export default function FilterSidebar({
               name="sessionLength"
               checked={filters.sessionLength === null}
               onChange={() => handleSessionLengthChange(null)}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              className={`w-4 h-4 text-sky-600 border-gray-300 focus:ring-sky-500 ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`}
             />
-            <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-900">
+            <span className={`ml-2 text-sm ${dm.textMuted} ${dm.hover}`}>
               {t.filterAnyLength}
             </span>
           </label>
@@ -179,9 +193,9 @@ export default function FilterSidebar({
                 name="sessionLength"
                 checked={filters.sessionLength === length}
                 onChange={() => handleSessionLengthChange(length)}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className={`w-4 h-4 text-sky-600 border-gray-300 focus:ring-sky-500 ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`}
               />
-              <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-900">
+              <span className={`ml-2 text-sm ${dm.textMuted} ${dm.hover}`}>
                 {length} {t.filterMin}
               </span>
             </label>
@@ -191,33 +205,33 @@ export default function FilterSidebar({
 
       {/* Donation Amount Filter */}
       <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-3">{t.filterPriceRange}</h4>
+        <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterPriceRange}</h4>
         <div className="space-y-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <div className="flex items-center">
-              <span className="text-xs text-gray-500 mr-1">$</span>
+              <span className={`text-xs ${dm.textMuted} mr-1`}>$</span>
               <input
                 type="number"
                 min={0}
                 max={100}
                 value={filters.priceRange[0]}
                 onChange={(e) => handlePriceRangeChange(Number(e.target.value), 0)}
-                className="w-14 px-1.5 py-1 text-xs border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                className={`w-14 px-1.5 py-1 text-xs border rounded focus:ring-sky-500 focus:border-sky-500 ${dm.input} ${dm.border}`}
               />
             </div>
-            <span className="text-gray-400 text-xs">~</span>
+            <span className={`${dm.textMuted} text-xs`}>~</span>
             <div className="flex items-center">
-              <span className="text-xs text-gray-500 mr-1">$</span>
+              <span className={`text-xs ${dm.textMuted} mr-1`}>$</span>
               <input
                 type="number"
                 min={0}
                 max={100}
                 value={filters.priceRange[1]}
                 onChange={(e) => handlePriceRangeChange(Number(e.target.value), 1)}
-                className="w-14 px-1.5 py-1 text-xs border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                className={`w-14 px-1.5 py-1 text-xs border rounded focus:ring-sky-500 focus:border-sky-500 ${dm.input} ${dm.border}`}
               />
             </div>
-            <span className="text-xs text-gray-500">Donation</span>
+            <span className={`text-xs ${dm.textMuted}`}>Donation</span>
           </div>
           <input
             type="range"
@@ -225,7 +239,7 @@ export default function FilterSidebar({
             max={100}
             value={filters.priceRange[1]}
             onChange={(e) => handlePriceRangeChange(Number(e.target.value), 1)}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600"
           />
         </div>
       </div>
@@ -236,7 +250,7 @@ export default function FilterSidebar({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-24 bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div className={`sticky top-24 ${dm.bg} rounded-lg shadow-sm border ${dm.border} p-5 transition-colors duration-300`}>
           {sidebarContent}
         </div>
       </aside>
@@ -245,17 +259,17 @@ export default function FilterSidebar({
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onMobileClose}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">{t.filterTitle}</h3>
+          <div className={`absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] ${dm.bg} shadow-xl transition-colors duration-300`}>
+            <div className={`flex items-center justify-between p-4 border-b ${dm.border}`}>
+              <h3 className={`text-lg font-semibold ${dm.text}`}>{t.filterTitle}</h3>
               <button
                 onClick={onMobileClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className={`p-2 hover:bg-gray-100 ${darkMode ? 'hover:bg-gray-700' : ''} rounded-full transition-colors`}
               >
-                <X size={20} className="text-gray-500" />
+                <X size={20} className={dm.textMuted} />
               </button>
             </div>
             <div className="p-5 overflow-y-auto h-[calc(100%-65px)]">

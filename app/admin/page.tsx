@@ -36,7 +36,27 @@ export default function AdminPage() {
     localStorage.setItem('darkMode', String(newValue));
   };
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name_en: string;
+    name_ko: string;
+    description_en: string;
+    description_ko: string;
+    location_en: string;
+    location_ko: string;
+    position_en: string;
+    position_ko: string;
+    company_en: string;
+    company_ko: string;
+    picture_url: string;
+    linkedin_url: string;
+    calendly_url: string;
+    email: string;
+    languages: string[];
+    tags: string;
+    is_active: boolean;
+    session_time_minutes: string;
+    session_price_usd: string;
+  }>({
     name_en: '',
     name_ko: '',
     description_en: '',
@@ -51,7 +71,7 @@ export default function AdminPage() {
     linkedin_url: '',
     calendly_url: '',
     email: '',
-    languages: '',
+    languages: [],
     tags: '',
     is_active: true,
     session_time_minutes: '',
@@ -59,6 +79,17 @@ export default function AdminPage() {
   });
 
   const t = translations[lang];
+
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData(prev => {
+      if (checked) {
+        return { ...prev, languages: [...prev.languages, value] };
+      } else {
+        return { ...prev, languages: prev.languages.filter(l => l !== value) };
+      }
+    });
+  };
 
   // Filter mentors by search
   const filteredMentors = mentors.filter(m => {
@@ -124,7 +155,7 @@ export default function AdminPage() {
       linkedin_url: mentor.linkedin_url || '',
       calendly_url: mentor.calendly_url || '',
       email: mentor.email || '',
-      languages: mentor.languages ? mentor.languages.join(', ') : '',
+      languages: mentor.languages || [],
       tags: mentor.tags ? mentor.tags.join(', ') : '',
       is_active: mentor.is_active,
       session_time_minutes: mentor.session_time_minutes?.toString() || '',
@@ -205,7 +236,7 @@ export default function AdminPage() {
       linkedin_url: formData.linkedin_url,
       calendly_url: formData.calendly_url,
       email: formData.email,
-      languages: formData.languages.split(',').map(l => l.trim()).filter(Boolean),
+      languages: formData.languages,
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
       is_active: formData.is_active,
       session_time_minutes: formData.session_time_minutes ? parseInt(formData.session_time_minutes, 10) : null,
@@ -231,7 +262,7 @@ export default function AdminPage() {
       name_en: '', name_ko: '', description_en: '', description_ko: '',
       location_en: '', location_ko: '', position_en: '', position_ko: '',
       company_en: '', company_ko: '', picture_url: '', linkedin_url: '',
-      calendly_url: '', email: '', languages: '', tags: '',
+      calendly_url: '', email: '', languages: [], tags: '',
       is_active: true, session_time_minutes: '', session_price_usd: '',
     });
     setIsFormOpen(true);
@@ -326,7 +357,7 @@ export default function AdminPage() {
             className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
           >
             <Plus size={18} />
-            Add Mentor
+            {t.addMentor}
           </button>
         </div>
 
@@ -406,7 +437,7 @@ export default function AdminPage() {
           <div className={`${dm.bgCard} border ${dm.border} rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-colors duration-300`}>
             <div className={`sticky top-0 ${dm.bgCard} border-b ${dm.border} px-5 py-4 flex justify-between items-center`}>
               <h2 className={`text-lg font-semibold ${dm.text}`}>
-                {editingMentor ? t.edit : 'Add Mentor'}
+                {editingMentor ? t.edit : t.addMentor}
               </h2>
               <button
                 onClick={() => setIsFormOpen(false)}
@@ -435,7 +466,7 @@ export default function AdminPage() {
 
               {/* Company */}
               <div>
-                <label className={getLabelClass(darkMode)}>Company</label>
+                <label className={getLabelClass(darkMode)}>{t.company}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇰🇷</span>
@@ -500,7 +531,7 @@ export default function AdminPage() {
                   <input type="text" className={getInputClass(darkMode)} value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} />
                 </div>
                 <div>
-                  <label className={getLabelClass(darkMode)}>Calendly URL</label>
+                  <label className={getLabelClass(darkMode)}>{t.calendarUrl}</label>
                   <input type="text" className={getInputClass(darkMode)} value={formData.calendly_url} onChange={e => setFormData({...formData, calendly_url: e.target.value})} />
                 </div>
               </div>
@@ -511,18 +542,39 @@ export default function AdminPage() {
                   <input type="email" className={getInputClass(darkMode)} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                 </div>
                 <div>
-                  <label className={getLabelClass(darkMode)}>Languages</label>
-                  <input type="text" className={getInputClass(darkMode)} value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="Korean, English" />
+                  <label className={getLabelClass(darkMode)}>{t.languages}</label>
+                  <div className="flex gap-4 pt-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        value="Korean"
+                        checked={formData.languages.includes('Korean')}
+                        onChange={handleLanguageChange}
+                        className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
+                      />
+                      <span className={`text-sm ${dm.textMuted}`}>Korean</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        value="English"
+                        checked={formData.languages.includes('English')}
+                        onChange={handleLanguageChange}
+                        className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
+                      />
+                      <span className={`text-sm ${dm.textMuted}`}>English</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={getLabelClass(darkMode)}>Session Time (min)</label>
+                  <label className={getLabelClass(darkMode)}>{t.sessionTime}</label>
                   <input type="number" min="0" className={getInputClass(darkMode)} value={formData.session_time_minutes} onChange={e => setFormData({...formData, session_time_minutes: e.target.value})} placeholder="60" />
                 </div>
                 <div>
-                  <label className={getLabelClass(darkMode)}>Donation (USD)</label>
+                  <label className={getLabelClass(darkMode)}>{t.sessionPrice}</label>
                   <input type="number" step="0.01" min="0" className={getInputClass(darkMode)} value={formData.session_price_usd} onChange={e => setFormData({...formData, session_price_usd: e.target.value})} placeholder="30.00" />
                 </div>
               </div>
