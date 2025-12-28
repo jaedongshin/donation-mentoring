@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
 import { FilterState } from '@/utils/useMentorFilters';
 
@@ -11,6 +11,8 @@ interface FilterSidebarProps {
   availableTags: string[];
   availableLocations: string[];
   lang: Language;
+  search: string;
+  onSearchChange: (value: string) => void;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
   darkMode?: boolean;
@@ -25,6 +27,8 @@ export default function FilterSidebar({
   availableTags,
   availableLocations,
   lang,
+  search,
+  onSearchChange,
   isMobileOpen = false,
   onMobileClose,
   darkMode = false,
@@ -96,8 +100,7 @@ export default function FilterSidebar({
   const sidebarContent = (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className={`text-lg font-semibold ${dm.text}`}>{t.filterTitle}</h3>
+      <div className="flex items-center justify-end">
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
@@ -106,6 +109,18 @@ export default function FilterSidebar({
             {t.filterClearAll}
           </button>
         )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={t.searchPlaceholder}
+          className={`w-full pl-9 pr-3 py-2 text-sm ${dm.input} ${dm.border} border rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40`}
+        />
       </div>
 
       {/* Expertise Filter - 2 columns with show more */}

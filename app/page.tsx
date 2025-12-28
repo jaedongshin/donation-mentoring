@@ -10,7 +10,7 @@ import MentorApplicationModal from '@/app/components/MentorApplicationModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray } from '@/utils/helpers';
 import Link from 'next/link';
-import { Search, X, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, Plus, User } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User } from 'lucide-react';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
 // Charcoal & Dusty Blue theme - locked in
@@ -34,7 +34,6 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [lang, setLang] = useState<Language>('ko');
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showDetailedSteps, setShowDetailedSteps] = useState(false);
@@ -127,72 +126,33 @@ export default function Home() {
 
             {/* Right side controls */}
             <div className="flex items-center gap-1.5 sm:gap-2">
-              {!searchExpanded && (
-                <>
-                  <nav className="hidden sm:flex items-center gap-1 mr-2">
-                    <a
-                      href="#hero"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        scrollToElement('hero');
-                      }}
-                      className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
-                    >
-                      {t.navHowItWorks}
-                    </a>
-                    <a
-                      href="#mentors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        scrollToMentors();
-                      }}
-                      className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
-                    >
-                      {t.navMentors}
-                    </a>
-                  </nav>
-
-                  <button
-                    onClick={() => setSearchExpanded(true)}
-                    className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
-                    aria-label="Search"
-                  >
-                    <Search size={18} />
-                  </button>
-                </>
-              )}
-
-              {searchExpanded && (
-                <div className="flex items-center gap-1.5 flex-1 max-w-md">
-                  <div className="relative flex-1">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      autoFocus
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder={t.searchPlaceholder}
-                      className={`w-full pl-9 pr-3 py-1.5 text-sm ${dm.bgCard} ${dm.text} border ${dm.border} rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40`}
-                    />
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSearchExpanded(false);
-                      setSearch('');
-                    }}
-                    className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
-                    aria-label="Close search"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              )}
+              <nav className="hidden sm:flex items-center gap-1 mr-2">
+                <a
+                  href="#hero"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToElement('hero');
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                >
+                  {t.navAbout}
+                </a>
+                <a
+                  href="#mentors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToMentors();
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                >
+                  {t.navMentors}
+                </a>
+              </nav>
 
               <button
                 onClick={() => setIsMentorModalOpen(true)}
-                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
+                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer whitespace-nowrap"
               >
-                <Plus size={18} />
                 {t.addMentor}
               </button>
 
@@ -429,6 +389,8 @@ export default function Home() {
               availableTags={availableTags}
               availableLocations={availableLocations}
               lang={lang}
+              search={search}
+              onSearchChange={setSearch}
               isMobileOpen={mobileFilterOpen}
               onMobileClose={() => setMobileFilterOpen(false)}
               darkMode={darkMode}
