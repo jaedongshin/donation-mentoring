@@ -36,6 +36,7 @@ export const translations = {
     howToStep4Title: "Meet",
     howToStep4Desc: "Connect with your mentor at the scheduled time",
     howToDetailedTitle: "Detailed Steps",
+    learnMoreAbout: "About Donation Mentoring",
     howToDonateSteps: [
       "Select the mentor you wish to receive guidance from.",
       "Check available time slots and fees on the mentor's calendar.",
@@ -117,10 +118,11 @@ export const translations = {
     howToStep4Title: "만남",
     howToStep4Desc: "예약한 시간에 멘토와 만나세요",
     howToDetailedTitle: "상세 안내",
+    learnMoreAbout: "기부 멘토링 소개",
     howToDonateSteps: [
       "멘토 받고 싶은 사람 선택",
       "멘토의 캘린더에서 가능한 시간과 비용 확인",
-      "Unicef(https://unicef.org/) 이동",
+      "Unicef 사이트로 이동 (https://unicef.org/)",
       "Donate - 'Give Once'",
       "멘토에 따른 비용 입력 및 결제",
       "기부를 마치고 멘토에게 영수증 메일 포워딩",

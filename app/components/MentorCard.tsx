@@ -186,22 +186,24 @@ export default function MentorCard({ mentor, lang, onClick, theme = defaultTheme
           </p>
         )}
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 pt-2">
-          {visibleTags.map((tag, index) => (
-            <span
-              key={index}
-              className={`px-2 py-0.5 ${theme.primaryLight} ${theme.primaryText} text-xs font-medium rounded-full`}
-            >
-              {tag}
-            </span>
-          ))}
-          {hiddenTagCount > 0 && (
-            <span className={`px-2 py-0.5 ${dm.bgCard} ${dm.textMuted} text-xs font-medium rounded-full border ${dm.border}`}>
-              +{hiddenTagCount}
-            </span>
-          )}
-        </div>
+        {/* Tags - single row */}
+        {(visibleTags.length > 0 || hiddenTagCount > 0) && (
+          <div className="flex items-center gap-1.5 pt-2">
+            {visibleTags.map((tag, index) => (
+              <span
+                key={index}
+                className={`px-2 py-0.5 ${theme.primaryLight} ${theme.primaryText} text-xs font-medium rounded-full truncate max-w-[80px]`}
+              >
+                {tag}
+              </span>
+            ))}
+            {hiddenTagCount > 0 && (
+              <span className={`px-2 py-0.5 ${dm.bgCard} ${dm.textMuted} text-xs font-medium rounded-full border ${dm.border} flex-shrink-0`}>
+                +{hiddenTagCount}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

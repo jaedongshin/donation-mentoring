@@ -9,73 +9,22 @@ import MentorModal from '@/app/components/MentorModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray } from '@/utils/helpers';
 import Link from 'next/link';
-import { Search, X, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, ArrowDown, Moon, Sun } from 'lucide-react';
+import { Search, X, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, ArrowDown, Moon, Sun, User } from 'lucide-react';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
-// Luxury two-tone palettes - sophisticated & professional
-type LuxuryTheme = 'slate-burgundy' | 'navy-brass' | 'charcoal-dusty';
-
-const LUXURY_THEMES = {
-  'slate-burgundy': {
-    label: 'Slate & Burgundy',
-    // Primary (dark slate)
-    primaryBg: 'bg-slate-800',
-    primaryHover: 'hover:bg-slate-900',
-    primaryText: 'text-slate-800',
-    primaryLight: 'bg-slate-100',
-    // Accent (wine/burgundy - sophisticated, not harsh)
-    accentBg: 'bg-rose-800',
-    accentHover: 'hover:bg-rose-900',
-    accentText: 'text-rose-800',
-    accentLight: 'bg-rose-50',
-    accentBorder: 'border-rose-200',
-    step1: { bg: 'bg-slate-100', text: 'text-slate-700' },
-    step2: { bg: 'bg-rose-100', text: 'text-rose-800' },
-    step3: { bg: 'bg-slate-100', text: 'text-slate-700' },
-    step4: { bg: 'bg-rose-100', text: 'text-rose-800' },
-    badge: 'bg-rose-800',
-    bullet: 'text-rose-700',
-  },
-  'navy-brass': {
-    label: 'Navy & Brass',
-    // Primary (deep navy)
-    primaryBg: 'bg-slate-900',
-    primaryHover: 'hover:bg-slate-950',
-    primaryText: 'text-slate-900',
-    primaryLight: 'bg-slate-100',
-    // Accent (brass/bronze - warmer, subtler than gold)
-    accentBg: 'bg-yellow-700',
-    accentHover: 'hover:bg-yellow-800',
-    accentText: 'text-yellow-700',
-    accentLight: 'bg-yellow-50',
-    accentBorder: 'border-yellow-200',
-    step1: { bg: 'bg-slate-100', text: 'text-slate-700' },
-    step2: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-    step3: { bg: 'bg-slate-100', text: 'text-slate-700' },
-    step4: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-    badge: 'bg-yellow-700',
-    bullet: 'text-yellow-700',
-  },
-  'charcoal-dusty': {
-    label: 'Charcoal & Dusty Blue',
-    // Primary (charcoal)
-    primaryBg: 'bg-neutral-800',
-    primaryHover: 'hover:bg-neutral-900',
-    primaryText: 'text-neutral-800',
-    primaryLight: 'bg-neutral-100',
-    // Accent (sky blue - soothing but visible in dark mode)
-    accentBg: 'bg-sky-600',
-    accentHover: 'hover:bg-sky-700',
-    accentText: 'text-sky-600',
-    accentLight: 'bg-sky-50',
-    accentBorder: 'border-sky-200',
-    step1: { bg: 'bg-neutral-100', text: 'text-neutral-700' },
-    step2: { bg: 'bg-sky-100', text: 'text-sky-700' },
-    step3: { bg: 'bg-neutral-100', text: 'text-neutral-700' },
-    step4: { bg: 'bg-sky-100', text: 'text-sky-700' },
-    badge: 'bg-sky-600',
-    bullet: 'text-sky-600',
-  },
+// Charcoal & Dusty Blue theme - locked in
+const BASE_THEME = {
+  primaryBg: 'bg-neutral-800',
+  primaryHover: 'hover:bg-neutral-900',
+  primaryText: 'text-neutral-800',
+  primaryLight: 'bg-neutral-100',
+  accentBg: 'bg-sky-600',
+  accentHover: 'hover:bg-sky-700',
+  accentText: 'text-sky-600',
+  accentLight: 'bg-sky-50',
+  accentBorder: 'border-sky-200',
+  badge: 'bg-sky-600',
+  bullet: 'text-sky-600',
 };
 
 export default function Home() {
@@ -88,10 +37,21 @@ export default function Home() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showDetailedSteps, setShowDetailedSteps] = useState(false);
-  const [luxuryTheme, setLuxuryTheme] = useState<LuxuryTheme>('slate-burgundy');
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [scrollY, setScrollY] = useState(0);
   const mentorsSectionRef = useRef<HTMLElement>(null);
+
+  // Persist dark mode across site
+  useEffect(() => {
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) setDarkMode(saved === 'true');
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newValue = !darkMode;
+    setDarkMode(newValue);
+    localStorage.setItem('darkMode', String(newValue));
+  };
 
   // Parallax scroll effect
   useEffect(() => {
@@ -102,18 +62,12 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Get base theme, then adjust charcoal-dusty accent for light/dark mode
-  const baseTheme = LUXURY_THEMES[luxuryTheme];
-  const theme = luxuryTheme === 'charcoal-dusty'
-    ? {
-        ...baseTheme,
-        // Light mode: muted slate, Dark mode: vibrant sky
-        accentBg: darkMode ? 'bg-sky-600' : 'bg-slate-500',
-        accentHover: darkMode ? 'hover:bg-sky-700' : 'hover:bg-slate-600',
-        accentText: darkMode ? 'text-sky-500' : 'text-slate-600',
-        accentLight: darkMode ? 'bg-sky-900/30' : 'bg-slate-100',
-      }
-    : baseTheme;
+  // Theme - same sky blue accent for both modes, slight adjustments for contrast
+  const theme = {
+    ...BASE_THEME,
+    accentText: darkMode ? 'text-sky-500' : 'text-sky-600',
+    accentLight: darkMode ? 'bg-sky-900/30' : 'bg-sky-50',
+  };
 
   // Dark mode classes
   const dm = {
@@ -164,41 +118,16 @@ export default function Home() {
       <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm sticky top-0 z-40 transition-colors duration-300`}>
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
-            <Link href="/" className={`text-lg font-bold ${dm.text} flex-shrink-0`}>
+            {/* Logo */}
+            <Link href="/" className={`text-lg font-bold ${dm.text} flex-shrink-0 mr-8`}>
               {t.title}
             </Link>
 
-            {/* Subtle Theme Selector */}
-            <div className="hidden md:flex items-center gap-1 text-xs">
-              {(Object.keys(LUXURY_THEMES) as LuxuryTheme[]).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setLuxuryTheme(key)}
-                  className={`px-2 py-1 rounded transition-all ${
-                    luxuryTheme === key
-                      ? `${theme.primaryBg} text-white`
-                      : `${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`
-                  }`}
-                >
-                  {LUXURY_THEMES[key].label}
-                </button>
-              ))}
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`ml-2 p-1.5 rounded-lg transition-all ${
-                  darkMode ? 'bg-gray-700 text-amber-400' : 'bg-gray-100 text-gray-600'
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? <Sun size={14} /> : <Moon size={14} />}
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Right side controls */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {!searchExpanded && (
                 <>
-                  <nav className="hidden sm:flex items-center gap-1">
+                  <nav className="hidden sm:flex items-center gap-1 mr-2">
                     <a
                       href="#hero"
                       onClick={(e) => {
@@ -232,7 +161,7 @@ export default function Home() {
               )}
 
               {searchExpanded && (
-                <div className="flex items-center gap-2 flex-1 max-w-md">
+                <div className="flex items-center gap-1.5 flex-1 max-w-md">
                   <div className="relative flex-1">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
@@ -241,7 +170,7 @@ export default function Home() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder={t.searchPlaceholder}
-                      className={`w-full pl-9 pr-3 py-1.5 text-sm ${dm.bgCard} ${dm.text} border ${dm.border} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                      className={`w-full pl-9 pr-3 py-1.5 text-sm ${dm.bgCard} ${dm.text} border ${dm.border} rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40`}
                     />
                   </div>
                   <button
@@ -257,6 +186,7 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Language selector */}
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value as Language)}
@@ -266,11 +196,24 @@ export default function Home() {
                 <option value="en">🇺🇸 EN</option>
               </select>
 
+              {/* Dark mode toggle */}
+              <button
+                onClick={toggleDarkMode}
+                className={`p-2 rounded-lg transition-all ${
+                  darkMode ? 'bg-gray-700 text-amber-400' : 'bg-gray-100 text-gray-600'
+                }`}
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+
+              {/* Admin/Login */}
               <Link
                 href="/admin"
-                className={`text-sm font-medium ${dm.textMuted} hover:${dm.text} transition-colors`}
+                className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                aria-label="Admin"
               >
-                Admin
+                <User size={18} />
               </Link>
             </div>
           </div>
@@ -278,7 +221,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section - Bento Style with Parallax */}
-      <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} py-8 sm:py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 overflow-hidden relative`}>
+      <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} py-4 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 overflow-hidden relative`}>
         {/* Parallax Background Elements */}
         <div
           className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -295,63 +238,9 @@ export default function Home() {
         </div>
 
         <div className="max-w-6xl mx-auto relative">
-          {/* About Row - Bento Cards with parallax hover */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4"
-            style={{ transform: `translateY(${scrollY * 0.02}px)` }}
-          >
-            <div className={`${dm.bgCard} rounded-2xl p-4 sm:p-5 shadow-sm border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-              <h2 className={`text-base sm:text-lg font-bold ${dm.text} mb-2`}>{t.mentoringTitle}</h2>
-              <p className={`${dm.textMuted} text-xs sm:text-sm leading-relaxed`}>{t.mentoringDesc}</p>
-            </div>
-            <div className={`${dm.bgCard} rounded-2xl p-4 sm:p-5 shadow-sm border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-              <h2 className={`text-base sm:text-lg font-bold ${dm.text} mb-2`}>{t.donationMentoringTitle}</h2>
-              <p className={`${dm.textMuted} text-xs sm:text-sm leading-relaxed`}>{t.donationMentoringDesc}</p>
-            </div>
-          </div>
-
-          {/* Values Row - Bento Cards */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4"
-            style={{ transform: `translateY(${scrollY * 0.03}px)` }}
-          >
-            <div className={`${dm.bgCard} rounded-2xl p-4 sm:p-5 shadow-sm border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-              <h3 className={`text-sm sm:text-base font-semibold ${dm.text} mb-2 sm:mb-3 flex items-center gap-2`}>
-                <span className={`w-7 h-7 sm:w-8 sm:h-8 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
-                  <Users size={14} className={`${theme.primaryText} sm:w-4 sm:h-4`} />
-                </span>
-                {t.mentorValueTitle}
-              </h3>
-              <ul className="space-y-1 sm:space-y-1.5">
-                {t.mentorValuePoints.map((point, i) => (
-                  <li key={i} className={`${dm.textMuted} text-[11px] sm:text-xs flex items-start gap-2`}>
-                    <span className={`${theme.bullet} mt-0.5`}>•</span>
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className={`${dm.bgCard} rounded-2xl p-4 sm:p-5 shadow-sm border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
-              <h3 className={`text-sm sm:text-base font-semibold ${dm.text} mb-2 sm:mb-3 flex items-center gap-2`}>
-                <span className={`w-7 h-7 sm:w-8 sm:h-8 ${theme.accentLight} rounded-lg flex items-center justify-center`}>
-                  <Heart size={14} className={`${theme.accentText} sm:w-4 sm:h-4`} />
-                </span>
-                {t.menteeValueTitle}
-              </h3>
-              <ul className="space-y-1 sm:space-y-1.5">
-                {t.menteeValuePoints.map((point, i) => (
-                  <li key={i} className={`${dm.textMuted} text-[11px] sm:text-xs flex items-start gap-2`}>
-                    <span className={`${theme.bullet} mt-0.5`}>•</span>
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
           {/* How it Works - Bento Card */}
-          <div className={`${dm.bgCardAlt} rounded-2xl p-4 sm:p-6 shadow-sm border ${dm.border} transition-all`}>
-            <h2 className={`text-lg sm:text-xl font-bold ${dm.text} mb-4 sm:mb-6 text-center`}>{t.howToDonate}</h2>
+          <div className={`${dm.bgCardAlt} rounded-2xl p-3 sm:p-4 md:p-6 shadow-sm border ${dm.border} transition-all`}>
+            <h2 className={`text-base sm:text-lg md:text-xl font-bold ${dm.text} mb-3 sm:mb-4 md:mb-6 text-center`}>{t.howToDonate}</h2>
 
             {/* 4 Steps - Icons use primary, Numbers use accent */}
             <div className="grid grid-cols-4 gap-1.5 sm:gap-3 mb-3 sm:mb-4">
@@ -400,55 +289,107 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Subtle Detailed Steps (between steps and CTA) */}
+            {/* Learn More Toggle */}
             <button
               onClick={() => setShowDetailedSteps(!showDetailedSteps)}
-              className="mx-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-4 transition-colors"
+              className={`mx-auto flex items-center gap-1 text-xs ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors cursor-pointer`}
             >
-              <span>{t.howToDetailedTitle}</span>
+              <span>{t.learnMoreAbout}</span>
               {showDetailedSteps ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
             {showDetailedSteps && (
-              <div className={`${dm.bgCard} rounded-xl p-4 mb-4 border ${dm.border}`}>
-                <ol className="space-y-2 text-xs">
-                  {t.howToDonateSteps.map((step, index) => {
-                    const urlMatch = step.match(/\(https?:\/\/[^)]+\)/);
-                    if (urlMatch) {
-                      const url = urlMatch[0].slice(1, -1);
-                      const parts = step.split(urlMatch[0]);
+              <div className={`${dm.bgCard} rounded-xl p-4 mt-3 border ${dm.border} space-y-4`}>
+                {/* About Section - Bento Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                    <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.mentoringTitle}</h3>
+                    <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.mentoringDesc}</p>
+                  </div>
+                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                    <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.donationMentoringTitle}</h3>
+                    <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.donationMentoringDesc}</p>
+                  </div>
+                </div>
+
+                {/* Values Section - Bento Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
+                        <Users size={14} className={theme.primaryText} />
+                      </span>
+                      <span className={`text-sm font-medium ${dm.text}`}>{t.mentorValueTitle}</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {t.mentorValuePoints.map((point, i) => (
+                        <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
+                          <span className={`${theme.bullet} mt-0.5`}>•</span>
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
+                        <Heart size={14} className={theme.accentText} />
+                      </span>
+                      <span className={`text-sm font-medium ${dm.text}`}>{t.menteeValueTitle}</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {t.menteeValuePoints.map((point, i) => (
+                        <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
+                          <span className={`${theme.bullet} mt-0.5`}>•</span>
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Detailed steps */}
+                <div className={`pt-3 border-t ${dm.border}`}>
+                  <h4 className={`text-xs font-medium ${dm.textMuted} mb-3`}>{t.howToDetailedTitle}</h4>
+                  <ol className="space-y-2 text-xs">
+                    {t.howToDonateSteps.map((step, index) => {
+                      const urlMatch = step.match(/\(https?:\/\/[^)]+\)/);
+                      if (urlMatch) {
+                        const url = urlMatch[0].slice(1, -1);
+                        const parts = step.split(urlMatch[0]);
+                        return (
+                          <li key={index} className={`flex items-start gap-2 ${dm.textMuted}`}>
+                            <span className={`flex-shrink-0 w-5 h-5 ${theme.accentBg} text-white rounded-full flex items-center justify-center text-[10px] font-bold`}>
+                              {index + 1}
+                            </span>
+                            <span>
+                              {parts[0]}
+                              <a href={url} target="_blank" rel="noopener noreferrer" className={`${theme.accentText} hover:underline`}>
+                                {url}
+                              </a>
+                              {parts[1]}
+                            </span>
+                          </li>
+                        );
+                      }
                       return (
                         <li key={index} className={`flex items-start gap-2 ${dm.textMuted}`}>
                           <span className={`flex-shrink-0 w-5 h-5 ${theme.accentBg} text-white rounded-full flex items-center justify-center text-[10px] font-bold`}>
                             {index + 1}
                           </span>
-                          <span>
-                            {parts[0]}
-                            <a href={url} target="_blank" rel="noopener noreferrer" className={`${theme.accentText} hover:underline`}>
-                              {url}
-                            </a>
-                            {parts[1]}
-                          </span>
+                          <span>{step}</span>
                         </li>
                       );
-                    }
-                    return (
-                      <li key={index} className={`flex items-start gap-2 ${dm.textMuted}`}>
-                        <span className={`flex-shrink-0 w-5 h-5 ${theme.accentBg} text-white rounded-full flex items-center justify-center text-[10px] font-bold`}>
-                          {index + 1}
-                        </span>
-                        <span>{step}</span>
-                      </li>
-                    );
-                  })}
-                </ol>
+                    })}
+                  </ol>
+                </div>
               </div>
             )}
 
           </div>
 
           {/* CTA Button - Outside the bento box */}
-          <div className="text-center mt-4 sm:mt-6">
+          <div className="text-center mt-3 sm:mt-4 md:mt-6">
             <button
               onClick={scrollToMentors}
               className={`inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 ${theme.accentBg} ${theme.accentHover} text-white text-sm font-medium rounded-lg transition-all shadow-md hover:shadow-lg active:scale-[0.98] group`}
@@ -463,12 +404,13 @@ export default function Home() {
       {/* Mentors Section */}
       <section ref={mentorsSectionRef} id="mentors" className={`${dm.bg} py-10 scroll-mt-14 transition-colors duration-300`}>
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
+          {/* Sticky section header - stays visible while browsing mentors */}
+          <div className={`flex items-center justify-between mb-6 sticky top-14 z-20 ${dm.bg} py-2 -mt-2 lg:static`}>
             <h2 className={`text-xl font-bold ${dm.text}`}>{t.navMentors}</h2>
 
             <button
               onClick={() => setMobileFilterOpen(true)}
-              className={`lg:hidden flex items-center gap-2 px-3 py-1.5 ${dm.bgCard} border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} hover:opacity-80 transition-colors`}
+              className={`lg:hidden flex items-center gap-2 px-3 py-1.5 ${dm.bgCard} border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} hover:opacity-80 transition-colors cursor-pointer`}
             >
               <Filter size={16} />
               <span>{t.filterTitle}</span>

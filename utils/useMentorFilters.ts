@@ -42,12 +42,25 @@ export function useMentorFilters({
   filters,
 }: UseMentorFiltersProps): UseMentorFiltersReturn {
   // Extract available filter options from mentors (DRY - computed once)
-  const { availableTags, availableLocations } = useMemo(() => {
-    const tagsSet = new Set<string>();
+  // Normalize tags: group similar tags (case-insensitive, space-insensitive)
+  const { availableTags, tagNormMap, availableLocations } = useMemo(() => {
+    const tagGroups = new Map<string, { display: string; count: number }>();
     const locationsSet = new Set<string>();
 
     mentors.forEach((mentor) => {
-      mentor.tags?.forEach((tag) => tagsSet.add(tag));
+      mentor.tags?.forEach((tag) => {
+        const normalized = normalizeTag(tag);
+        const existing = tagGroups.get(normalized);
+        if (existing) {
+          existing.count++;
+          // Prefer: spaces over no-spaces, title case over lowercase
+          if (preferDisplayName(tag, existing.display)) {
+            existing.display = tag;
+          }
+        } else {
+          tagGroups.set(normalized, { display: tag, count: 1 });
+        }
+      });
       const loc = lang === 'en' ? mentor.location_en : mentor.location_ko;
       const fallbackLoc = mentor.location_en || mentor.location_ko;
       if (loc || fallbackLoc) {
@@ -55,8 +68,18 @@ export function useMentorFilters({
       }
     });
 
+    // Sort by count (most popular first), then alphabetically
+    const sortedTags = Array.from(tagGroups.entries())
+      .sort((a, b) => b[1].count - a[1].count || a[1].display.localeCompare(b[1].display))
+      .map(([, v]) => v.display);
+
+    // Create map from display name to normalized (for filtering)
+    const normMap = new Map<string, string>();
+    tagGroups.forEach((v, k) => normMap.set(v.display, k));
+
     return {
-      availableTags: Array.from(tagsSet).sort(),
+      availableTags: sortedTags,
+      tagNormMap: normMap,
       availableLocations: Array.from(locationsSet).filter(Boolean).sort(),
     };
   }, [mentors, lang]);
@@ -70,9 +93,11 @@ export function useMentorFilters({
       // Search text filtering
       if (search && !matchesSearch(mentor, search)) return false;
 
-      // Expertise (tags) filter
+      // Expertise (tags) filter - use normalized comparison
       if (filters.expertise.length > 0) {
-        if (!filters.expertise.some((tag) => mentor.tags?.includes(tag))) return false;
+        const mentorTagsNormalized = (mentor.tags || []).map(normalizeTag);
+        const filterTagsNormalized = filters.expertise.map((t) => tagNormMap.get(t) || normalizeTag(t));
+        if (!filterTagsNormalized.some((ft) => mentorTagsNormalized.includes(ft))) return false;
       }
 
       // Location filter
@@ -146,4 +171,26 @@ function matchesSearch(mentor: Mentor, search: string): boolean {
 function getMentorLocation(mentor: Mentor, lang: Language): string {
   const loc = lang === 'en' ? mentor.location_en : mentor.location_ko;
   return loc || mentor.location_en || mentor.location_ko || '';
+}
+
+// Normalize tag for comparison: lowercase + remove spaces
+function normalizeTag(tag: string): string {
+  return tag.toLowerCase().replace(/\s+/g, '');
+}
+
+// Prefer display names with: spaces over no-spaces, title case over lowercase
+function preferDisplayName(candidate: string, current: string): boolean {
+  const candidateHasSpace = candidate.includes(' ');
+  const currentHasSpace = current.includes(' ');
+
+  // Prefer with spaces (more readable)
+  if (candidateHasSpace && !currentHasSpace) return true;
+  if (!candidateHasSpace && currentHasSpace) return false;
+
+  // Prefer title case (first letter uppercase)
+  const candidateIsTitle = candidate[0] === candidate[0].toUpperCase();
+  const currentIsTitle = current[0] === current[0].toUpperCase();
+  if (candidateIsTitle && !currentIsTitle) return true;
+
+  return false;
 }

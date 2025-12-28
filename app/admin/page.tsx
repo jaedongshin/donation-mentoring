@@ -6,7 +6,11 @@ import { Mentor } from '@/types/mentor';
 import { translations, Language } from '@/utils/i18n';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Edit2, Plus, X } from 'lucide-react';
+import { Trash2, Plus, X, Home, Search, Moon, Sun } from 'lucide-react';
+
+// Input class generator (DRY)
+const getInputClass = (dark: boolean) => `block w-full rounded-lg ${dark ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border p-2.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40 transition-all text-sm`;
+const getLabelClass = (dark: boolean) => `block text-sm font-medium ${dark ? 'text-gray-300' : 'text-gray-700'} mb-1.5`;
 
 export default function AdminPage() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
@@ -15,8 +19,23 @@ export default function AdminPage() {
   const [editingMentor, setEditingMentor] = useState<Partial<Mentor> | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
-  // Form state - flattened for easier handling of dual languages
+  // Persist dark mode across site
+  useEffect(() => {
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) setDarkMode(saved === 'true');
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newValue = !darkMode;
+    setDarkMode(newValue);
+    localStorage.setItem('darkMode', String(newValue));
+  };
+
   const [formData, setFormData] = useState({
     name_en: '',
     name_ko: '',
@@ -40,6 +59,34 @@ export default function AdminPage() {
   });
 
   const t = translations[lang];
+
+  // Filter mentors by search
+  const filteredMentors = mentors.filter(m => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      m.name_ko?.toLowerCase().includes(q) ||
+      m.name_en?.toLowerCase().includes(q) ||
+      m.position_ko?.toLowerCase().includes(q) ||
+      m.position_en?.toLowerCase().includes(q)
+    );
+  });
+
+  // Dark mode classes
+  const dm = {
+    bg: darkMode ? 'bg-gray-900' : 'bg-gray-50',
+    bgCard: darkMode ? 'bg-gray-800' : 'bg-white',
+    text: darkMode ? 'text-gray-100' : 'text-gray-900',
+    textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
+    textSubtle: darkMode ? 'text-gray-500' : 'text-gray-500',
+    border: darkMode ? 'border-gray-700' : 'border-gray-200',
+    divider: darkMode ? 'divide-gray-700' : 'divide-gray-200',
+    headerBg: darkMode ? 'bg-gray-900/95' : 'bg-white/95',
+    input: darkMode
+      ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
+      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400',
+    rowHover: darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-sky-50',
+  };
 
   const fetchMentors = async () => {
     setLoading(true);
@@ -86,30 +133,33 @@ export default function AdminPage() {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this mentor?')) return;
+  const handleDeleteClick = (mentor: Mentor) => {
+    setDeleteConfirm({ id: mentor.id, name: mentor.name_ko || mentor.name_en || 'this mentor' });
+  };
 
-    const { error } = await supabase.from('mentors').delete().eq('id', id);
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+
+    const { error } = await supabase.from('mentors').delete().eq('id', deleteConfirm.id);
     if (error) {
       alert('Error deleting mentor');
     } else {
       fetchMentors();
     }
+    setDeleteConfirm(null);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
-    }
+    if (!e.target.files || e.target.files.length === 0) return;
+
     setUploading(true);
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('mentor-pictures')
-      .upload(filePath, file);
+      .upload(fileName, file);
 
     if (uploadError) {
       alert('Error uploading image');
@@ -118,8 +168,7 @@ export default function AdminPage() {
       return;
     }
 
-    const { data } = supabase.storage.from('mentor-pictures').getPublicUrl(filePath);
-    
+    const { data } = supabase.storage.from('mentor-pictures').getPublicUrl(fileName);
     setFormData(prev => ({ ...prev, picture_url: data.publicUrl }));
     setUploading(false);
   };
@@ -140,11 +189,6 @@ export default function AdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-    const languagesArray = formData.languages.split(',').map(l => l.trim()).filter(l => l !== '');
-    const sessionTimeMinutes = formData.session_time_minutes ? parseInt(formData.session_time_minutes, 10) : null;
-    const sessionPriceUsd = formData.session_price_usd ? parseFloat(formData.session_price_usd) : null;
 
     const mentorData = {
       name_en: formData.name_en,
@@ -161,27 +205,18 @@ export default function AdminPage() {
       linkedin_url: formData.linkedin_url,
       calendly_url: formData.calendly_url,
       email: formData.email,
-      languages: languagesArray,
-      tags: tagsArray,
+      languages: formData.languages.split(',').map(l => l.trim()).filter(Boolean),
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
       is_active: formData.is_active,
-      session_time_minutes: sessionTimeMinutes,
-      session_price_usd: sessionPriceUsd,
+      session_time_minutes: formData.session_time_minutes ? parseInt(formData.session_time_minutes, 10) : null,
+      session_price_usd: formData.session_price_usd ? parseFloat(formData.session_price_usd) : null,
     };
 
-    if (editingMentor && editingMentor.id) {
-      // Update
-      const { error } = await supabase
-        .from('mentors')
-        .update(mentorData)
-        .eq('id', editingMentor.id);
-      
+    if (editingMentor?.id) {
+      const { error } = await supabase.from('mentors').update(mentorData).eq('id', editingMentor.id);
       if (error) alert('Error updating mentor');
     } else {
-      // Create
-      const { error } = await supabase
-        .from('mentors')
-        .insert([mentorData]);
-        
+      const { error } = await supabase.from('mentors').insert([mentorData]);
       if (error) alert('Error creating mentor');
     }
 
@@ -193,310 +228,386 @@ export default function AdminPage() {
   const openNewForm = () => {
     setEditingMentor(null);
     setFormData({
-      name_en: '',
-      name_ko: '',
-      description_en: '',
-      description_ko: '',
-      location_en: '',
-      location_ko: '',
-      position_en: '',
-      position_ko: '',
-      company_en: '',
-      company_ko: '',
-      picture_url: '',
-      linkedin_url: '',
-      calendly_url: '',
-      email: '',
-      languages: '',
-      tags: '',
-      is_active: true,
-      session_time_minutes: '',
-      session_price_usd: '',
+      name_en: '', name_ko: '', description_en: '', description_ko: '',
+      location_en: '', location_ko: '', position_en: '', position_ko: '',
+      company_en: '', company_ko: '', picture_url: '', linkedin_url: '',
+      calendly_url: '', email: '', languages: '', tags: '',
+      is_active: true, session_time_minutes: '', session_price_usd: '',
     });
     setIsFormOpen(true);
   };
 
   return (
-    <div className="min-h-screen bg-warm-50 pb-12">
+    <div className={`min-h-screen ${dm.bg} transition-colors duration-300`}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-warm-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl sm:text-2xl font-semibold text-warm-900">{t.adminTitle}</h1>
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Language)}
-              className="text-xs sm:text-sm font-medium text-warm-600 bg-warm-50 border border-warm-200 rounded-full px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-300"
-            >
-              <option value="ko">🇰🇷 KO</option>
-              <option value="en">🇺🇸 EN</option>
-            </select>
+      <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm border-b ${dm.border} sticky top-0 z-40 transition-colors duration-300`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            {/* Logo */}
+            <h1 className={`text-lg font-bold ${dm.text} flex-shrink-0 mr-8`}>{t.adminTitle}</h1>
+
+            {/* Right side controls */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Search */}
+              {!searchExpanded ? (
+                <button
+                  onClick={() => setSearchExpanded(true)}
+                  className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                  aria-label="Search"
+                >
+                  <Search size={18} />
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 flex-1 max-w-xs">
+                  <div className="relative flex-1">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      autoFocus
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder={t.searchPlaceholder}
+                      className={`w-full pl-9 pr-3 py-1.5 text-sm ${dm.bgCard} ${dm.text} border ${dm.border} rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40`}
+                    />
+                  </div>
+                  <button
+                    onClick={() => { setSearchExpanded(false); setSearch(''); }}
+                    className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                    aria-label="Close search"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              )}
+
+              {/* Language selector */}
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as Language)}
+                className={`text-sm font-medium ${dm.textMuted} ${dm.bgCard} border ${dm.border} rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40`}
+              >
+                <option value="ko">🇰🇷 KO</option>
+                <option value="en">🇺🇸 EN</option>
+              </select>
+
+              {/* Dark mode toggle */}
+              <button
+                onClick={toggleDarkMode}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  darkMode ? 'bg-gray-700 text-amber-400' : 'bg-gray-100 text-gray-600'
+                }`}
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+
+              {/* Home */}
+              <Link
+                href="/"
+                className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                aria-label="Home"
+              >
+                <Home size={18} />
+              </Link>
+            </div>
           </div>
-          <Link href="/" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
-            {t.viewHome}
-          </Link>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-end mb-6 gap-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Sticky CTA row */}
+        <div className={`flex justify-between items-center mb-4 sticky top-14 z-20 ${dm.bg} py-2 -mt-2`}>
+          <span className={`text-sm ${dm.textMuted}`}>
+            {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''}
+            {search && ` matching "${search}"`}
+          </span>
           <button
             onClick={openNewForm}
-            className="flex items-center gap-2 btn-primary px-5 py-2.5 rounded-xl font-semibold"
+            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             Add Mentor
           </button>
         </div>
 
-        {/* List */}
-        <div className="bg-white shadow-sm border border-warm-100 overflow-hidden rounded-2xl">
-          <ul className="divide-y divide-warm-100">
-            {mentors.map((mentor) => (
-              <li key={mentor.id} className="hover:bg-warm-50 transition-colors">
-                <div className="px-5 py-4 sm:px-6 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-12 w-12 relative bg-warm-100 rounded-xl overflow-hidden">
-                      {mentor.picture_url ? (
-                        <Image
-                          src={mentor.picture_url}
-                          alt={mentor.name_en || 'Mentor'}
-                          fill
-                          className="object-cover"
-                          unoptimized={mentor.picture_url.includes('supabase.co')}
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-warm-400 text-lg">👤</div>
-                      )}
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-semibold text-warm-900">
-                        {mentor.name_ko} / {mentor.name_en}
-                      </div>
-                      <div className="text-xs text-warm-500 mt-0.5">
-                        {mentor.position_ko || mentor.position_en}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
+        {/* Mentor List */}
+        <div className={`${dm.bgCard} border ${dm.border} rounded-xl overflow-hidden transition-colors duration-300`}>
+          {loading ? (
+            <div className={`px-6 py-12 text-center ${dm.textSubtle}`}>{t.loading}</div>
+          ) : filteredMentors.length === 0 ? (
+            <div className={`px-6 py-12 text-center ${dm.textSubtle}`}>
+              {search ? `No mentors matching "${search}"` : 'No mentors found.'}
+            </div>
+          ) : (
+            <ul className={`divide-y ${dm.divider}`}>
+              {filteredMentors.map((mentor) => (
+                <li key={mentor.id} className={`${dm.rowHover} transition-colors`}>
+                  <div className="px-4 py-3 sm:px-5 flex items-center justify-between gap-4">
+                    {/* Clickable area for edit */}
                     <button
-                      onClick={() => toggleActive(mentor)}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-md ${
-                        mentor.is_active
-                          ? 'bg-secondary-500 focus:ring-secondary-400'
-                          : 'bg-warm-300 focus:ring-warm-400'
-                      }`}
-                      role="switch"
-                      aria-checked={mentor.is_active}
-                      aria-label={mentor.is_active ? 'Deactivate mentor' : 'Activate mentor'}
+                      onClick={() => handleEdit(mentor)}
+                      className="flex items-center min-w-0 flex-1 text-left cursor-pointer group"
                     >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${
-                          mentor.is_active ? 'translate-x-8' : 'translate-x-1'
+                      <div className={`flex-shrink-0 h-10 w-10 relative ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg overflow-hidden`}>
+                        {mentor.picture_url ? (
+                          <Image
+                            src={mentor.picture_url}
+                            alt={mentor.name_en || 'Mentor'}
+                            fill
+                            className="object-cover"
+                            unoptimized={mentor.picture_url.includes('supabase.co')}
+                          />
+                        ) : (
+                          <div className={`flex items-center justify-center h-full ${dm.textSubtle} text-sm`}>👤</div>
+                        )}
+                      </div>
+                      <div className="ml-3 min-w-0">
+                        <div className={`text-sm font-medium ${dm.text} truncate group-hover:text-sky-500 transition-colors`}>
+                          {mentor.name_ko} / {mentor.name_en}
+                        </div>
+                        <div className={`text-xs ${dm.textSubtle} truncate`}>
+                          {mentor.position_ko || mentor.position_en}
+                        </div>
+                      </div>
+                    </button>
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                      {/* Toggle */}
+                      <button
+                        onClick={() => toggleActive(mentor)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-offset-1 ${darkMode ? 'hover:ring-offset-gray-800' : 'hover:ring-offset-white'} ${
+                          mentor.is_active ? 'bg-sky-600 hover:ring-sky-400' : darkMode ? 'bg-gray-600 hover:ring-gray-500' : 'bg-gray-300 hover:ring-gray-400'
                         }`}
-                      />
-                    </button>
-                    <button onClick={() => handleEdit(mentor)} className="p-2 text-warm-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                      <Edit2 size={18} />
-                    </button>
-                    <button onClick={() => handleDelete(mentor.id)} className="p-2 text-warm-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                      <Trash2 size={18} />
-                    </button>
+                        role="switch"
+                        aria-checked={mentor.is_active}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                          mentor.is_active ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(mentor)}
+                        className={`p-2 ${dm.textSubtle} hover:text-red-400 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors cursor-pointer`}
+                        aria-label="Delete mentor"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
-            {mentors.length === 0 && !loading && (
-              <li className="px-6 py-12 text-center text-warm-500">No mentors found.</li>
-            )}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </main>
 
-      {/* Modal/Form Overlay */}
+      {/* Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-warm-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-warm-900">{editingMentor ? t.edit : 'Add Mentor'}</h2>
-              <button onClick={() => setIsFormOpen(false)} className="p-2 text-warm-400 hover:text-warm-600 hover:bg-warm-100 rounded-full transition-all">
-                <X size={22} />
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`${dm.bgCard} border ${dm.border} rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-colors duration-300`}>
+            <div className={`sticky top-0 ${dm.bgCard} border-b ${dm.border} px-5 py-4 flex justify-between items-center`}>
+              <h2 className={`text-lg font-semibold ${dm.text}`}>
+                {editingMentor ? t.edit : 'Add Mentor'}
+              </h2>
+              <button
+                onClick={() => setIsFormOpen(false)}
+                className={`p-2 ${dm.textSubtle} hover:${dm.text} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+              >
+                <X size={20} />
               </button>
             </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-5">
 
-              {/* Names */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.name} (KO)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.name_ko} onChange={e => setFormData({...formData, name_ko: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.name} (EN)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} />
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              {/* Bilingual Fields - each row clearly labeled */}
+              {/* Name */}
+              <div>
+                <label className={getLabelClass(darkMode)}>{t.name}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇰🇷</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.name_ko} onChange={e => setFormData({...formData, name_ko: e.target.value})} placeholder="한국어" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇺🇸</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} placeholder="English" />
+                  </div>
                 </div>
               </div>
 
               {/* Company */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Company (KO)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.company_ko} onChange={e => setFormData({...formData, company_ko: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Company (EN)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.company_en} onChange={e => setFormData({...formData, company_en: e.target.value})} />
-                </div>
-              </div>
-
-              {/* Positions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.position} (KO)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.position_ko} onChange={e => setFormData({...formData, position_ko: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.position} (EN)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.position_en} onChange={e => setFormData({...formData, position_en: e.target.value})} />
+              <div>
+                <label className={getLabelClass(darkMode)}>Company</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇰🇷</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.company_ko} onChange={e => setFormData({...formData, company_ko: e.target.value})} placeholder="한국어" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇺🇸</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.company_en} onChange={e => setFormData({...formData, company_en: e.target.value})} placeholder="English" />
+                  </div>
                 </div>
               </div>
 
-              {/* Descriptions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.description} (KO)</label>
-                  <textarea rows={3} className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.description_ko} onChange={e => setFormData({...formData, description_ko: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.description} (EN)</label>
-                  <textarea rows={3} className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.description_en} onChange={e => setFormData({...formData, description_en: e.target.value})} />
-                </div>
-              </div>
-
-              {/* Locations */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.location} (KO)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.location_ko} onChange={e => setFormData({...formData, location_ko: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.location} (EN)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.location_en} onChange={e => setFormData({...formData, location_en: e.target.value})} />
+              {/* Position */}
+              <div>
+                <label className={getLabelClass(darkMode)}>{t.position}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇰🇷</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.position_ko} onChange={e => setFormData({...formData, position_ko: e.target.value})} placeholder="한국어" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇺🇸</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.position_en} onChange={e => setFormData({...formData, position_en: e.target.value})} placeholder="English" />
+                  </div>
                 </div>
               </div>
 
-              {/* URLs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">LinkedIn URL</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Calendly URL</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.calendly_url} onChange={e => setFormData({...formData, calendly_url: e.target.value})} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Email</label>
-                  <input type="email" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Languages (comma separated)</label>
-                  <input type="text" className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all" value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="Korean, English" />
+              {/* Description */}
+              <div>
+                <label className={getLabelClass(darkMode)}>{t.description}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-sm">🇰🇷</span>
+                    <textarea rows={3} className={`${getInputClass(darkMode)} pl-9`} value={formData.description_ko} onChange={e => setFormData({...formData, description_ko: e.target.value})} placeholder="한국어" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-sm">🇺🇸</span>
+                    <textarea rows={3} className={`${getInputClass(darkMode)} pl-9`} value={formData.description_en} onChange={e => setFormData({...formData, description_en: e.target.value})} placeholder="English" />
+                  </div>
                 </div>
               </div>
 
-              {/* Session Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Location */}
+              <div>
+                <label className={getLabelClass(darkMode)}>{t.location}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇰🇷</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.location_ko} onChange={e => setFormData({...formData, location_ko: e.target.value})} placeholder="한국어" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇺🇸</span>
+                    <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.location_en} onChange={e => setFormData({...formData, location_en: e.target.value})} placeholder="English" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Other Fields */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Session Time (minutes)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
-                    value={formData.session_time_minutes}
-                    onChange={e => setFormData({...formData, session_time_minutes: e.target.value})}
-                    placeholder="60"
-                  />
+                  <label className={getLabelClass(darkMode)}>LinkedIn URL</label>
+                  <input type="text" className={getInputClass(darkMode)} value={formData.linkedin_url} onChange={e => setFormData({...formData, linkedin_url: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1.5">Session Price (USD)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
-                    value={formData.session_price_usd}
-                    onChange={e => setFormData({...formData, session_price_usd: e.target.value})}
-                    placeholder="30.00"
-                  />
+                  <label className={getLabelClass(darkMode)}>Calendly URL</label>
+                  <input type="text" className={getInputClass(darkMode)} value={formData.calendly_url} onChange={e => setFormData({...formData, calendly_url: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={getLabelClass(darkMode)}>Email</label>
+                  <input type="email" className={getInputClass(darkMode)} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                </div>
+                <div>
+                  <label className={getLabelClass(darkMode)}>Languages</label>
+                  <input type="text" className={getInputClass(darkMode)} value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="Korean, English" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={getLabelClass(darkMode)}>Session Time (min)</label>
+                  <input type="number" min="0" className={getInputClass(darkMode)} value={formData.session_time_minutes} onChange={e => setFormData({...formData, session_time_minutes: e.target.value})} placeholder="60" />
+                </div>
+                <div>
+                  <label className={getLabelClass(darkMode)}>Donation (USD)</label>
+                  <input type="number" step="0.01" min="0" className={getInputClass(darkMode)} value={formData.session_price_usd} onChange={e => setFormData({...formData, session_price_usd: e.target.value})} placeholder="30.00" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.tags}</label>
-                <input
-                  type="text"
-                  className="block w-full rounded-xl border-warm-200 shadow-sm border p-2.5 text-warm-900 bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
-                  value={formData.tags}
-                  onChange={e => setFormData({...formData, tags: e.target.value})}
-                  placeholder="Java, Spring, Career"
-                />
+                <label className={getLabelClass(darkMode)}>{t.tags}</label>
+                <input type="text" className={getInputClass(darkMode)} value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} placeholder="Java, Spring, Career" />
               </div>
 
+              {/* Photo */}
               <div>
-                <label className="block text-sm font-medium text-warm-700 mb-1.5">{t.photo}</label>
-                <div className="flex items-center gap-4">
+                <label className={getLabelClass(darkMode)}>{t.photo}</label>
+                <div className="flex items-center gap-3">
                   {formData.picture_url && (
-                    <div className="relative h-16 w-16 bg-warm-100 rounded-xl overflow-hidden">
-                      <Image
-                        src={formData.picture_url}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                        unoptimized={formData.picture_url.includes('supabase.co')}
-                      />
+                    <div className={`relative h-14 w-14 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg overflow-hidden flex-shrink-0`}>
+                      <Image src={formData.picture_url} alt="Preview" fill className="object-cover" unoptimized={formData.picture_url.includes('supabase.co')} />
                     </div>
                   )}
-                  <label className="cursor-pointer bg-white border-2 border-dashed border-warm-200 rounded-xl py-3 px-4 flex items-center justify-center text-sm font-medium text-warm-600 hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all">
+                  <label className={`cursor-pointer ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-300 text-gray-600'} border border-dashed rounded-lg py-2.5 px-4 text-sm font-medium hover:border-sky-500 hover:text-sky-400 transition-colors`}>
                     {uploading ? t.loading : t.upload}
                     <input type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                   </label>
                 </div>
               </div>
 
-              <div className="flex items-center">
+              {/* Active checkbox */}
+              <div className="flex items-center gap-2">
                 <input
                   id="enabled"
                   type="checkbox"
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-warm-300 rounded-md"
+                  className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
                   checked={formData.is_active}
                   onChange={e => setFormData({...formData, is_active: e.target.checked})}
                 />
-                <label htmlFor="enabled" className="ml-2 block text-sm text-warm-800 font-medium">
-                  {t.enabled}
-                </label>
+                <label htmlFor="enabled" className={`text-sm ${dm.textMuted}`}>{t.enabled}</label>
               </div>
 
-              <div className="pt-5 flex justify-end gap-3 border-t border-warm-100">
+              {/* Actions */}
+              <div className={`pt-4 flex justify-end gap-3 border-t ${dm.border}`}>
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="py-2.5 px-5 border border-warm-200 rounded-xl text-sm font-medium text-warm-700 hover:bg-warm-50 transition-all"
+                  className={`py-2 px-4 border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary py-2.5 px-6 rounded-xl text-sm font-semibold"
+                  className="py-2 px-5 bg-sky-600 hover:bg-sky-700 rounded-lg text-sm font-medium text-white transition-colors"
                 >
                   {t.save}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`${dm.bgCard} border ${dm.border} rounded-xl shadow-2xl max-w-sm w-full p-6 transition-colors duration-300`}>
+            <div className="text-center">
+              <div className={`mx-auto w-12 h-12 rounded-full ${darkMode ? 'bg-red-900/30' : 'bg-red-100'} flex items-center justify-center mb-4`}>
+                <Trash2 size={24} className="text-red-500" />
+              </div>
+              <h3 className={`text-lg font-semibold ${dm.text} mb-2`}>Delete Mentor</h3>
+              <p className={`text-sm ${dm.textMuted} mb-6`}>
+                Are you sure you want to delete <span className="font-medium">{deleteConfirm.name}</span>? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className={`flex-1 py-2.5 px-4 border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium text-white transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

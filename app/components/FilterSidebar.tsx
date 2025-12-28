@@ -1,6 +1,7 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
 import { FilterState } from '@/utils/useMentorFilters';
 
@@ -15,6 +16,7 @@ interface FilterSidebarProps {
 }
 
 const SESSION_LENGTHS = [30, 45, 60];
+const INITIAL_TAGS_SHOWN = 10;
 
 export default function FilterSidebar({
   filters,
@@ -26,6 +28,10 @@ export default function FilterSidebar({
   onMobileClose,
 }: FilterSidebarProps) {
   const t = translations[lang];
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  const visibleTags = showAllTags ? availableTags : availableTags.slice(0, INITIAL_TAGS_SHOWN);
+  const hasMoreTags = availableTags.length > INITIAL_TAGS_SHOWN;
 
   const handleExpertiseToggle = (tag: string) => {
     const newExpertise = filters.expertise.includes(tag)
@@ -88,12 +94,12 @@ export default function FilterSidebar({
         )}
       </div>
 
-      {/* Expertise Filter - 2 columns */}
+      {/* Expertise Filter - 2 columns with show more */}
       {availableTags.length > 0 && (
         <div>
           <h4 className="text-sm font-medium text-gray-700 mb-3">{t.filterExpertise}</h4>
           <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-            {availableTags.map((tag) => (
+            {visibleTags.map((tag) => (
               <label key={tag} className="flex items-center cursor-pointer group">
                 <input
                   type="checkbox"
@@ -107,6 +113,24 @@ export default function FilterSidebar({
               </label>
             ))}
           </div>
+          {hasMoreTags && (
+            <button
+              onClick={() => setShowAllTags(!showAllTags)}
+              className="mt-2 flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+            >
+              {showAllTags ? (
+                <>
+                  <span>{lang === 'ko' ? '접기' : 'Show less'}</span>
+                  <ChevronUp size={14} />
+                </>
+              ) : (
+                <>
+                  <span>{lang === 'ko' ? `+${availableTags.length - INITIAL_TAGS_SHOWN}개 더보기` : `+${availableTags.length - INITIAL_TAGS_SHOWN} more`}</span>
+                  <ChevronDown size={14} />
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 
