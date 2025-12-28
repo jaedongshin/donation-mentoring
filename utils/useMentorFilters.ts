@@ -119,7 +119,7 @@ export function useMentorFilters({
 
       return true;
     });
-  }, [mentors, search, lang, filters]);
+  }, [mentors, search, lang, filters, tagNormMap]);
 
   // Count active filters (for UI badge)
   const activeFilterCount = useMemo(() => {

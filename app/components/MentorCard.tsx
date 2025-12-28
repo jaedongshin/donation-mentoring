@@ -58,8 +58,8 @@ const defaultDarkMode: DarkModeConfig = {
 };
 
 export default function MentorCard({ mentor, lang, onClick, theme = defaultTheme, darkMode = defaultDarkMode }: MentorCardProps) {
-  const [imageError, setImageError] = useState(false);
   const t = translations[lang];
+  const [imageError, setImageError] = useState(false);
 
   const name = lang === 'en' ? mentor.name_en : mentor.name_ko;
   const position = lang === 'en' ? mentor.position_en : mentor.position_ko;
@@ -173,7 +173,7 @@ export default function MentorCard({ mentor, lang, onClick, theme = defaultTheme
             {mentor.session_price_usd && (
               <div className="flex items-center">
                 <DollarSign size={14} className="mr-0.5" />
-                <span>{mentor.session_price_usd}</span>
+                <span>{mentor.session_price_usd} {t.unicefDonation}</span>
               </div>
             )}
           </div>
