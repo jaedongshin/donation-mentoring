@@ -37,16 +37,14 @@ export default function Home() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showDetailedSteps, setShowDetailedSteps] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem('darkMode');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [scrollY, setScrollY] = useState(0);
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const mentorsSectionRef = useRef<HTMLElement>(null);
-
-  // Persist dark mode across site
-  useEffect(() => {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) setDarkMode(saved === 'true');
-  }, []);
 
   const toggleDarkMode = () => {
     const newValue = !darkMode;
@@ -85,24 +83,23 @@ export default function Home() {
   const { filteredMentors, availableTags, availableLocations, activeFilterCount, hasActiveFilters } =
     useMentorFilters({ mentors, search, lang, filters });
 
-  const fetchMentors = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('mentors')
-      .select('*')
-      .eq('is_active', true);
-
-    if (error) {
-      console.error('Error fetching mentors:', error);
-      setMentors([]);
-    } else {
-      setMentors(shuffleArray(data || []));
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    fetchMentors();
+    const loadMentors = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('mentors')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error fetching mentors:', error);
+        setMentors([]);
+      } else {
+        setMentors(shuffleArray(data || []));
+      }
+      setLoading(false);
+    };
+    loadMentors();
   }, []);
 
   const t = translations[lang];
@@ -117,23 +114,23 @@ export default function Home() {
     <div className={`min-h-screen ${dm.bg} scroll-smooth transition-colors duration-300`}>
       {/* Sticky Navigation */}
       <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm sticky top-0 z-40 transition-colors duration-300`}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
-            <Link href="/" className={`text-lg font-bold ${dm.text} flex-shrink-0 mr-8`}>
+            <Link href="/" className={`text-base sm:text-lg font-bold ${dm.text} whitespace-nowrap mr-2 sm:mr-4`}>
               {t.title}
             </Link>
 
             {/* Right side controls */}
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <nav className="hidden sm:flex items-center gap-1 mr-2">
+              <nav className="hidden md:flex items-center gap-1 mr-2">
                 <a
                   href="#hero"
                   onClick={(e) => {
                     e.preventDefault();
                     scrollToElement('hero');
                   }}
-                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors whitespace-nowrap`}
                 >
                   {t.navAbout}
                 </a>
@@ -143,7 +140,7 @@ export default function Home() {
                     e.preventDefault();
                     scrollToMentors();
                   }}
-                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors whitespace-nowrap`}
                 >
                   {t.navMentors}
                 </a>
@@ -151,24 +148,26 @@ export default function Home() {
 
               <button
                 onClick={() => setIsMentorModalOpen(true)}
-                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer whitespace-nowrap"
+                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors cursor-pointer whitespace-nowrap"
               >
                 {t.addMentor}
               </button>
 
+              {/* Language selector */}
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value as Language)}
-                className={`text-sm font-medium ${dm.textMuted} ${dm.bgCard} border ${dm.border} rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`text-sm font-medium ${dm.textMuted} ${dm.bgCard} border ${dm.border} rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-12 sm:w-auto`}
+                aria-label="Select language"
               >
                 <option value="ko">🇰🇷 KO</option>
                 <option value="en">🇺🇸 EN</option>
               </select>
 
-              {/* Dark mode toggle */}
+              {/* Dark mode toggle - hidden on mobile */}
               <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-lg transition-all ${
+                className={`hidden sm:block p-2 rounded-lg transition-all ${
                   darkMode ? 'bg-gray-700 text-amber-400' : 'bg-gray-100 text-gray-600'
                 }`}
                 aria-label="Toggle dark mode"
@@ -190,7 +189,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section - Bento Style with Parallax */}
-      <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} py-4 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 overflow-hidden relative`}>
+      <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} pt-4 pb-6 sm:pt-6 sm:pb-8 md:pt-8 md:pb-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300 overflow-hidden relative`}>
         {/* Parallax Background Elements */}
         <div
           className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -206,7 +205,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="max-w-6xl mx-auto relative">
+        <div className="max-w-7xl mx-auto relative">
           {/* How it Works - Bento Card */}
           <div className={`${dm.bgCardAlt} rounded-2xl p-3 sm:p-4 md:p-6 shadow-sm border ${dm.border} transition-all`}>
             {/* About Section - Bento Cards - Always visible */}
@@ -242,7 +241,7 @@ export default function Home() {
               <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`w-7 h-7 ${theme.primaryLight} rounded-lg flex items-center justify-center`}>
-                    <Heart size={14} className={theme.accentText} />
+                    <Heart size={14} className={theme.primaryText} />
                   </span>
                   <span className={`text-sm font-medium ${dm.text}`}>{t.menteeValueTitle}</span>
                 </div>
@@ -316,10 +315,10 @@ export default function Home() {
             </button>
 
             {showDetailedSteps && (
-              <div className={`${dm.bgCard} rounded-xl p-4 mt-3 border ${dm.border} space-y-4`}>
+              <div className={`${dm.bgCard} rounded-xl p-4 mt-3 border ${dm.border}`}>
                 {/* Detailed steps */}
-                <div className={`pt-3 border-t ${dm.border}`}>
-                  <h4 className={`text-xs font-medium ${dm.textMuted} mb-3`}>{t.howToDetailedTitle}</h4>
+                <div>
+                  <h4 className={`text-sm font-semibold ${dm.text} mb-3`}>{t.howToDetailedTitle}</h4>
                   <ol className="space-y-2 text-xs">
                     {t.howToDonateSteps.map((step, index) => {
                       const urlMatch = step.match(/\(https?:\/\/[^)]+\)/);
@@ -363,7 +362,7 @@ export default function Home() {
 
       {/* Mentors Section */}
       <section ref={mentorsSectionRef} id="mentors" className={`${dm.bg} py-10 scroll-mt-14 transition-colors duration-300`}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Sticky section header - stays visible while browsing mentors */}
           <div className={`flex items-center justify-between mb-6 sticky top-14 z-20 ${dm.bg} py-2 -mt-2 lg:static`}>
             <h2 className={`text-xl font-bold ${dm.text}`}>{t.navMentors}</h2>

@@ -254,7 +254,7 @@ export default function FilterSidebar({
             max={100}
             value={filters.priceRange[1]}
             onChange={(e) => handlePriceRangeChange(Number(e.target.value), 1)}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-600"
+            className={`w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-600 ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}
           />
         </div>
       </div>

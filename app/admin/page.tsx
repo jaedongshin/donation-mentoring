@@ -6,7 +6,7 @@ import { Mentor } from '@/types/mentor';
 import { translations, Language } from '@/utils/i18n';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, X, Home, Search, Moon, Sun } from 'lucide-react';
+import { Trash2, Plus, X, Home, Search, Moon, Sun, Pencil } from 'lucide-react';
 
 // Input class generator (DRY)
 const getInputClass = (dark: boolean) => `block w-full rounded-lg ${dark ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border p-2.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40 transition-all text-sm`;
@@ -21,14 +21,12 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
-
-  // Persist dark mode across site
-  useEffect(() => {
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');
-    if (saved !== null) setDarkMode(saved === 'true');
-  }, []);
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   const toggleDarkMode = () => {
     const newValue = !darkMode;
@@ -135,7 +133,21 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchMentors();
+    const loadMentors = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('mentors')
+        .select('*')
+        .order('name_ko', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching mentors:', error);
+      } else {
+        setMentors(data || []);
+      }
+      setLoading(false);
+    };
+    loadMentors();
   }, []);
 
   const handleEdit = (mentor: Mentor) => {
@@ -283,7 +295,7 @@ export default function AdminPage() {
               {!searchExpanded ? (
                 <button
                   onClick={() => setSearchExpanded(true)}
-                  className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                  className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
                   aria-label="Search"
                 >
                   <Search size={18} />
@@ -303,7 +315,7 @@ export default function AdminPage() {
                   </div>
                   <button
                     onClick={() => { setSearchExpanded(false); setSearch(''); }}
-                    className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                    className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
                     aria-label="Close search"
                   >
                     <X size={18} />
@@ -335,7 +347,7 @@ export default function AdminPage() {
               {/* Home */}
               <Link
                 href="/"
-                className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
                 aria-label="Home"
               >
                 <Home size={18} />
@@ -354,7 +366,7 @@ export default function AdminPage() {
           </span>
           <button
             onClick={openNewForm}
-            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
+            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
           >
             <Plus size={18} />
             {t.addMentor}
@@ -377,7 +389,7 @@ export default function AdminPage() {
                     {/* Clickable area for edit */}
                     <button
                       onClick={() => handleEdit(mentor)}
-                      className="flex items-center min-w-0 flex-1 text-left cursor-pointer group"
+                      className="flex items-center min-w-0 flex-1 text-left cursor-pointer group active:opacity-80"
                     >
                       <div className={`flex-shrink-0 h-10 w-10 relative ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg overflow-hidden`}>
                         {mentor.picture_url ? (
@@ -400,12 +412,14 @@ export default function AdminPage() {
                           {mentor.position_ko || mentor.position_en}
                         </div>
                       </div>
+                      {/* Edit icon - mobile only (desktop has hover) */}
+                      <Pencil size={14} className={`ml-2 flex-shrink-0 ${dm.textSubtle} sm:hidden`} />
                     </button>
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                       {/* Toggle */}
                       <button
                         onClick={() => toggleActive(mentor)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-offset-1 ${darkMode ? 'hover:ring-offset-gray-800' : 'hover:ring-offset-white'} ${
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-offset-1 active:scale-95 ${darkMode ? 'hover:ring-offset-gray-800' : 'hover:ring-offset-white'} ${
                           mentor.is_active ? 'bg-sky-600 hover:ring-sky-400' : darkMode ? 'bg-gray-600 hover:ring-gray-500' : 'bg-gray-300 hover:ring-gray-400'
                         }`}
                         role="switch"
@@ -417,7 +431,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteClick(mentor)}
-                        className={`p-2 ${dm.textSubtle} hover:text-red-400 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors cursor-pointer`}
+                        className={`p-2 ${dm.textSubtle} hover:text-red-400 ${darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors cursor-pointer active:scale-95`}
                         aria-label="Delete mentor"
                       >
                         <Trash2 size={16} />
@@ -441,7 +455,7 @@ export default function AdminPage() {
               </h2>
               <button
                 onClick={() => setIsFormOpen(false)}
-                className={`p-2 ${dm.textSubtle} hover:${dm.text} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+                className={`p-2 ${dm.textSubtle} hover:${dm.text} ${darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
               >
                 <X size={20} />
               </button>
@@ -593,7 +607,7 @@ export default function AdminPage() {
                       <Image src={formData.picture_url} alt="Preview" fill className="object-cover" unoptimized={formData.picture_url.includes('supabase.co')} />
                     </div>
                   )}
-                  <label className={`cursor-pointer ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-300 text-gray-600'} border border-dashed rounded-lg py-2.5 px-4 text-sm font-medium hover:border-sky-500 hover:text-sky-400 transition-colors`}>
+                  <label className={`cursor-pointer ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-300 text-gray-600'} border border-dashed rounded-lg py-2.5 px-4 text-sm font-medium hover:border-sky-500 hover:text-sky-400 active:border-sky-600 active:bg-sky-900/20 transition-colors`}>
                     {uploading ? t.loading : t.upload}
                     <input type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                   </label>
@@ -617,13 +631,13 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className={`py-2 px-4 border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+                  className={`py-2 px-4 border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'} transition-colors`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="py-2 px-5 bg-sky-600 hover:bg-sky-700 rounded-lg text-sm font-medium text-white transition-colors"
+                  className="py-2 px-5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 rounded-lg text-sm font-medium text-white transition-colors"
                 >
                   {t.save}
                 </button>
@@ -648,13 +662,13 @@ export default function AdminPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className={`flex-1 py-2.5 px-4 border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+                  className={`flex-1 py-2.5 px-4 border ${dm.border} rounded-lg text-sm font-medium ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'} transition-colors`}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteConfirm}
-                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium text-white transition-colors"
+                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-lg text-sm font-medium text-white transition-colors"
                 >
                   Delete
                 </button>
