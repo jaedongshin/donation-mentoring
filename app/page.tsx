@@ -406,7 +406,7 @@ export default function Home() {
                   </p>
                 </div>
 
-                <p className={`${dm.textMuted} text-base leading-relaxed line-clamp-3 md:line-clamp-4`}>
+                <p className={`${dm.textMuted} text-base leading-relaxed line-clamp-7 md:line-clamp-7`}>
                   {getMentorDisplay(todaysMentor, lang).description}
                 </p>
 
