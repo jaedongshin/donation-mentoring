@@ -150,7 +150,7 @@ export default function Home() {
                 onClick={() => setIsMentorModalOpen(true)}
                 className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors cursor-pointer whitespace-nowrap"
               >
-                {t.addMentor}
+                {t.applyMentor}
               </button>
 
               {/* Language selector */}
@@ -212,11 +212,11 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 sm:mb-4 md:mb-6">
               <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
                 <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.mentoringTitle}</h3>
-                <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.mentoringDesc}</p>
+                <p className={`${dm.textMuted} text-sm leading-relaxed`}>{t.mentoringDesc}</p>
               </div>
               <div className={`${dm.bgCardAlt} rounded-xl p-4 border ${dm.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm`}>
                 <h3 className={`text-sm font-semibold ${dm.text} mb-2`}>{t.donationMentoringTitle}</h3>
-                <p className={`${dm.textMuted} text-xs leading-relaxed`}>{t.donationMentoringDesc}</p>
+                <p className={`${dm.textMuted} text-sm leading-relaxed`}>{t.donationMentoringDesc}</p>
               </div>
             </div>
 
@@ -231,7 +231,7 @@ export default function Home() {
                 </div>
                 <ul className="space-y-1.5">
                   {t.mentorValuePoints.map((point, i) => (
-                    <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
+                    <li key={i} className={`${dm.textMuted} text-sm flex items-start gap-2`}>
                       <span className={`${theme.bullet} mt-0.5`}>•</span>
                       <span>{point}</span>
                     </li>
@@ -247,7 +247,7 @@ export default function Home() {
                 </div>
                 <ul className="space-y-1.5">
                   {t.menteeValuePoints.map((point, i) => (
-                    <li key={i} className={`${dm.textMuted} text-xs flex items-start gap-2`}>
+                    <li key={i} className={`${dm.textMuted} text-sm flex items-start gap-2`}>
                       <span className={`${theme.bullet} mt-0.5`}>•</span>
                       <span>{point}</span>
                     </li>
@@ -267,7 +267,7 @@ export default function Home() {
                 <div className={`inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 ${theme.accentBg} text-white text-[9px] sm:text-[10px] font-bold rounded-full mb-1`}>
                   1
                 </div>
-                <h3 className={`text-[10px] sm:text-xs font-semibold ${dm.text} mb-0.5`}>{t.howToStep1Title}</h3>
+                <h3 className={`text-[10px] sm:text-sm font-semibold ${dm.text} mb-0.5`}>{t.howToStep1Title}</h3>
                 <p className={`${dm.textSubtle} text-[9px] sm:text-[10px] hidden sm:block leading-tight`}>{t.howToStep1Desc}</p>
               </div>
 
@@ -278,7 +278,7 @@ export default function Home() {
                 <div className={`inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 ${theme.accentBg} text-white text-[9px] sm:text-[10px] font-bold rounded-full mb-1`}>
                   2
                 </div>
-                <h3 className={`text-[10px] sm:text-xs font-semibold ${dm.text} mb-0.5`}>{t.howToStep2Title}</h3>
+                <h3 className={`text-[10px] sm:text-sm font-semibold ${dm.text} mb-0.5`}>{t.howToStep2Title}</h3>
                 <p className={`${dm.textSubtle} text-[9px] sm:text-[10px] hidden sm:block leading-tight`}>{t.howToStep2Desc}</p>
               </div>
 
@@ -289,7 +289,7 @@ export default function Home() {
                 <div className={`inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 ${theme.accentBg} text-white text-[9px] sm:text-[10px] font-bold rounded-full mb-1`}>
                   3
                 </div>
-                <h3 className={`text-[10px] sm:text-xs font-semibold ${dm.text} mb-0.5`}>{t.howToStep3Title}</h3>
+                <h3 className={`text-[10px] sm:text-sm font-semibold ${dm.text} mb-0.5`}>{t.howToStep3Title}</h3>
                 <p className={`${dm.textSubtle} text-[9px] sm:text-[10px] hidden sm:block leading-tight`}>{t.howToStep3Desc}</p>
               </div>
 
@@ -300,7 +300,7 @@ export default function Home() {
                 <div className={`inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 ${theme.accentBg} text-white text-[9px] sm:text-[10px] font-bold rounded-full mb-1`}>
                   4
                 </div>
-                <h3 className={`text-[10px] sm:text-xs font-semibold ${dm.text} mb-0.5`}>{t.howToStep4Title}</h3>
+                <h3 className={`text-[10px] sm:text-sm font-semibold ${dm.text} mb-0.5`}>{t.howToStep4Title}</h3>
                 <p className={`${dm.textSubtle} text-[9px] sm:text-[10px] hidden sm:block leading-tight`}>{t.howToStep4Desc}</p>
               </div>
             </div>

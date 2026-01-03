@@ -369,7 +369,7 @@ export default function AdminPage() {
             className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors cursor-pointer"
           >
             <Plus size={18} />
-            {t.addMentor}
+            {t.applyMentor}
           </button>
         </div>
 
@@ -451,7 +451,7 @@ export default function AdminPage() {
           <div className={`${dm.bgCard} border ${dm.border} rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-colors duration-300`}>
             <div className={`sticky top-0 ${dm.bgCard} border-b ${dm.border} px-5 py-4 flex justify-between items-center`}>
               <h2 className={`text-lg font-semibold ${dm.text}`}>
-                {editingMentor ? t.edit : t.addMentor}
+                {editingMentor ? t.edit : t.applyMentor}
               </h2>
               <button
                 onClick={() => setIsFormOpen(false)}
