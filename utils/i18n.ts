@@ -17,8 +17,7 @@ export const translations = {
     edit: "Edit",
     delete: "Delete",
     viewAdmin: "Go to Admin",
-    applyMentor: "Apply as Mentor",
-    addMentor: "Add Mentor",
+    applyMentor: "Apply Mentor",
     cancel: "Cancel",
     submitApplication: "Submit Application",
     submitting: "Submitting...",
@@ -70,23 +69,24 @@ export const translations = {
     viewProfile: "View Profile",
     bookSession: "Book Session",
     findMentors: "Find Mentors",
-    mentoringTitle: "What is Mentoring?",
-    mentoringDesc: "Mentoring is a process where mentees find their own answers by sharing their concerns and questions with mentors. While thinking alone can limit you to your own experiences and perspectives, working with a mentor's diverse views and rich experiences allows you to find broader perspectives and solutions.",
-    donationMentoringTitle: "What is Donation Mentoring?",
-    donationMentoringDesc: "From my experience, free mentoring (1:1s, coffee chats, coaching) can sometimes result in low engagement. To build a more committed and sustainable community while making a difference, I now include a UNICEF donation as part of the mentoring process. This way, our growth also helps provide a better future for vulnerable children around the world.",
-    mentorValueTitle: "Value for Mentors",
+    mentoringTitle: "What is Mentorship?",
+    mentoringDesc: "Mentorship is the process through which a mentee shares their challenges and inquiries with a mentor to independently discover their optimal solutions. While solo contemplation can be restricted by one's own limited perspective and experience, leveraging the mentor's diverse viewpoints and extensive expertise allows the mentee to achieve broader insights and discover more effective resolutions.",
+    donationMentoringTitle: "The Value Proposition of Donation-Based Mentorship ",
+    donationMentoringDesc: "Our experience with complimentary mentoring sessions (e.g., 1:1, coffee chats, coaching) indicated a decline in the commitment level of both mentors and mentees. To enhance program sustainability and concurrently generate positive societal impact, we have integrated a UNICEF donation requirement into the mentoring framework. This contribution provides significant support to vulnerable children globally.",
+    mentorValueTitle: "Mentor Benefits",
     mentorValuePoints: [
-      "Contribute to mentee growth using your expertise.",
-      "Save time and energy with efficient scheduling and management systems.",
-      "While there is no direct financial gain, it has the same effect as a donation made by the mentor.",
-      "Build relationships with other donation mentors."
+      "Professional Contribution: Utilize your expertise to directly contribute to the professional development and growth of the mentee.",
+      "Operational Efficiency: The streamlined scheduling and management system conserves valuable time and energy.",
+      "Equivalent Social Impact: While direct financial compensation is not provided, this initiative generates social impact equivalent to a personal donation.",
+      "Networking Opportunities: Gain access to exclusive networking opportunities with other participating donation-based mentors."
     ],
-    menteeValueTitle: "Value for Mentees",
+    menteeValueTitle: "Mentee Benefits",
     menteeValuePoints: [
-      "Experience meaningful connections with mentors who are usually hard to reach.",
-      "Efficiently coordinate schedules through the mentor's calendar.",
-      "Enjoy practical benefits like tax deductions through donations.",
-      "Contribute to society by participating in donation activities."
+      "Meaningful Connections: Establish significant and valuable connections with highly sought-after mentors who may typically be inaccessible.",
+      "Efficient Scheduling: The mentor calendar feature enables efficient coordination and scheduling of session times.",
+      "Tangible Financial Benefits: Donation payments may provide practical financial benefits, such as tax deductions/refunds.",
+      "Societal Contribution: Actively participate in philanthropy, thereby exerting a positive influence on society.",
+      "Fostering Enhanced Accountability and Motivation: The structured mentorship process cultivates a strong sense of self-directed ownership and a sustained impetus for growth."
     ],
   },
   ko: {
@@ -108,7 +108,6 @@ export const translations = {
     delete: "삭제",
     viewAdmin: "관리자 페이지로 이동",
     applyMentor: "멘토 신청",
-    addMentor: "멘토 등록",
     cancel: "취소",
     submitApplication: "신청서 제출",
     submitting: "제출 중...",
@@ -166,17 +165,18 @@ export const translations = {
     donationMentoringDesc: "멘토링(1:1, 커피챗, 코칭 등등)을 하는데, 무료로 했을 때, 멘토와 멘티의 책임감이 떨어지는 것을 경험했습니다. 그래서, 지속 가능성을 높이고, 동시에 세상에 선한 영향을 끼치기 위해 멘토링에 UNICEF 기부를 추가 하였습니다. UNICEF 기부는 전세계 어려운 아이들에게 큰 도움을 줍니다.",
     mentorValueTitle: "멘토의 가치",
     mentorValuePoints: [
-      "자신의 전문성을 활용하여 멘티의 성장에 기여합니다.",
-      "효율적인 예약 및 관리 시스템으로 시간과 에너지를 절약합니다.",
-      "직접적인 금전 이익은 없지만, 간점적으로 멘토가 기부한 것과 동일한 효과를 일으킵니다.",
-      "기부 멘토들간의 네트워킹을 얻을 수 있습니다."
+      "전문성 활용 및 기여: 보유하신 전문 역량을 활용하여 멘티의 성장과 발전에 직접적으로 기여할 수 있습니다.",
+      "운영 효율화: 효율적인 예약 및 관리 시스템을 통해 시간과 에너지를 절약할 수 있습니다.",
+      "사회적 기여 효과: 직접적인 금전적 이익은 없으나, 기부 행위와 동등한 사회적 가치를 창출합니다.",
+      "상호작용 및 통찰: 멘티와의 상호작용을 통해 책임감을 함양하고 새로운 관점을 얻을 수 있습니다."
     ],
     menteeValueTitle: "멘티의 가치",
     menteeValuePoints: [
-      "평소 접하기 어려운 멘토와 의미 있는 연결을 경험합니다.",
-      "멘토의 캘린더를 통해 효율적인 시간 조율이 가능합니다.",
-      "기부금을 통해 세금 환급과 같은 실질적인 혜택도 누릴 수 있습니다.",
-      "기부 활동에 참여하며 사회에 긍정적인 영향을 미칩니다."
+      "네트워킹 확장: 평소 접하기 어려웠던 전문가인 멘토와 의미 있는 연결을 구축할 수 있습니다.",
+      "일정 조율의 용이성: 멘토의 캘린더 연동을 통해 효율적인 세션 시간 조율이 가능합니다.",
+      "실질적인 혜택: 기부금 납부를 통해 세금 환급 등과 같은 실질적인 재정적 혜택을 누릴 수 있습니다.",
+      "사회 공헌 참여: 기부 활동에 참여함으로써 사회에 긍정적인 영향을 미치는 데 동참합니다.",
+      "책임감 및 동기 부여 강화: 멘토링 과정을 통해 자기 주도적 책임감과 성장 동기를 강화할 수 있습니다."
     ],
   }
 };

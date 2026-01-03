@@ -182,7 +182,7 @@ export default function MentorApplicationModal({ isOpen, onClose, lang, darkMode
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
       <div className={`${dm.bg} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 animate-scale-in transition-colors duration-300`}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className={`text-xl font-semibold ${dm.text}`}>{t.addMentor}</h2>
+          <h2 className={`text-xl font-semibold ${dm.text}`}>{t.applyMentor}</h2>
           <button onClick={onClose} className={`p-2 ${dm.textMuted} hover:text-gray-600 ${dm.hover} rounded-full transition-all`}>
             <X size={22} />
           </button>
