@@ -8,7 +8,7 @@ import FilterSidebar from '@/app/components/FilterSidebar';
 import MentorModal from '@/app/components/MentorModal';
 import MentorApplicationModal from '@/app/components/MentorApplicationModal';
 import { translations, Language } from '@/utils/i18n';
-import { scrollToElement, shuffleArray } from '@/utils/helpers';
+import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from '@/utils/helpers';
 import Link from 'next/link';
 import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User } from 'lucide-react';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
@@ -44,6 +44,7 @@ export default function Home() {
   });
   const [scrollY, setScrollY] = useState(0);
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
+  const [todaysMentor, setTodaysMentor] = useState<Mentor | null>(null);
   const mentorsSectionRef = useRef<HTMLElement>(null);
 
   const toggleDarkMode = () => {
@@ -95,7 +96,9 @@ export default function Home() {
         console.error('Error fetching mentors:', error);
         setMentors([]);
       } else {
-        setMentors(shuffleArray(data || []));
+        const activeMentors = data || [];
+        setMentors(shuffleArray(activeMentors));
+        setTodaysMentor(getDailyMentor(activeMentors));
       }
       setLoading(false);
     };
@@ -359,6 +362,72 @@ export default function Home() {
 
         </div>
       </section>
+
+      {/* Today's Mentor Section */}
+      {todaysMentor && !loading && (
+        <section className={`${dm.bg} pt-8 pb-4 transition-colors duration-300`}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className={`text-xl font-bold ${dm.text} mb-4 flex items-center gap-2`}>
+              <span className="text-2xl">✨</span> {t.todaysMentor}
+            </h2>
+            <div 
+              onClick={() => setSelectedMentor(todaysMentor)}
+              className={`${dm.bgCard} rounded-2xl p-6 border ${dm.border} shadow-lg hover:shadow-xl transition-all cursor-pointer group flex flex-col md:flex-row gap-8 items-center md:items-start`}
+            >
+              {/* Big Picture */}
+              <div className="relative w-full md:w-1/3 aspect-[4/3] md:aspect-square flex-shrink-0 overflow-hidden rounded-xl">
+                {todaysMentor.picture_url ? (
+                  <img 
+                    src={todaysMentor.picture_url} 
+                    alt={getMentorDisplay(todaysMentor, lang).name}
+                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className={`w-full h-full ${theme.primaryBg} flex items-center justify-center text-white text-4xl font-bold`}>
+                    {getMentorDisplay(todaysMentor, lang).name.charAt(0)}
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
+                <div className="absolute bottom-4 left-4 text-white md:hidden">
+                  <h3 className="text-xl font-bold">{getMentorDisplay(todaysMentor, lang).name}</h3>
+                  <p className="text-sm opacity-90">{getMentorDisplay(todaysMentor, lang).position}</p>
+                </div>
+              </div>
+
+              {/* Details */}
+              <div className="flex-1 w-full text-center md:text-left space-y-4">
+                <div className="hidden md:block">
+                  <h3 className={`text-2xl font-bold ${dm.text} mb-1`}>
+                    {getMentorDisplay(todaysMentor, lang).name}
+                  </h3>
+                  <p className={`text-lg ${theme.accentText} font-medium`}>
+                    {getMentorDisplay(todaysMentor, lang).position}
+                    {getMentorDisplay(todaysMentor, lang).company && ` @ ${getMentorDisplay(todaysMentor, lang).company}`}
+                  </p>
+                </div>
+
+                <p className={`${dm.textMuted} text-base leading-relaxed line-clamp-3 md:line-clamp-4`}>
+                  {getMentorDisplay(todaysMentor, lang).description}
+                </p>
+
+                <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                  {todaysMentor.tags?.slice(0, 5).map(tag => (
+                    <span key={tag} className={`px-3 py-1 rounded-full text-xs font-medium ${theme.primaryLight} ${theme.primaryText}`}>
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="pt-2">
+                  <span className={`inline-flex items-center gap-2 ${dm.text} font-medium group-hover:${theme.accentText} transition-colors`}>
+                    {t.viewProfile} <ChevronDown className="-rotate-90" size={16} />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Mentors Section */}
       <section ref={mentorsSectionRef} id="mentors" className={`${dm.bg} py-10 scroll-mt-14 transition-colors duration-300`}>

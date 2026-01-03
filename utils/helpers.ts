@@ -52,3 +52,18 @@ export function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+/**
+ * Selects a daily mentor deterministically based on the current date.
+ * Uses the date as a seed to ensure the same mentor is selected for the entire day.
+ */
+export function getDailyMentor(mentors: Mentor[]): Mentor | null {
+  if (!mentors || mentors.length === 0) return null;
+  
+  const today = new Date();
+  // Create a seed from YYYYMMDD
+  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  
+  // Use the seed to pick a mentor
+  return mentors[seed % mentors.length];
+}
+
