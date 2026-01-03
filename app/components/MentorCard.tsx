@@ -181,7 +181,7 @@ export default function MentorCard({ mentor, lang, onClick, theme = defaultTheme
 
         {/* Description */}
         {displayDescription && (
-          <p className={`text-sm ${dm.textMuted} line-clamp-3 leading-relaxed flex-1`}>
+          <p className={`text-sm ${dm.textMuted} line-clamp-5 leading-relaxed flex-1 overflow-hidden`}>
             {displayDescription}
           </p>
         )}
@@ -192,8 +192,7 @@ export default function MentorCard({ mentor, lang, onClick, theme = defaultTheme
             {visibleTags.map((tag, index) => (
               <span
                 key={index}
-                className={`px-2 py-0.5 ${theme.primaryLight} ${theme.primaryText} text-xs font-medium rounded-full truncate max-w-[80px]`}
-              >
+                className={`px-2 py-0.5 ${theme.primaryLight} ${theme.primaryText} text-xs font-small rounded-full overflow-hidden whitespace-nowrap text-clip`}>
                 {tag}
               </span>
             ))}
