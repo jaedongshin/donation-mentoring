@@ -6,7 +6,6 @@ import { Mentor } from '@/types/mentor';
 import MentorCard from '@/app/components/MentorCard';
 import FilterSidebar from '@/app/components/FilterSidebar';
 import MentorModal from '@/app/components/MentorModal';
-import MentorApplicationModal from '@/app/components/MentorApplicationModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from '@/utils/helpers';
 import Link from 'next/link';
@@ -117,80 +116,15 @@ export default function Home() {
   return (
     <div className={`min-h-screen ${dm.bg} scroll-smooth transition-colors duration-300`}>
       {/* Sticky Navigation */}
-      <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm sticky top-0 z-40 transition-colors duration-300`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo */}
-            <Link href="/" className={`text-base sm:text-lg font-bold ${dm.text} whitespace-nowrap mr-2 sm:mr-4`}>
-              {t.title}
-            </Link>
-
-            {/* Right side controls */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <nav className="hidden md:flex items-center gap-1 mr-2">
-                <a
-                  href="#hero"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToElement('hero');
-                  }}
-                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors whitespace-nowrap`}
-                >
-                  {t.navAbout}
-                </a>
-                <a
-                  href="#mentors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToMentors();
-                  }}
-                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors whitespace-nowrap`}
-                >
-                  {t.navMentors}
-                </a>
-              </nav>
-
-              <button
-                onClick={() => setIsMentorModalOpen(true)}
-                className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors cursor-pointer whitespace-nowrap"
-              >
-                {t.applyMentor}
-              </button>
-
-              {/* Language selector */}
-              <select
-                value={lang}
-                onChange={(e) => setLang(e.target.value as Language)}
-                className={`text-sm font-medium ${dm.textMuted} ${dm.bgCard} border ${dm.border} rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-12 sm:w-auto`}
-                aria-label="Select language"
-              >
-                <option value="ko">🇰🇷 KO</option>
-                <option value="en">🇺🇸 EN</option>
-              </select>
-
-              {/* Dark mode toggle - hidden on mobile */}
-              <button
-                onClick={toggleDarkMode}
-                className={`hidden sm:block p-2 rounded-lg transition-all ${
-                  darkMode ? 'bg-gray-700 text-amber-400' : 'bg-gray-100 text-gray-600'
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-
-              {/* Admin/Login */}
-              <Link
-                href="/admin"
-                className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
-                aria-label="Admin"
-              >
-                <User size={18} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopNav
+        variant="guest"
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        lang={lang}
+        onLangChange={setLang}
+        onScrollToAbout={() => scrollToElement('hero')}
+        onScrollToMentors={scrollToMentors}
+      />
 
       {/* Hero Section - Bento Style with Parallax */}
       <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} pt-4 pb-6 sm:pt-6 sm:pb-8 md:pt-8 md:pb-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300 overflow-hidden relative`}>
@@ -552,12 +486,6 @@ export default function Home() {
         />
       )}
 
-      <MentorApplicationModal
-        isOpen={isMentorModalOpen}
-        onClose={() => setIsMentorModalOpen(false)}
-        lang={lang}
-        darkMode={darkMode}
-      />
 
       {/* Footer */}
       <footer className={`${dm.bg} border-t ${dm.border} py-6 transition-colors duration-300`}>

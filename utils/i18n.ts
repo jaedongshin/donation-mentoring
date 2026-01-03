@@ -90,6 +90,64 @@ export const translations = {
       "Fostering Enhanced Accountability and Motivation: The structured mentorship process cultivates a strong sense of self-directed ownership and a sustained impetus for growth."
     ],
     applicationSuccess: "Application submitted successfully! Please wait for admin approval.",
+    // Auth
+    login: "Sign In",
+    logout: "Logout",
+    loginSubtitle: "Sign in to manage your mentor profile",
+    continueWithGoogle: "Continue with Google",
+    forMentorsAndAdmins: "For mentors and admins only",
+    lookingToBook: "Looking to book a session?",
+    browseMentorsNoLogin: "→ Browse mentors (no login needed)",
+    dashboard: "Dashboard",
+    mentorManagement: "Mentor Management",
+    manageUsers: "Manage Users",
+    home: "Home",
+    // Mock auth / Dev mode
+    devModeBanner: "Development Mode - Mock Authentication",
+    loginAs: "Login as",
+    loginAsPendingMentor: "Pending Mentor",
+    loginAsApprovedMentor: "Approved Mentor",
+    loginAsAdmin: "Admin",
+    loginAsSuperAdmin: "Super Admin",
+    // Roles
+    roleMentor: "Mentor",
+    roleAdmin: "Admin",
+    roleSuperAdmin: "Super Admin",
+    // Status
+    statusPending: "Pending Approval",
+    statusApproved: "Approved",
+    // Dashboard
+    dashboardTitle: "My Dashboard",
+    pendingApprovalMessage: "Your application is being reviewed. You'll be notified by email when approved.",
+    profileLive: "Your profile is live!",
+    editProfile: "Edit Profile",
+    setAvailability: "Set Availability",
+    connectCalendar: "Connect Calendar",
+    upcomingBookings: "Upcoming Bookings",
+    noUpcomingBookings: "No upcoming bookings",
+    comingSoon: "Coming Soon",
+    // Dashboard cards
+    profileCardTitle: "Profile",
+    profileCardDesc: "Edit your mentor profile and public information",
+    availabilityCardTitle: "Availability",
+    availabilityCardDesc: "Set your available times for mentoring sessions",
+    calendarCardTitle: "Calendar",
+    calendarCardDesc: "Connect your calendar for automatic booking",
+    statsCardTitle: "Stats",
+    statsCardDesc: "View your mentoring statistics and impact",
+    // Register
+    registerTitle: "Mentor Registration",
+    registerSubtitle: "Complete your profile to get started. Your application will be reviewed by an admin.",
+    // Admin
+    pendingApplications: "Pending Applications",
+    activeMentors: "Active Mentors",
+    approve: "Approve",
+    reject: "Reject",
+    // User management
+    userManagement: "User Management",
+    allUsers: "All Users",
+    changeRole: "Change Role",
+    cannotModify: "Cannot modify",
   },
   ko: {
     title: "기부 멘토링",
@@ -182,6 +240,64 @@ export const translations = {
       "책임감 및 동기 부여 강화: 멘토링 과정을 통해 자기 주도적 책임감과 성장 동기를 강화할 수 있습니다."
     ],
     applicationSuccess: "신청서가 성공적으로 제출되었습니다! 관리자의 승인을 기다려주세요.",
+    // Auth
+    login: "로그인",
+    logout: "로그아웃",
+    loginSubtitle: "멘토 프로필을 관리하려면 로그인하세요",
+    continueWithGoogle: "Google로 계속하기",
+    forMentorsAndAdmins: "멘토와 관리자 전용입니다",
+    lookingToBook: "세션을 예약하시겠어요?",
+    browseMentorsNoLogin: "→ 멘토 둘러보기 (로그인 불필요)",
+    dashboard: "대시보드",
+    mentorManagement: "멘토 관리",
+    manageUsers: "사용자 관리",
+    home: "홈으로",
+    // Mock auth / Dev mode
+    devModeBanner: "개발 모드 - 모의 인증",
+    loginAs: "로그인:",
+    loginAsPendingMentor: "대기 중 멘토",
+    loginAsApprovedMentor: "승인된 멘토",
+    loginAsAdmin: "관리자",
+    loginAsSuperAdmin: "최고 관리자",
+    // Roles
+    roleMentor: "멘토",
+    roleAdmin: "관리자",
+    roleSuperAdmin: "최고 관리자",
+    // Status
+    statusPending: "승인 대기 중",
+    statusApproved: "승인됨",
+    // Dashboard
+    dashboardTitle: "내 대시보드",
+    pendingApprovalMessage: "신청서를 검토 중입니다. 승인되면 이메일로 알려드립니다.",
+    profileLive: "프로필이 게시되었습니다!",
+    editProfile: "프로필 수정",
+    setAvailability: "가능 시간 설정",
+    connectCalendar: "캘린더 연결",
+    upcomingBookings: "예정된 세션",
+    noUpcomingBookings: "예정된 세션이 없습니다",
+    comingSoon: "준비 중",
+    // Dashboard cards
+    profileCardTitle: "프로필",
+    profileCardDesc: "멘토 프로필과 공개 정보를 수정하세요",
+    availabilityCardTitle: "가능 시간",
+    availabilityCardDesc: "멘토링 가능한 시간을 설정하세요",
+    calendarCardTitle: "캘린더",
+    calendarCardDesc: "자동 예약을 위해 캘린더를 연결하세요",
+    statsCardTitle: "통계",
+    statsCardDesc: "멘토링 통계와 영향력을 확인하세요",
+    // Register
+    registerTitle: "멘토 등록",
+    registerSubtitle: "프로필을 작성해주세요. 관리자 검토 후 승인됩니다.",
+    // Admin
+    pendingApplications: "승인 대기 신청",
+    activeMentors: "활성 멘토",
+    approve: "승인",
+    reject: "거절",
+    // User management
+    userManagement: "사용자 관리",
+    allUsers: "전체 사용자",
+    changeRole: "역할 변경",
+    cannotModify: "수정 불가",
   }
 };
 
