@@ -5,6 +5,7 @@ import Select, { StylesConfig } from 'react-select';
 export interface SelectOption {
   value: string;
   label: string;
+  tag?: string;  // Optional tag to display (e.g., "Email Match")
 }
 
 interface SearchableSelectProps {
@@ -67,6 +68,22 @@ export default function SearchableSelect({
     }),
   };
 
+  // Custom option rendering with tag support
+  const formatOptionLabel = (option: SelectOption) => (
+    <div className="flex items-center justify-between w-full">
+      <span>{option.label}</span>
+      {option.tag && (
+        <span className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
+          darkMode
+            ? 'bg-sky-500/20 text-sky-400'
+            : 'bg-sky-100 text-sky-600'
+        }`}>
+          {option.tag}
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <Select<SelectOption>
       options={options}
@@ -76,6 +93,7 @@ export default function SearchableSelect({
       isSearchable
       isDisabled={disabled}
       styles={styles}
+      formatOptionLabel={formatOptionLabel}
       noOptionsMessage={() => noOptionsMessage}
     />
   );

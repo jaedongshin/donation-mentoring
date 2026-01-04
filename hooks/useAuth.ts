@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabase';
 import { User } from '@supabase/supabase-js';
 
-export type UserRole = 'mentor' | 'admin' | 'super_admin';
+export type UserRole = 'user' | 'mentor' | 'admin' | 'super_admin';
 
 export interface MentorProfileData {
   name_en: string;
@@ -74,14 +74,87 @@ export function useAuth(): UseAuthReturn {
   // Convert Supabase user to AuthUser
   const mapSupabaseUser = useCallback(async (supabaseUser: User): Promise<AuthUser> => {
     // Try to get user profile from profiles table
+    // Use maybeSingle() instead of single() to handle missing profiles gracefully
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('role, is_approved, display_name, mentor_id, policy_accepted_at')
       .eq('id', supabaseUser.id)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching profile:', error);
+    // If profile doesn't exist, create it (fallback for users created before trigger)
+    if (error || !profile) {
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "0 rows" which is expected if profile doesn't exist
+        console.error('Error fetching profile:', error);
+      }
+
+      // Only try to create profile if we didn't get a foreign key error
+      // Foreign key error (23503) means user doesn't exist in auth.users - clear stale session
+      if (error && error.code === '23503') {
+        // User doesn't exist in auth.users - invalid/stale session, clear it
+        console.warn('Stale session detected: user does not exist in auth.users. Clearing session...');
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError) {
+          // Ignore signOut errors (e.g., 403) - session is already invalid
+          console.debug('SignOut error (expected for invalid sessions):', signOutError);
+        }
+        // Return null to indicate no valid user
+        throw new Error('Invalid session: user does not exist');
+      } else {
+        // Auto-create profile if it doesn't exist
+        const userRole: UserRole = supabaseUser.email && 
+          ['mulli2@gmail.com', 'tk.hfes@gmail.com'].includes(supabaseUser.email)
+          ? 'super_admin'
+          : 'mentor';
+        
+        const isApproved = userRole === 'super_admin';
+
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            display_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+            avatar_url: supabaseUser.user_metadata?.avatar_url,
+            role: userRole,
+            is_approved: isApproved,
+            mentor_id: null,
+          })
+          .select('role, is_approved, display_name, mentor_id, policy_accepted_at')
+          .single();
+
+        if (createError) {
+          // Handle foreign key constraint violation (user doesn't exist in auth.users)
+          if (createError.code === '23503') {
+            // Stale session - user doesn't exist in auth.users, clear it
+            console.warn('Stale session detected: user does not exist in auth.users. Clearing session...');
+            try {
+              await supabase.auth.signOut();
+            } catch (signOutError) {
+              // Ignore signOut errors (e.g., 403) - session is already invalid
+              console.debug('SignOut error (expected for invalid sessions):', signOutError);
+            }
+            throw new Error('Invalid session: user does not exist');
+          } else {
+            console.error('Error creating profile:', createError);
+          }
+        } else if (newProfile) {
+          // Use the newly created profile
+          setPolicyAccepted(!!newProfile?.policy_accepted_at);
+          
+          return {
+            id: supabaseUser.id,
+            email: supabaseUser.email || '',
+            displayName: newProfile?.display_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+            avatarUrl: supabaseUser.user_metadata?.avatar_url,
+            role: (newProfile?.role as UserRole) || userRole,
+            isApproved: newProfile?.is_approved ?? isApproved,
+            mentorId: newProfile?.mentor_id || null,
+            policyAcceptedAt: newProfile?.policy_accepted_at || null,
+          };
+        }
+      }
     }
 
     // Update policy accepted state
@@ -102,10 +175,37 @@ export function useAuth(): UseAuthReturn {
   // Load user on mount
   useEffect(() => {
     const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      // If there's an error getting the session, clear any stale data
+      if (sessionError) {
+        console.debug('Error getting session on mount:', sessionError);
+        setUser(null);
+        setPolicyAccepted(false);
+        setIsLoading(false);
+        return;
+      }
+      
       if (session?.user) {
-        const authUser = await mapSupabaseUser(session.user);
-        setUser(authUser);
+        try {
+          const authUser = await mapSupabaseUser(session.user);
+          setUser(authUser);
+        } catch (error) {
+          // Invalid session (e.g., user doesn't exist in auth.users)
+          // Session has been cleared, set user to null
+          // Only log if it's not the expected "Invalid session" error
+          if (error instanceof Error && error.message === 'Invalid session: user does not exist') {
+            console.debug('Stale session cleared successfully');
+          } else {
+            console.warn('Failed to map user, clearing session:', error);
+          }
+          setUser(null);
+          setPolicyAccepted(false);
+        }
+      } else {
+        // No session - ensure state is cleared
+        setUser(null);
+        setPolicyAccepted(false);
       }
       setIsLoading(false);
     };
@@ -117,10 +217,26 @@ export function useAuth(): UseAuthReturn {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.debug('Auth state change:', event, session ? 'has session' : 'no session');
+        
         if (event === 'SIGNED_IN' && session?.user) {
-          const authUser = await mapSupabaseUser(session.user);
-          setUser(authUser);
-        } else if (event === 'SIGNED_OUT') {
+          try {
+            const authUser = await mapSupabaseUser(session.user);
+            setUser(authUser);
+          } catch (error) {
+            // Invalid session (e.g., user doesn't exist in auth.users)
+            // Session has been cleared, set user to null
+            // Only log if it's not the expected "Invalid session" error
+            if (error instanceof Error && error.message === 'Invalid session: user does not exist') {
+              console.debug('Stale session cleared successfully after sign in');
+            } else {
+              console.warn('Failed to map user after sign in, clearing session:', error);
+            }
+            setUser(null);
+            setPolicyAccepted(false);
+          }
+        } else if (event === 'SIGNED_OUT' || (!session && event !== 'SIGNED_IN')) {
+          // Clear state on sign out or when session is removed
           setUser(null);
           setPolicyAccepted(false);
         } else if (event === 'PASSWORD_RECOVERY') {
@@ -222,13 +338,32 @@ export function useAuth(): UseAuthReturn {
 
   // Logout
   const logout = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Logout error:', error);
-      throw error;
-    }
+    // Clear local state immediately to prevent race conditions
     setUser(null);
     setPolicyAccepted(false);
+    
+    // Sign out from Supabase (this will trigger SIGNED_OUT event)
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('Logout error:', error);
+      // Even if there's an error, we've already cleared local state
+      // Don't throw - allow the logout to proceed
+    }
+    
+    // Clear any cached session data from localStorage
+    // Supabase stores session in localStorage with key pattern: sb-<project-ref>-auth-token
+    try {
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.includes('supabase.auth.token') || key.startsWith('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      // Ignore localStorage errors (e.g., in private browsing)
+      console.debug('Could not clear localStorage:', e);
+    }
   }, []);
 
   // Link mentor profile (existing or new)
@@ -306,7 +441,8 @@ export function useAuth(): UseAuthReturn {
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const isSuperAdmin = user?.role === 'super_admin';
   const isApproved = user?.isApproved ?? false;
-  const needsMentorLink = user?.mentorId === null;
+  // Only mentors need to link mentor profiles (not 'user' role)
+  const needsMentorLink = isMentor && user?.mentorId === null;
 
   return {
     user,

@@ -8,12 +8,12 @@ export const admin = {
     approve: "Approve",
     reject: "Reject",
     // User management
-    userManagement: "User Management",
+    userManagement: "Permission Management",
     allUsers: "All Users",
     changeRole: "Change Role",
     cannotModify: "Cannot modify",
-    mentorManagement: "Mentor Management",
-    manageUsers: "Manage Users",
+    mentorManagement: "Manage Mentors",
+    manageUsers: "Manage Permissions",
   },
   ko: {
     adminTitle: "멘토 관리",
@@ -23,11 +23,11 @@ export const admin = {
     approve: "승인",
     reject: "거절",
     // User management
-    userManagement: "사용자 관리",
+    userManagement: "권한 관리",
     allUsers: "전체 사용자",
     changeRole: "역할 변경",
     cannotModify: "수정 불가",
     mentorManagement: "멘토 관리",
-    manageUsers: "사용자 관리",
+    manageUsers: "권한 관리",
   },
 };

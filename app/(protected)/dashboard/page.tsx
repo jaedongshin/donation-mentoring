@@ -79,7 +79,7 @@ export default function DashboardPage() {
         .from('profiles')
         .select('mentor_id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profile?.mentor_id) {
         setMentorId(profile.mentor_id);
@@ -322,10 +322,14 @@ export default function DashboardPage() {
   // Build options for searchable select (new mentor at top)
   const mentorOptions = [
     { value: 'new', label: `➕ ${t.registerAsNewMentor}` },
-    ...unlinkedMentors.map(m => ({
-      value: m.id,
-      label: `${lang === 'ko' ? m.name_ko : m.name_en}${m.email?.toLowerCase() === user?.email.toLowerCase() ? ` (${t.emailMatch})` : ''}`,
-    })),
+    ...unlinkedMentors.map(m => {
+      const isMatch = m.email?.toLowerCase() === user?.email.toLowerCase();
+      return {
+        value: m.id,
+        label: lang === 'ko' ? m.name_ko : m.name_en,
+        tag: isMatch ? t.emailMatch : undefined,
+      };
+    }),
   ];
 
   // Dark mode classes

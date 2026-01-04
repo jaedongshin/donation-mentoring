@@ -48,6 +48,7 @@ export const auth = {
     emailAlreadyExists: "This email is already registered",
     signUpSuccess: "Account created! Please check your email to verify.",
     // Roles
+    roleUser: "User",
     roleMentor: "Mentor",
     roleAdmin: "Admin",
     roleSuperAdmin: "Super Admin",
@@ -88,7 +89,7 @@ export const auth = {
     passwordResetSuccess: "비밀번호가 재설정되었습니다! 이제 로그인할 수 있습니다.",
     backToLogin: "로그인으로 돌아가기",
     // Policy
-    acceptPolicy: "Donation Mentoring의 정책에 동의합니다",
+    acceptPolicy: "Donation Mentoring의 이용약관에 동의합니다",
     policyRequired: "계속하려면 정책에 동의해야 합니다",
     policyAcceptanceRequired: "정책 동의 필요",
     policyAcceptanceMessage: "플랫폼을 계속 사용하려면 정책에 동의해주세요.",
@@ -100,6 +101,7 @@ export const auth = {
     emailAlreadyExists: "이미 등록된 이메일입니다",
     signUpSuccess: "계정이 생성되었습니다! 이메일을 확인하여 인증해주세요.",
     // Roles
+    roleUser: "사용자",
     roleMentor: "멘토",
     roleAdmin: "관리자",
     roleSuperAdmin: "최고 관리자",

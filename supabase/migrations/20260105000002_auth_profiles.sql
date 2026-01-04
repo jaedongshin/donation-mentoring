@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT,
     display_name TEXT,
     avatar_url TEXT,
-    role TEXT DEFAULT 'mentor' CHECK (role IN ('mentor', 'admin', 'super_admin')),
+    role TEXT DEFAULT 'mentor' CHECK (role IN ('user', 'mentor', 'admin', 'super_admin')),
     is_approved BOOLEAN DEFAULT false,
     mentor_id UUID REFERENCES public.mentors(id) ON DELETE SET NULL,  -- NULL = needs to link/register
     policy_accepted_at TIMESTAMPTZ,
@@ -56,19 +56,28 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile" ON public.profiles
     FOR SELECT USING (auth.uid() = id);
 
+-- Users can insert their own profile (fallback if trigger fails)
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+CREATE POLICY "Users can insert own profile" ON public.profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- Users can update their own profile (limited fields handled by app)
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles
     FOR UPDATE USING (auth.uid() = id);
 
 -- Admins can view all profiles
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
 CREATE POLICY "Admins can view all profiles" ON public.profiles
     FOR SELECT USING (public.is_admin_or_super_admin());
 
 -- Admins can update any profile (for approval)
 -- Note: Role changes restricted to super_admin at application level
+DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
 CREATE POLICY "Admins can update all profiles" ON public.profiles
     FOR UPDATE USING (public.is_admin_or_super_admin());
 
@@ -77,15 +86,26 @@ CREATE POLICY "Admins can update all profiles" ON public.profiles
 -- ============================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+    user_role TEXT := 'mentor';
+    user_approved BOOLEAN := false;
 BEGIN
+    -- Auto-promote hardcoded super admin emails
+    IF NEW.email IN ('mulli2@gmail.com', 'tk.hfes@gmail.com') THEN
+        user_role := 'super_admin';
+        user_approved := true;
+    END IF;
+
     -- Create profile WITHOUT auto-linking to mentor
     -- User must manually select/link their mentor profile via UI
-    INSERT INTO public.profiles (id, email, display_name, avatar_url, mentor_id)
+    INSERT INTO public.profiles (id, email, display_name, avatar_url, role, is_approved, mentor_id)
     VALUES (
         NEW.id,
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         NEW.raw_user_meta_data->>'avatar_url',
+        user_role,
+        user_approved,
         NULL    -- No auto-linking, user must choose
     );
 

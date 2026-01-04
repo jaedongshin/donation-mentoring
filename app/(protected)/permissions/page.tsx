@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { translations, Language } from '@/utils/i18n';
 import { Users, Shield, ShieldCheck, User, ChevronDown } from 'lucide-react';
@@ -31,6 +31,8 @@ export default function UserManagementPage() {
     return saved !== null ? saved === 'true' : true;
   });
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [dropdownDirection, setDropdownDirection] = useState<'up' | 'down'>('down');
+  const dropdownButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const toggleDarkMode = () => {
     const newValue = !darkMode;
@@ -78,13 +80,20 @@ export default function UserManagementPage() {
   // Redirect if not authenticated or not super admin
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isSuperAdmin)) {
-      router.push('/admin');
+      router.push('/mentors');
     }
   }, [authLoading, isAuthenticated, isSuperAdmin, router]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setOpenDropdownId(null);
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Don't close if clicking inside a role dropdown
+      if (target.closest('[data-role-dropdown]')) {
+        return;
+      }
+      setOpenDropdownId(null);
+    };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
@@ -95,6 +104,13 @@ export default function UserManagementPage() {
   };
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    // Find current user to check if role is changing
+    const currentUser = users.find(u => u.id === userId);
+    if (currentUser?.role === newRole) {
+      setOpenDropdownId(null);
+      return;
+    }
+
     const { error } = await supabase
       .from('profiles')
       .update({ role: newRole })
@@ -104,6 +120,7 @@ export default function UserManagementPage() {
       console.error('Error updating role:', error);
       alert(lang === 'ko' ? '역할 변경에 실패했습니다.' : 'Failed to update role.');
     } else {
+      // Optimistically update UI
       setUsers(prev =>
         prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
       );
@@ -149,6 +166,13 @@ export default function UserManagementPage() {
           <span className={`${baseClasses} ${darkMode ? 'bg-green-900/40 text-green-300' : 'bg-green-100 text-green-700'}`}>
             <User size={12} />
             {t.roleMentor}
+          </span>
+        );
+      case 'user':
+        return (
+          <span className={`${baseClasses} ${darkMode ? 'bg-gray-700/40 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>
+            <User size={12} />
+            {t.roleUser}
           </span>
         );
     }
@@ -259,11 +283,26 @@ export default function UserManagementPage() {
 
                       {/* Role Dropdown */}
                       {canModify && (
-                        <div className="relative">
+                        <div className="relative" data-role-dropdown>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdownId(openDropdownId === u.id ? null : u.id);
+                            ref={(el) => {
+                              if (el) dropdownButtonRefs.current.set(u.id, el);
+                              else dropdownButtonRefs.current.delete(u.id);
+                            }}
+                            onClick={() => {
+                              if (openDropdownId === u.id) {
+                                setOpenDropdownId(null);
+                              } else {
+                                // Calculate if dropdown should open up or down
+                                const button = dropdownButtonRefs.current.get(u.id);
+                                if (button) {
+                                  const rect = button.getBoundingClientRect();
+                                  const spaceBelow = window.innerHeight - rect.bottom;
+                                  // Dropdown is ~80px tall (2 items × ~40px each)
+                                  setDropdownDirection(spaceBelow < 100 ? 'up' : 'down');
+                                }
+                                setOpenDropdownId(u.id);
+                              }
                             }}
                             className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
                               darkMode
@@ -272,25 +311,66 @@ export default function UserManagementPage() {
                             }`}
                           >
                             {t.changeRole}
-                            <ChevronDown size={12} />
+                            <ChevronDown size={12} className={`transition-transform ${openDropdownId === u.id && dropdownDirection === 'up' ? 'rotate-180' : ''}`} />
                           </button>
 
                           {openDropdownId === u.id && (
                             <div
-                              className={`absolute right-0 mt-1 w-36 rounded-lg shadow-lg ${dm.bgCard} border ${dm.border} z-10`}
-                              onClick={(e) => e.stopPropagation()}
+                              className={`absolute right-0 w-40 rounded-lg shadow-lg ${dm.bgCard} border ${dm.border} z-10 overflow-hidden ${
+                                dropdownDirection === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+                              }`}
                             >
+                              {/* User (no permissions) */}
                               <button
+                                type="button"
+                                onClick={() => handleRoleChange(u.id, 'user')}
+                                className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between cursor-pointer ${
+                                  u.role === 'user'
+                                    ? darkMode ? 'bg-sky-600/20 text-sky-300' : 'bg-sky-100 text-sky-700'
+                                    : `${dm.text} ${dm.rowHover}`
+                                }`}
+                              >
+                                {t.roleUser}
+                                {u.role === 'user' && <span className="text-xs">✓</span>}
+                              </button>
+                              {/* Mentor */}
+                              <button
+                                type="button"
                                 onClick={() => handleRoleChange(u.id, 'mentor')}
-                                className={`w-full px-3 py-2 text-left text-sm ${dm.text} ${dm.rowHover} rounded-t-lg`}
+                                className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between cursor-pointer ${
+                                  u.role === 'mentor'
+                                    ? darkMode ? 'bg-sky-600/20 text-sky-300' : 'bg-sky-100 text-sky-700'
+                                    : `${dm.text} ${dm.rowHover}`
+                                }`}
                               >
                                 {t.roleMentor}
+                                {u.role === 'mentor' && <span className="text-xs">✓</span>}
                               </button>
+                              {/* Admin */}
                               <button
+                                type="button"
                                 onClick={() => handleRoleChange(u.id, 'admin')}
-                                className={`w-full px-3 py-2 text-left text-sm ${dm.text} ${dm.rowHover} rounded-b-lg`}
+                                className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between cursor-pointer ${
+                                  u.role === 'admin'
+                                    ? darkMode ? 'bg-sky-600/20 text-sky-300' : 'bg-sky-100 text-sky-700'
+                                    : `${dm.text} ${dm.rowHover}`
+                                }`}
                               >
                                 {t.roleAdmin}
+                                {u.role === 'admin' && <span className="text-xs">✓</span>}
+                              </button>
+                              {/* Super Admin - only visible to super admins */}
+                              <button
+                                type="button"
+                                onClick={() => handleRoleChange(u.id, 'super_admin')}
+                                className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between cursor-pointer ${
+                                  u.role === 'super_admin'
+                                    ? darkMode ? 'bg-sky-600/20 text-sky-300' : 'bg-sky-100 text-sky-700'
+                                    : `${dm.text} ${dm.rowHover}`
+                                }`}
+                              >
+                                {t.roleSuperAdmin}
+                                {u.role === 'super_admin' && <span className="text-xs">✓</span>}
                               </button>
                             </div>
                           )}

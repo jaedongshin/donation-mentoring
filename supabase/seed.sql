@@ -51,7 +51,7 @@ INSERT INTO public.mentors (
 );
 
 -- ============================================
--- TEST MENTORS (for local dev testing)
+-- TEST MENTORS (8 approved + 2 unapproved)
 -- ============================================
 INSERT INTO public.mentors (
     id,
@@ -63,48 +63,293 @@ INSERT INTO public.mentors (
     email, languages, tags, is_active, display_order,
     session_time_minutes, session_price_usd
 ) VALUES
+-- APPROVED MENTORS (8)
 (
-    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-    'Test Mentor (Approved)', '테스트 멘토 (승인됨)',
-    'Software Engineer', '소프트웨어 엔지니어',
-    'Test Company', '테스트 회사',
+    'aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa',
+    'Sarah Chen', '사라 첸',
+    'Staff Engineer', '스태프 엔지니어',
+    'Google', 'Google',
     'USA', '미국',
-    'Test mentor account for development - approved status.',
-    '개발용 테스트 멘토 계정 - 승인 상태.',
-    'test.mentor@example.com',
+    'Staff engineer at Google with 12 years experience. Specializes in distributed systems.',
+    'Google 스태프 엔지니어, 12년 경력. 분산 시스템 전문.',
+    'sarah.chen@test.com',
+    ARRAY['English', 'Korean'],
+    '["Backend", "System Design", "Career Growth"]',
+    false,10,
+    45, 25
+),
+(
+    'aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa',
+    'Michael Park', '박마이클',
+    'Engineering Manager', '엔지니어링 매니저',
+    'Meta', 'Meta',
+    'USA', '미국',
+    'Engineering manager at Meta. Former IC at Netflix. Passionate about leadership.',
+    'Meta 엔지니어링 매니저. 전 Netflix IC. 리더십에 열정적.',
+    'michael.park@test.com',
+    ARRAY['English', 'Korean'],
+    '["Leadership", "Management", "Career"]',
+    false,11,
+    60, 40
+),
+(
+    'aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa',
+    'Emily Kim', '김에밀리',
+    'Product Designer', '프로덕트 디자이너',
+    'Airbnb', 'Airbnb',
+    'USA', '미국',
+    'Lead product designer at Airbnb. Focus on user research and design systems.',
+    'Airbnb 리드 프로덕트 디자이너. 사용자 리서치와 디자인 시스템에 집중.',
+    'emily.kim@test.com',
     ARRAY['English'],
-    '["test", "development"]',
-    true, 100,
+    '["Design", "UX Research", "Design Systems"]',
+    true, 12,
+    30, 20
+),
+(
+    'aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa',
+    'David Lee', '이데이비드',
+    'Senior PM', '시니어 PM',
+    'Amazon', 'Amazon',
+    'USA', '미국',
+    'Senior Product Manager at AWS. 8 years in product management.',
+    'AWS 시니어 프로덕트 매니저. 프로덕트 관리 8년 경력.',
+    'david.lee@test.com',
+    ARRAY['English', 'Korean'],
+    '["Product Management", "AWS", "Strategy"]',
+    false,13,
+    45, 30
+),
+(
+    'aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa',
+    'Jennifer Wang', '왕제니퍼',
+    'Data Scientist', '데이터 사이언티스트',
+    'Netflix', 'Netflix',
+    'USA', '미국',
+    'Senior data scientist at Netflix. ML/AI specialist with PhD from Stanford.',
+    'Netflix 시니어 데이터 사이언티스트. Stanford 박사, ML/AI 전문가.',
+    'jennifer.wang@test.com',
+    ARRAY['English'],
+    '["Data Science", "Machine Learning", "AI"]',
+    false,14,
+    60, 50
+),
+(
+    'aaaaaaaa-0006-0006-0006-aaaaaaaaaaaa',
+    'Kevin Cho', '조케빈',
+    'iOS Engineer', 'iOS 엔지니어',
+    'Apple', 'Apple',
+    'USA', '미국',
+    'iOS engineer at Apple. Building consumer apps for 10 years.',
+    'Apple iOS 엔지니어. 10년간 소비자 앱 개발.',
+    'kevin.cho@test.com',
+    ARRAY['Korean', 'English'],
+    '["iOS", "Swift", "Mobile"]',
+    false,15,
+    30, 15
+),
+(
+    'aaaaaaaa-0007-0007-0007-aaaaaaaaaaaa',
+    'Lisa Nguyen', '리사 응우옌',
+    'DevOps Lead', 'DevOps 리드',
+    'Stripe', 'Stripe',
+    'USA', '미국',
+    'DevOps lead at Stripe. Expert in Kubernetes and cloud infrastructure.',
+    'Stripe DevOps 리드. Kubernetes와 클라우드 인프라 전문가.',
+    'lisa.nguyen@test.com',
+    ARRAY['English'],
+    '["DevOps", "Kubernetes", "Infrastructure"]',
+    false,16,
+    45, 35
+),
+(
+    'aaaaaaaa-0008-0008-0008-aaaaaaaaaaaa',
+    'James Yoon', '윤제임스',
+    'Security Engineer', '보안 엔지니어',
+    'Microsoft', 'Microsoft',
+    'USA', '미국',
+    'Principal security engineer at Microsoft. Focus on application security.',
+    'Microsoft 수석 보안 엔지니어. 애플리케이션 보안에 집중.',
+    'james.yoon@test.com',
+    ARRAY['English', 'Korean'],
+    '["Security", "AppSec", "Cloud Security"]',
+    false,17,
+    60, 45
+),
+-- UNAPPROVED MENTORS (2)
+(
+    'bbbbbbbb-0001-0001-0001-bbbbbbbbbbbb',
+    'New Applicant One', '신규 지원자 1',
+    'Junior Developer', '주니어 개발자',
+    'Startup ABC', '스타트업 ABC',
+    'Korea', '한국',
+    'Recent bootcamp graduate looking to mentor others.',
+    '최근 부트캠프 졸업생, 다른 사람들을 멘토링하고 싶습니다.',
+    'applicant1@test.com',
+    ARRAY['Korean'],
+    '["Bootcamp", "Junior", "Frontend"]',
+    false, 100,
     30, 0
 ),
 (
-    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-    'Test Pending Mentor', '테스트 대기 멘토',
-    'Junior Developer', '주니어 개발자',
-    'Startup Inc', '스타트업',
+    'bbbbbbbb-0002-0002-0002-bbbbbbbbbbbb',
+    'New Applicant Two', '신규 지원자 2',
+    'Mid-level Engineer', '미드레벨 엔지니어',
+    'Tech Corp', '테크 회사',
     'Korea', '한국',
-    'Test mentor account for development - pending approval.',
-    '개발용 테스트 멘토 계정 - 승인 대기.',
-    'test.pending@example.com',
-    ARRAY['Korean'],
-    '["test", "pending"]',
+    'Mid-level engineer with 3 years experience wanting to give back.',
+    '3년 경력 미드레벨 엔지니어, 기여하고 싶습니다.',
+    'applicant2@test.com',
+    ARRAY['Korean', 'English'],
+    '["Backend", "Python", "Django"]',
     false, 101,
-    45, 20
+    45, 10
+);
+
+-- ============================================
+-- TEST AUTH USERS
+-- ============================================
+-- Note: Passwords use bcrypt via pgcrypto extension
+-- super@test.com / super
+-- admin@test.com / admin
+-- Plus regular mentor accounts
+
+INSERT INTO auth.users (
+    id,
+    instance_id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    confirmation_token,
+    recovery_token,
+    email_change,
+    email_change_token_new,
+    email_change_token_current,
+    phone_change,
+    phone_change_token,
+    reauthentication_token,
+    is_sso_user,
+    is_anonymous
+) VALUES
+-- Super Admin
+(
+    '11111111-1111-1111-1111-111111111111',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'super@test.com',
+    crypt('super', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}',
+    '{"full_name": "Super Admin"}',
+    now(),
+    now(),
+    '', '', '', '', '', '', '', '', false, false
+),
+-- Admin
+(
+    '22222222-2222-2222-2222-222222222222',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'admin@test.com',
+    crypt('admin', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}',
+    '{"full_name": "Test Admin"}',
+    now(),
+    now(),
+    '', '', '', '', '', '', '', '', false, false
+),
+-- Regular mentor users (some linked to mentors above)
+(
+    '33333333-3333-3333-3333-333333333333',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'mentor1@test.com',
+    crypt('mentor1', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}',
+    '{"full_name": "Sarah Chen"}',
+    now(),
+    now(),
+    '', '', '', '', '', '', '', '', false, false
 ),
 (
-    'cccccccc-cccc-cccc-cccc-cccccccccccc',
-    'Test Admin User', '테스트 관리자',
-    'Admin', '관리자',
-    'Platform Admin', '플랫폼 관리',
-    'USA', '미국',
-    'Test admin account for development.',
-    '개발용 테스트 관리자 계정.',
-    'test.admin@example.com',
-    ARRAY['English', 'Korean'],
-    '["admin", "test"]',
-    false, 102,
-    60, 0
+    '44444444-4444-4444-4444-444444444444',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'mentor2@test.com',
+    crypt('mentor2', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}',
+    '{"full_name": "Michael Park"}',
+    now(),
+    now(),
+    '', '', '', '', '', '', '', '', false, false
+),
+(
+    '55555555-5555-5555-5555-555555555555',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'pending1@test.com',
+    crypt('pending1', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}',
+    '{"full_name": "New Applicant One"}',
+    now(),
+    now(),
+    '', '', '', '', '', '', '', '', false, false
 );
+
+-- ============================================
+-- UPDATE PROFILES FOR AUTH USERS
+-- ============================================
+-- Note: Trigger auto-creates profiles with defaults, we UPDATE to set correct values
+
+-- Super Admin
+UPDATE public.profiles SET
+    role = 'super_admin',
+    is_approved = true,
+    policy_accepted_at = now()
+WHERE id = '11111111-1111-1111-1111-111111111111';
+
+-- Admin
+UPDATE public.profiles SET
+    role = 'admin',
+    is_approved = true,
+    policy_accepted_at = now()
+WHERE id = '22222222-2222-2222-2222-222222222222';
+
+-- Mentor - Sarah Chen (approved, linked to mentor)
+UPDATE public.profiles SET
+    is_approved = true,
+    mentor_id = 'aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa',
+    policy_accepted_at = now()
+WHERE id = '33333333-3333-3333-3333-333333333333';
+
+-- Mentor - Michael Park (approved, linked to mentor)
+UPDATE public.profiles SET
+    is_approved = true,
+    mentor_id = 'aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa',
+    policy_accepted_at = now()
+WHERE id = '44444444-4444-4444-4444-444444444444';
+
+-- Pending Mentor - Applicant One (not approved, linked to unapproved mentor)
+UPDATE public.profiles SET
+    is_approved = false,
+    mentor_id = 'bbbbbbbb-0001-0001-0001-bbbbbbbbbbbb',
+    policy_accepted_at = now()
+WHERE id = '55555555-5555-5555-5555-555555555555';
 
 -- ============================================
 -- SAMPLE REVIEWS
@@ -114,22 +359,29 @@ INSERT INTO public.reviews (review) VALUES
 ('Learned so much about frontend development best practices.'),
 ('Highly recommend for anyone looking to grow in tech. Super insightful!'),
 ('TK helped me prepare for my FAANG interview. Got the offer!'),
-('Jaedong gave practical advice on building community. 10/10 would recommend.');
+('Jaedong gave practical advice on building community. 10/10 would recommend.'),
+('Sarah is amazing! Her system design tips landed me a job at Google.'),
+('Michael''s leadership advice changed how I approach management.'),
+('The best investment in my career. Thank you donation mentoring!');
 
 -- ============================================
--- NOTE: User profiles are NOT seeded here
+-- TEST ACCOUNTS SUMMARY
 -- ============================================
--- Profiles are created automatically when users sign up via Supabase Auth.
--- The handle_new_user() trigger links profiles to mentors by matching email.
 --
--- To test locally:
--- 1. Run `supabase db reset` to apply migrations + seed
--- 2. Go to http://localhost:3000/login
--- 3. Sign up with Google (or email when implemented)
--- 4. Your profile will be auto-created and linked to mentor if email matches
+-- ADMIN ACCOUNTS:
+-- | Email           | Password | Role        |
+-- |-----------------|----------|-------------|
+-- | super@test.com  | super    | super_admin |
+-- | admin@test.com  | admin    | admin       |
 --
--- For test accounts (email/password auth):
--- After implementing email auth, you can sign up with:
--- - test.mentor@example.com (will link to approved test mentor)
--- - test.pending@example.com (will link to pending test mentor)
--- - test.admin@example.com (will link to admin test mentor)
+-- MENTOR ACCOUNTS:
+-- | Email            | Password | Status   | Linked Mentor  |
+-- |------------------|----------|----------|----------------|
+-- | mentor1@test.com | mentor1  | approved | Sarah Chen     |
+-- | mentor2@test.com | mentor2  | approved | Michael Park   |
+-- | pending1@test.com| pending1 | pending  | Applicant One  |
+--
+-- MENTORS (no account - just profiles):
+-- - 8 approved mentors (visible on homepage)
+-- - 2 unapproved mentors (in admin pending list)
+--

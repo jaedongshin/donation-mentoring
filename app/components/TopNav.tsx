@@ -4,14 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Moon, Sun, User, LogOut, Search, X, ChevronDown } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
+import { UserRole } from '@/hooks/useAuth';
 
-// User type for authenticated users (will be replaced with actual auth context later)
+// User type for authenticated users
 export interface AuthUser {
   id: string;
   email: string;
   displayName?: string;
   avatarUrl?: string;
-  role: 'mentor' | 'admin' | 'super_admin';
+  role: UserRole;
 }
 
 export type NavVariant = 'guest' | 'mentor' | 'admin';
@@ -116,14 +117,14 @@ export default function TopNav({
                   {t.dashboard}
                 </Link>
                 <Link
-                  href="/admin"
+                  href="/mentors"
                   className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
                 >
                   {t.mentorManagement}
                 </Link>
                 {user.role === 'super_admin' && (
                   <Link
-                    href="/admin/users"
+                    href="/permissions"
                     className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
                   >
                     {t.manageUsers}
