@@ -33,15 +33,14 @@ export async function POST(request: Request) {
     // Create a transporter
     // For production, these should be in .env.local
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // Sender email
-        pass: process.env.EMAIL_PASS, // Sender app password
-      },
+      host: process.env.EMAIL_HOST || 'localhost',
+      port: Number(process.env.EMAIL_PORT) || 25,
+      secure: false,
+      auth: undefined // No authentication required as per instruction
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER || 'noreply@donation-mentoring.com',
       to: adminEmails, // Send to all admins
       subject: `[Donation Mentoring] New Mentor Application: ${name_ko} (${name_en})`,
       text: `
@@ -57,12 +56,12 @@ export async function POST(request: Request) {
     };
 
     // Only attempt to send if credentials are present, otherwise log it
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    if (process.env.EMAIL_HOST) {
         await transporter.sendMail(mailOptions);
         return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
     } else {
-        console.log('Email credentials missing. Simulating email send:', mailOptions);
-        return NextResponse.json({ message: 'Email simulated (credentials missing)' }, { status: 200 });
+        console.log('Email host missing. Simulating email send:', mailOptions);
+        return NextResponse.json({ message: 'Email simulated (host missing)' }, { status: 200 });
     }
 
   } catch (error) {
