@@ -10,6 +10,7 @@ import MentorApplicationModal from '@/app/components/MentorApplicationModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from '@/utils/helpers';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User, Mail, Linkedin } from 'lucide-react';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
@@ -377,10 +378,12 @@ export default function Home() {
               {/* Big Picture */}
               <div className="relative w-full md:w-1/3 aspect-[4/3] md:aspect-square flex-shrink-0 overflow-hidden rounded-xl">
                 {todaysMentor.picture_url ? (
-                  <img 
+                  <Image 
                     src={todaysMentor.picture_url} 
                     alt={getMentorDisplay(todaysMentor, lang).name}
-                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    unoptimized={todaysMentor.picture_url.includes('supabase.co')}
                   />
                 ) : (
                   <div className={`w-full h-full ${theme.primaryBg} flex items-center justify-center text-white text-4xl font-bold`}>

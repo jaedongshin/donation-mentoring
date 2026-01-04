@@ -14,8 +14,8 @@ jest.mock('@supabase/supabase-js');
 
 // Mock Request object
 class MockRequest {
-    body: any;
-    constructor(body: any) {
+    body: unknown;
+    constructor(body: unknown) {
         this.body = body;
     }
     json() {
@@ -67,7 +67,7 @@ describe('POST /api/send-email', () => {
             company_ko: '테스트',
         });
 
-        const response = await POST(req as any);
+        const response = await POST(req as unknown as Request);
         const data = await response.json();
 
         expect(response.status).toBe(200);
@@ -89,7 +89,7 @@ describe('POST /api/send-email', () => {
             company_ko: '테스트',
         });
 
-        const response = await POST(req as any);
+        const response = await POST(req as unknown as Request);
         const data = await response.json();
 
         expect(response.status).toBe(200);
@@ -109,7 +109,7 @@ describe('POST /api/send-email', () => {
             company_ko: '테스트',
         });
 
-        const response = await POST(req as any);
+        const response = await POST(req as unknown as Request);
         
         expect(response.status).toBe(200);
         expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
