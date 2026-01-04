@@ -11,6 +11,7 @@ import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User, Mail, Linkedin } from 'lucide-react';
+import TopNav from '@/app/components/TopNav';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
 // Charcoal & Dusty Blue theme - locked in
