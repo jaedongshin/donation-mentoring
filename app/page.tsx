@@ -10,7 +10,7 @@ import MentorApplicationModal from '@/app/components/MentorApplicationModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from '@/utils/helpers';
 import Link from 'next/link';
-import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User, Mail, Linkedin } from 'lucide-react';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
 // Charcoal & Dusty Blue theme - locked in
@@ -418,10 +418,41 @@ export default function Home() {
                   ))}
                 </div>
                 
-                <div className="pt-2">
-                  <span className={`inline-flex items-center gap-2 ${dm.text} font-medium group-hover:${theme.accentText} transition-colors`}>
-                    {t.viewProfile} <ChevronDown className="-rotate-90" size={16} />
-                  </span>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2" onClick={(e) => e.stopPropagation()}>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (todaysMentor.calendly_url) window.open(todaysMentor.calendly_url, '_blank');
+                    }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white ${theme.accentBg} hover:opacity-90 transition-all shadow-sm hover:shadow`}
+                  >
+                    <Calendar size={16} />
+                    {t.bookSession}
+                  </button>
+
+                  {todaysMentor.email && (
+                    <a 
+                      href={`mailto:${todaysMentor.email}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${dm.text} ${dm.bgCardAlt} border ${dm.border} hover:bg-gray-100 dark:hover:bg-gray-700 transition-all shadow-sm hover:shadow`}
+                    >
+                      <Mail size={16} />
+                      Email
+                    </a>
+                  )}
+
+                  {todaysMentor.linkedin_url && (
+                    <a 
+                      href={todaysMentor.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${dm.text} ${dm.bgCardAlt} border ${dm.border} hover:bg-gray-100 dark:hover:bg-gray-700 transition-all shadow-sm hover:shadow`}
+                    >
+                      <Linkedin size={16} />
+                      LinkedIn
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
