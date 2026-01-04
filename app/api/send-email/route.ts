@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const body = await request.json();
     const { name_ko, name_en, email, position_ko, company_ko } = body;
@@ -30,20 +31,8 @@ export async function POST(request: Request) {
         adminEmails.push('mulli2@gmail.com');
     }
 
-    // Create a transporter
-    // For production, these should be in .env.local
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'localhost',
-      port: Number(process.env.EMAIL_PORT) || 25,
-      secure: false,
-      auth: undefined // No authentication required as per instruction
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER || 'noreply@donation-mentoring.com',
-      to: adminEmails, // Send to all admins
-      subject: `[Donation Mentoring] New Mentor Application: ${name_ko} (${name_en})`,
-      text: `
+    const emailSubject = `[Donation Mentoring] New Mentor Application: ${name_ko} (${name_en})`;
+    const emailContent = `
         New Mentor Application Received:
         
         Name: ${name_ko} / ${name_en}
@@ -52,16 +41,30 @@ export async function POST(request: Request) {
         Company: ${company_ko}
         
         Please check the admin panel to review and approve.
-      `,
-    };
+      `;
 
-    // Only attempt to send if credentials are present, otherwise log it
-    if (process.env.EMAIL_HOST) {
-        await transporter.sendMail(mailOptions);
-        return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
+    // Only attempt to send if API key is present, otherwise log it
+    if (process.env.RESEND_API_KEY) {
+        const { data, error } = await resend.emails.send({
+            from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+            to: adminEmails,
+            subject: emailSubject,
+            text: emailContent,
+        });
+
+        if (error) {
+            console.error('Error sending email with Resend:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ message: 'Email sent successfully', data }, { status: 200 });
     } else {
-        console.log('Email host missing. Simulating email send:', mailOptions);
-        return NextResponse.json({ message: 'Email simulated (host missing)' }, { status: 200 });
+        console.log('RESEND_API_KEY missing. Simulating email send:', {
+            to: adminEmails,
+            subject: emailSubject,
+            text: emailContent
+        });
+        return NextResponse.json({ message: 'Email simulated (API key missing)' }, { status: 200 });
     }
 
   } catch (error) {
