@@ -89,6 +89,7 @@ export const translations = {
       "Societal Contribution: Actively participate in philanthropy, thereby exerting a positive influence on society.",
       "Fostering Enhanced Accountability and Motivation: The structured mentorship process cultivates a strong sense of self-directed ownership and a sustained impetus for growth."
     ],
+    applicationSuccess: "Application submitted successfully! Please wait for admin approval.",
   },
   ko: {
     title: "기부 멘토링",
@@ -180,6 +181,7 @@ export const translations = {
       "사회 공헌 참여: 기부 활동에 참여함으로써 사회에 긍정적인 영향을 미치는 데 동참합니다.",
       "책임감 및 동기 부여 강화: 멘토링 과정을 통해 자기 주도적 책임감과 성장 동기를 강화할 수 있습니다."
     ],
+    applicationSuccess: "신청서가 성공적으로 제출되었습니다! 관리자의 승인을 기다려주세요.",
   }
 };
 

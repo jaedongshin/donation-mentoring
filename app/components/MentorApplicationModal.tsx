@@ -173,7 +173,7 @@ export default function MentorApplicationModal({ isOpen, onClose, lang, darkMode
         // We don't block success if email fails, but maybe log it
     }
 
-    alert('Application submitted successfully! Please wait for admin approval.');
+    alert(t.applicationSuccess);
     setIsSubmitting(false);
     onClose();
   };
