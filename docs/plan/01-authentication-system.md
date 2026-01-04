@@ -2,9 +2,10 @@
 
 ## Summary
 
-Add role-based authentication with Google OAuth for admins and mentors. Guests can browse and book without login.
+Role-based authentication with **Google OAuth + Email/Password** for admins and mentors. Guests can browse and book without login. All new users must accept the platform policy before using the application.
 
 **Priority**: High (prerequisite for Calendar Booking)
+**Status**: Implemented
 
 ---
 
@@ -27,7 +28,7 @@ Add role-based authentication with Google OAuth for admins and mentors. Guests c
 │  │   │   • View all bookings                                │
 │  │   │                                                      │
 │  │   └── 👤 Mentor (Authenticated)                          │
-│  │       │   • Register via Google OAuth                    │
+│  │       │   • Register via Google OAuth or Email           │
 │  │       │   • Wait for admin approval                      │
 │  │       │   • After approval: edit own profile only        │
 │  │       │   • Set availability, connect calendar           │
@@ -47,6 +48,7 @@ Add role-based authentication with Google OAuth for admins and mentors. Guests c
 - Mentors must register and wait for approval (no direct adding by anyone)
 - Search functionality limited to Admin/Super Admin only
 - Each role inherits all permissions from lower roles
+- **Policy acceptance required** for all users before using the platform
 
 ---
 
@@ -54,6 +56,7 @@ Add role-based authentication with Google OAuth for admins and mentors. Guests c
 
 - **Auth Provider**: Supabase Auth
 - **OAuth**: Google (via Supabase)
+- **Email/Password**: Supabase Auth (with email verification)
 - **Database**: Supabase PostgreSQL
 - **Framework**: Next.js 16 (App Router)
 
@@ -61,457 +64,392 @@ Add role-based authentication with Google OAuth for admins and mentors. Guests c
 
 ## Database Schema
 
-### New Table: `user_profiles`
+### Table: `profiles`
 
 ```sql
-CREATE TABLE user_profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL UNIQUE,
-  role TEXT NOT NULL CHECK (role IN ('mentor', 'admin', 'super_admin')),
-  mentor_id UUID REFERENCES mentors(id), -- NULL for admin/super_admin
-  display_name TEXT,
-  avatar_url TEXT,
-  is_approved BOOLEAN DEFAULT FALSE, -- For mentor approval workflow
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    email TEXT,
+    display_name TEXT,
+    avatar_url TEXT,
+    role TEXT DEFAULT 'mentor' CHECK (role IN ('mentor', 'admin', 'super_admin')),
+    is_approved BOOLEAN DEFAULT false,
+    mentor_id UUID REFERENCES public.mentors(id) ON DELETE SET NULL,
+    policy_accepted_at TIMESTAMPTZ,  -- NULL = not accepted
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Row Level Security
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+-- Row Level Security with SECURITY DEFINER functions to avoid recursion
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- Helper functions
+CREATE OR REPLACE FUNCTION public.get_user_role(user_id UUID)
+RETURNS TEXT
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT role FROM public.profiles WHERE id = user_id;
+$$;
+
+-- Policies
 CREATE POLICY "Users can view own profile"
-  ON user_profiles FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile"
-  ON user_profiles FOR UPDATE USING (auth.uid() = id);
+  ON public.profiles FOR SELECT
+  USING (auth.uid() = id);
 
 CREATE POLICY "Admins can view all profiles"
-  ON user_profiles FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
+  ON public.profiles FOR SELECT
+  USING (public.get_user_role(auth.uid()) IN ('admin', 'super_admin'));
 
-CREATE POLICY "Admins can update mentor approval"
-  ON user_profiles FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    )
-  );
-
-CREATE POLICY "Super admins can update roles"
-  ON user_profiles FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles
-      WHERE id = auth.uid() AND role = 'super_admin'
-    )
-  );
+CREATE POLICY "Users can update own profile"
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id);
 ```
 
-### Modify: `mentors` table
+### Trigger: Auto-create profile on signup
 
 ```sql
--- Link mentor to auth user
-ALTER TABLE mentors ADD COLUMN user_id UUID REFERENCES auth.users(id);
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    linked_mentor_id UUID;
+    user_role TEXT := 'mentor';
+    user_approved BOOLEAN := false;
+BEGIN
+    -- Try to find mentor by email
+    SELECT id INTO linked_mentor_id
+    FROM public.mentors
+    WHERE email = NEW.email
+    LIMIT 1;
 
--- RLS policies
-ALTER TABLE mentors ENABLE ROW LEVEL SECURITY;
+    -- If mentor found, check their status
+    IF linked_mentor_id IS NOT NULL THEN
+        SELECT is_active INTO user_approved
+        FROM public.mentors
+        WHERE id = linked_mentor_id;
+    END IF;
 
-CREATE POLICY "Admins have full access" ON mentors FOR ALL
-  USING (EXISTS (
-    SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-  ));
+    INSERT INTO public.profiles (id, email, display_name, avatar_url, role, is_approved, mentor_id)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name'),
+        NEW.raw_user_meta_data->>'avatar_url',
+        user_role,
+        COALESCE(user_approved, false),
+        linked_mentor_id
+    );
 
-CREATE POLICY "Mentors can update own record" ON mentors FOR UPDATE
-  USING (user_id = auth.uid());
+    RETURN NEW;
+END;
+$$;
 
-CREATE POLICY "Public can view active mentors" ON mentors FOR SELECT
-  USING (is_active = true);
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 ```
 
 ---
 
-## Super Admin Bootstrapping
-
-First super admin(s) are defined via environment variable:
-
-```env
-# .env.local
-SUPER_ADMIN_EMAILS=owner@example.com,admin@example.com
-```
-
-**Flow:**
-1. User logs in via Google OAuth
-2. System checks if email is in `SUPER_ADMIN_EMAILS`
-3. If match: auto-assign `super_admin` role
-4. If no match: create as `mentor` (pending approval)
-
-**Implementation:**
-```typescript
-// utils/auth.ts
-export async function handleOAuthCallback(user: User) {
-  const superAdminEmails = process.env.SUPER_ADMIN_EMAILS?.split(',') || [];
-
-  const role = superAdminEmails.includes(user.email)
-    ? 'super_admin'
-    : 'mentor';
-
-  const isApproved = role === 'super_admin'; // Super admins auto-approved
-
-  await createUserProfile({
-    id: user.id,
-    email: user.email,
-    role,
-    is_approved: isApproved,
-  });
-}
-```
-
----
-
-## UI Components
-
-### TopNav Component (Implemented)
-
-Role-based navigation with three variants:
-
-| Element | Guest | Mentor | Admin/Super Admin |
-|---------|-------|--------|-------------------|
-| Logo | ✅ | ✅ | ✅ (Admin title) |
-| Nav links (About, Mentors) | ✅ | ❌ | ❌ |
-| Search | ❌ | ❌ | ✅ |
-| Login button | ✅ | - | - |
-| Profile dropdown | - | ✅ | ✅ |
-| Language selector | ✅ | ✅ | ✅ |
-| Dark mode toggle | ✅ | ✅ | ✅ |
-
-**File:** `app/components/TopNav.tsx`
-
----
-
-## UI Wireframes
+## Auth Pages
 
 ### Login Page (`/login`)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│                    🎓 Donation Mentoring                    │
-│                                                             │
-│              ┌─────────────────────────────────┐            │
-│              │                                 │            │
-│              │   Sign in to manage your        │            │
-│              │   mentor profile                │            │
-│              │                                 │            │
-│              │   ┌─────────────────────────┐   │            │
-│              │   │  🔵 Continue with Google │   │            │
-│              │   └─────────────────────────┘   │            │
-│              │                                 │            │
-│              │   For mentors and admins only   │            │
-│              │                                 │            │
-│              └─────────────────────────────────┘            │
-│                                                             │
-│              Looking to book a session?                     │
-│              → Browse mentors (no login needed)             │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+- Google OAuth button
+- Email/Password form
+- "Don't have an account? Sign up" link
+- "Forgot password?" link
+- Guest browse link
 
-### Mentor Registration (`/register`)
+### Signup Page (`/signup`)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  🎓 Mentor Registration                          [Profile ▼]│
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Complete your mentor profile to get started.               │
-│  Your application will be reviewed by an admin.             │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │                                                         ││
-│  │  Name (KO)        [________________]                    ││
-│  │  Name (EN)        [________________]                    ││
-│  │                                                         ││
-│  │  Company (KO)     [________________]                    ││
-│  │  Company (EN)     [________________]                    ││
-│  │                                                         ││
-│  │  Position (KO)    [________________]                    ││
-│  │  Position (EN)    [________________]                    ││
-│  │                                                         ││
-│  │  Description (KO) [________________]                    ││
-│  │  Description (EN) [________________]                    ││
-│  │                                                         ││
-│  │  Photo            [Upload]                              ││
-│  │  LinkedIn URL     [________________]                    ││
-│  │  Calendar URL     [________________]                    ││
-│  │                                                         ││
-│  │  Languages        [x] Korean  [x] English               ││
-│  │  Tags             [________________]                    ││
-│  │                                                         ││
-│  │  Session Time     [____] minutes                        ││
-│  │  Session Price    [____] USD                            ││
-│  │                                                         ││
-│  │                              [Submit Application]       ││
-│  │                                                         ││
-│  └─────────────────────────────────────────────────────────┘│
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+- **Policy acceptance checkbox** (required to enable signup CTAs)
+- Google signup button (disabled until policy accepted)
+- Email signup form (disabled until policy accepted)
+  - Email, Password (min 8 chars), Confirm Password
+- "Already have an account? Login" link
 
-### Mentor Dashboard (`/dashboard`)
+### Forgot Password Page (`/forgot-password`)
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  🎓 Donation Mentoring                             [Profile ▼] [Logout]│
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─ Profile Status ────────────────────────────────────────────────────┐│
-│  │                                                                     ││
-│  │  ⏳ Pending Approval                                                ││
-│  │  Your application is being reviewed. You'll be notified by email.  ││
-│  │                                                                     ││
-│  │  OR                                                                 ││
-│  │                                                                     ││
-│  │  ✅ Approved - Your profile is live!                                ││
-│  │  [📝 Edit Profile]  [⏰ Set Availability]  [📅 Connect Calendar]    ││
-│  │                                                                     ││
-│  └─────────────────────────────────────────────────────────────────────┘│
-│                                                                         │
-│  ┌─ Upcoming Bookings ──────────────────────────────────────────────────┐│
-│  │                                                                     ││
-│  │  📅 Dec 30, 10:00 AM - John Doe (john@email.com)                   ││
-│  │     Topic: Career advice                                           ││
-│  │                                                                     ││
-│  │  📅 Jan 2, 2:00 PM - Jane Smith (jane@email.com)                   ││
-│  │     Topic: Resume review                                           ││
-│  │                                                                     ││
-│  └─────────────────────────────────────────────────────────────────────┘│
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+- Email input
+- Send reset link button
+- Success message after sending
 
-### Admin Dashboard (`/admin`)
+### Reset Password Page (`/reset-password`)
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  🛡️ Mentor Management          [🔍 Search]          [Profile ▼] [Logout]│
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─ Pending Applications (3) ───────────────────────────────────────────┐│
-│  │                                                                     ││
-│  │  Name              Email              Submitted     Actions         ││
-│  │  ─────────────────────────────────────────────────────────         ││
-│  │  김새멘토          kim@email.com      2 hours ago   [✅] [❌]       ││
-│  │  Park Mentor      park@email.com     1 day ago     [✅] [❌]       ││
-│  │  Lee Mentor       lee@email.com      3 days ago    [✅] [❌]       ││
-│  │                                                                     ││
-│  └─────────────────────────────────────────────────────────────────────┘│
-│                                                                         │
-│  ┌─ Active Mentors (35) ────────────────────────────────────────────────┐│
-│  │                                                                     ││
-│  │  Name              Email              Status    Actions            ││
-│  │  ─────────────────────────────────────────────────────────         ││
-│  │  기존멘토          existing@email.com Active    [Edit] [Toggle]   ││
-│  │  ...                                                               ││
-│  │                                                                     ││
-│  └─────────────────────────────────────────────────────────────────────┘│
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+- Validates PASSWORD_RECOVERY session from Supabase
+- New password + Confirm password form
+- Invalid/expired link error state
+- Redirects to login on success
 
-### Super Admin: User Management (`/admin/users`)
+### Policy Acceptance Modal
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  👑 User Management             [🔍 Search]          [Profile ▼] [Logout]│
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─ All Users ──────────────────────────────────────────────────────────┐│
-│  │                                                                     ││
-│  │  Email              Role          Status      Actions               ││
-│  │  ─────────────────────────────────────────────────────────         ││
-│  │  owner@site.com     Super Admin   -           [Cannot modify]      ││
-│  │  admin1@email.com   Admin         Approved    [▼ Change Role]      ││
-│  │  mentor1@email.com  Mentor        Approved    [▼ Change Role]      ││
-│  │  mentor2@email.com  Mentor        Pending     [▼ Change Role]      ││
-│  │                                                                     ││
-│  └─────────────────────────────────────────────────────────────────────┘│
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+For existing users who haven't accepted policy:
+- Modal displayed on dashboard
+- Checkbox + Accept button
+- Cannot dismiss without accepting
 
 ---
 
 ## Auth Flows
 
-### Mentor Registration Flow
+### Email Signup Flow
 
 ```
-User clicks Login → Google OAuth → Email not in SUPER_ADMIN_EMAILS
-                                          │
-                                          ▼
-                                   Create user_profile
-                                   (role='mentor', is_approved=false)
-                                          │
-                                          ▼
-                                   Redirect to /register
-                                   (Complete profile form)
-                                          │
-                                          ▼
-                                   Submit application
-                                   (Create mentor record, linked to user)
-                                          │
-                                          ▼
-                                   Redirect to /dashboard
-                                   (Shows "Pending Approval" status)
-                                          │
-                                          ▼
-                               Admin approves application
-                                          │
-                                          ▼
-                               is_approved = true
-                               mentor.is_active = true
-                                          │
-                                          ▼
-                               Mentor profile visible to guests
+User visits /signup → Checks policy checkbox → Clicks "Sign up with email"
+                                                        │
+                                                        ▼
+                                             Form expands: email, password, confirm
+                                                        │
+                                                        ▼
+                                             Submit → signUpWithEmail()
+                                                        │
+                                                        ▼
+                                             Supabase sends verification email
+                                                        │
+                                                        ▼
+                                             User clicks email link
+                                                        │
+                                                        ▼
+                                             Profile created via trigger
+                                                        │
+                                                        ▼
+                                             Redirect to /dashboard
+                                                        │
+                                                        ▼
+                                             Policy modal shown
+                                                        │
+                                                        ▼
+                                             User accepts → policy_accepted_at set
 ```
 
-### Super Admin Bootstrap Flow
+### Google OAuth Flow (Signup)
 
 ```
-User logs in → Google OAuth → Email in SUPER_ADMIN_EMAILS
-                                    │
-                                    ▼
-                             Create user_profile
-                             (role='super_admin', is_approved=true)
-                                    │
-                                    ▼
-                             Redirect to /admin
+User visits /signup → Checks policy checkbox → Store in sessionStorage
+                                                        │
+                                                        ▼
+                                             Click Google button → OAuth redirect
+                                                        │
+                                                        ▼
+                                             Return to /dashboard
+                                                        │
+                                                        ▼
+                                             Check sessionStorage, call acceptPolicy()
+                                                        │
+                                                        ▼
+                                             policy_accepted_at set
+```
+
+### Password Reset Flow
+
+```
+User clicks "Forgot password?" on /login → Goes to /forgot-password
+                                                        │
+                                                        ▼
+                                             Enters email → resetPassword()
+                                                        │
+                                                        ▼
+                                             Checks email, clicks link
+                                                        │
+                                                        ▼
+                                             Redirected to /reset-password
+                                                        │
+                                                        ▼
+                                             Enters new password → updatePassword()
+                                                        │
+                                                        ▼
+                                             Redirected to /login
+```
+
+### Existing User Policy Flow
+
+```
+Existing user logs in → Dashboard loaded → policyAccepted = false
+                                                        │
+                                                        ▼
+                                             PolicyAcceptanceModal shown
+                                                        │
+                                                        ▼
+                                             User checks box, clicks accept
+                                                        │
+                                                        ▼
+                                             acceptPolicy() → policy_accepted_at set
+                                                        │
+                                                        ▼
+                                             Modal closes, dashboard accessible
 ```
 
 ---
 
-## Files to Create
+## Files Structure
 
 ```
 app/
 ├── login/
-│   └── page.tsx                # Login page with Google OAuth
-├── register/
-│   └── page.tsx                # Mentor registration form
+│   └── page.tsx                # ✅ Login with Google + Email
+├── signup/
+│   └── page.tsx                # ✅ Signup with policy checkbox
+├── forgot-password/
+│   └── page.tsx                # ✅ Request password reset
+├── reset-password/
+│   └── page.tsx                # ✅ Set new password
 ├── dashboard/
-│   └── page.tsx                # Mentor dashboard
+│   └── page.tsx                # ✅ Mentor dashboard with PolicyAcceptanceModal
 ├── admin/
-│   ├── page.tsx                # Admin dashboard (updated)
+│   ├── page.tsx                # Admin dashboard
 │   └── users/
 │       └── page.tsx            # Super Admin: user management
-├── api/
-│   └── auth/
-│       └── callback/
-│           └── route.ts        # OAuth callback handler
+├── components/
+│   ├── TopNav.tsx              # ✅ Role-based navigation
+│   ├── PolicyAcceptanceModal.tsx # ✅ Policy acceptance modal
+│   └── ProfileForm.tsx         # Profile edit form
 
-components/
-└── TopNav.tsx                  # ✅ Created (role-based nav)
+hooks/
+└── useAuth.ts                  # ✅ Auth hook with all methods
 
 utils/
-├── auth.ts                     # Auth helpers (getUser, requireAuth)
-└── supabase.ts                 # Update with auth client
+├── supabase.ts                 # Supabase client
+└── i18n.ts                     # ✅ Translations including auth keys
 
-middleware.ts                   # Route protection by role
-types/auth.ts                   # TypeScript types
-```
-
-## Files Modified
-
-```
-app/
-├── page.tsx                    # ✅ Updated (uses TopNav, removed Add Mentor CTA)
-└── admin/page.tsx              # ✅ Updated (uses TopNav with search)
+supabase/
+├── migrations/
+│   ├── 20260105000001_baseline_schema.sql  # ✅ Base tables
+│   └── 20260105000002_auth_profiles.sql    # ✅ Profiles + auth
+└── seed.sql                    # ✅ Test data
 ```
 
 ---
 
-## Implementation Steps
+## useAuth Hook API
 
-### Phase 1: Supabase Auth Setup
-- [ ] Enable Google OAuth in Supabase dashboard
-- [ ] Configure Google Cloud Console OAuth credentials
-- [ ] Set redirect URLs
-- [ ] Add `SUPER_ADMIN_EMAILS` to environment variables
+```typescript
+interface UseAuthReturn {
+  // State
+  user: AppUser | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
 
-### Phase 2: Database
-- [ ] Create `user_profiles` table
-- [ ] Add `user_id` column to `mentors` table
-- [ ] Set up RLS policies
+  // Role checks
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isApproved: boolean;
 
-### Phase 3: Auth Infrastructure
-- [ ] Create `utils/auth.ts` with helpers
-- [ ] Create `middleware.ts` for route protection
-- [ ] Create OAuth callback handler
-- [ ] Implement super admin auto-assignment
+  // Policy
+  policyAccepted: boolean;
+  acceptPolicy: () => Promise<void>;
 
-### Phase 4: Login & Registration
-- [ ] Create `/login` page
-- [ ] Create `/register` page (mentor application form)
-- [ ] Handle OAuth callback with role assignment
-
-### Phase 5: Dashboards
-- [ ] Create `/dashboard` (mentor dashboard)
-- [ ] Update `/admin` (add pending applications section)
-- [ ] Create `/admin/users` (super admin user management)
-
-### Phase 6: Approval Workflow
-- [ ] Add approve/reject buttons in admin
-- [ ] Send notification emails on approval
-- [ ] Auto-activate mentor profile on approval
+  // Auth methods
+  loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
+```
 
 ---
 
-## Environment Variables
+## Translation Keys
 
-```env
-# Supabase (existing)
-NEXT_PUBLIC_SUPABASE_URL=your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+Auth-related keys in `utils/i18n.ts`:
 
-# Super Admin Bootstrap
-SUPER_ADMIN_EMAILS=owner@example.com,admin@example.com
-```
+| Key | Korean | English |
+|-----|--------|---------|
+| `signUp` | 회원가입 | Sign Up |
+| `signUpSubtitle` | 계정을 만들어 시작하세요 | Get started with your account |
+| `alreadyHaveAccount` | 이미 계정이 있으신가요? | Already have an account? |
+| `dontHaveAccount` | 계정이 없으신가요? | Don't have an account? |
+| `signUpWithGoogle` | Google로 회원가입 | Sign up with Google |
+| `signUpWithEmail` | 이메일로 회원가입 | Sign up with email |
+| `createAccount` | 계정 만들기 | Create Account |
+| `email` | 이메일 | Email |
+| `password` | 비밀번호 | Password |
+| `confirmPassword` | 비밀번호 확인 | Confirm Password |
+| `logIn` | 로그인 | Log In |
+| `loginWithGoogle` | Google로 로그인 | Sign in with Google |
+| `forgotPassword` | 비밀번호를 잊으셨나요? | Forgot password? |
+| `forgotPasswordTitle` | 비밀번호 재설정 | Reset Your Password |
+| `forgotPasswordSubtitle` | 가입 시 사용한 이메일을 입력하세요 | Enter the email you used to sign up |
+| `sendResetLink` | 재설정 링크 보내기 | Send Reset Link |
+| `resetLinkSent` | 이메일을 확인해주세요. 재설정 링크를 보냈습니다. | Check your email. We sent you a reset link. |
+| `resetPassword` | 비밀번호 재설정 | Reset Password |
+| `resetPasswordTitle` | 새 비밀번호 설정 | Set New Password |
+| `resetPasswordSubtitle` | 새 비밀번호를 입력하세요 | Enter your new password |
+| `newPassword` | 새 비밀번호 | New Password |
+| `passwordResetSuccess` | 비밀번호가 변경되었습니다. 로그인 페이지로 이동합니다. | Your password has been changed. Redirecting to login. |
+| `backToLogin` | 로그인으로 돌아가기 | Back to Login |
+| `acceptPolicy` | Donation Mentoring의 이용약관에 동의합니다 | I accept Donation Mentoring's terms and policy |
+| `policyRequired` | 계속하려면 이용약관에 동의해주세요 | Please accept the terms to continue |
+| `policyAcceptanceRequired` | 이용약관 동의 필요 | Policy Acceptance Required |
+| `policyAcceptanceMessage` | 서비스를 이용하시려면 이용약관에 동의해주세요. | Please accept our terms and policy to continue using the service. |
+| `acceptAndContinue` | 동의하고 계속하기 | Accept and Continue |
+| `invalidCredentials` | 이메일 또는 비밀번호가 올바르지 않습니다. | Invalid email or password. |
+| `passwordMismatch` | 비밀번호가 일치하지 않습니다. | Passwords do not match. |
+| `passwordTooShort` | 비밀번호는 최소 8자 이상이어야 합니다. | Password must be at least 8 characters. |
+| `emailAlreadyExists` | 이미 가입된 이메일입니다. | This email is already registered. |
+| `signUpSuccess` | 가입이 완료되었습니다! 이메일을 확인하여 계정을 인증해주세요. | Sign up complete! Please check your email to verify your account. |
+| `or` | 또는 | or |
+
+---
+
+## Supabase Configuration
+
+### Auth Settings (Dashboard)
+
+1. **Enable Email Provider**
+   - Email confirmations: ON
+   - Double confirm email changes: ON
+
+2. **Enable Google Provider**
+   - Configure Google Cloud OAuth credentials
+   - Set authorized redirect URIs
+
+3. **URL Configuration**
+   - Site URL: `http://localhost:3000` (dev) / production URL
+   - Redirect URLs:
+     - `http://localhost:3000/dashboard`
+     - `http://localhost:3000/reset-password`
+     - Production equivalents
 
 ---
 
 ## Security Checklist
 
-- [ ] Google OAuth only (no custom passwords)
-- [ ] RLS policies on all tables
-- [ ] Middleware protects routes by role
-- [ ] Super admin bootstrap via secure env var
-- [ ] Email verification implicit via Google OAuth
+- [x] Google OAuth supported
+- [x] Email/Password with verification
+- [x] RLS policies with SECURITY DEFINER to avoid recursion
+- [x] Password minimum 8 characters
+- [x] Policy acceptance tracking
+- [x] Session-based auth state
+- [ ] Rate limiting on auth endpoints (Supabase default)
 - [ ] HTTPS only (Vercel default)
-- [ ] Rate limiting on auth endpoints
 
 ---
 
-## Dependencies
+## Seed Data (Local Development)
 
-**Requires**: Nothing (this is the foundation)
+```sql
+-- Real mentors (for testing with actual accounts)
+INSERT INTO public.mentors (name_en, name_ko, email, ...) VALUES
+  ('TK Kim', 'TK 김', 'tk.hfes@gmail.com', ...),
+  ('Jaedong Shin', '신재동', 'mulli2@gmail.com', ...);
 
-**Required by**: Calendar Booking Feature
-
----
-
-## Migration Path
-
-For existing mentors without user accounts:
-1. Keep existing mentor records as-is
-2. Admin can "invite" existing mentor to claim profile
-3. Invited mentor logs in, email matched, profile linked
-4. Or admin can continue managing unclaimed profiles
+-- Test accounts
+INSERT INTO public.mentors (name_en, name_ko, email, ...) VALUES
+  ('Test Mentor', '테스트 멘토', 'test.mentor@example.com', ...),      -- approved
+  ('Pending Mentor', '대기 멘토', 'test.pending@example.com', ...),    -- not approved
+  ('Test Admin', '테스트 관리자', 'test.admin@example.com', ...);      -- admin
+```
 
 ---
 
 ## Labels
 
-`enhancement` `security` `high-priority` `help-wanted`
+`enhancement` `security` `high-priority` `completed`

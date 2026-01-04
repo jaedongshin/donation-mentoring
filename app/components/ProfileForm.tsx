@@ -19,27 +19,36 @@ export interface ProfileFormData {
   location_ko: string;
   linkedin_url: string;
   calendly_url: string;
+  email: string;
   languages: string[];
+  session_time_minutes: number | null;
+  session_price_usd: number | null;
+  tags: string[];
+  picture_url: string;
 }
 
 interface ProfileFormProps {
   formData: ProfileFormData;
   onChange: (data: ProfileFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onImageUpload?: (file: File) => Promise<string | null>;
   darkMode: boolean;
   lang: Language;
   formId?: string;
   showSubmitButton?: boolean;
+  isUploading?: boolean;
 }
 
 export default function ProfileForm({
   formData,
   onChange,
   onSubmit,
+  onImageUpload,
   darkMode,
   lang,
   formId = 'profile-form',
   showSubmitButton = false,
+  isUploading = false,
 }: ProfileFormProps) {
   const t = translations[lang];
   const dm = {
@@ -56,6 +65,21 @@ export default function ProfileForm({
     } else {
       onChange({ ...formData, languages: formData.languages.filter(l => l !== language) });
     }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImageUpload) {
+      const url = await onImageUpload(file);
+      if (url) {
+        onChange({ ...formData, picture_url: url });
+      }
+    }
+  };
+
+  const handleTagsChange = (value: string) => {
+    const tags = value.split(',').map(tag => tag.trim()).filter(Boolean);
+    onChange({ ...formData, tags });
   };
 
   return (
@@ -219,27 +243,104 @@ export default function ProfileForm({
         </div>
       </div>
 
-      {/* Languages */}
+      {/* Email and Languages row */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={getLabelClass(darkMode)}>Email</label>
+          <input
+            type="email"
+            className={getInputClass(darkMode)}
+            value={formData.email}
+            onChange={e => updateField('email', e.target.value)}
+            placeholder="your@email.com"
+          />
+        </div>
+        <div>
+          <label className={getLabelClass(darkMode)}>{t.languages}</label>
+          <div className="flex gap-4 pt-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.languages.includes('Korean')}
+                onChange={(e) => toggleLanguage('Korean', e.target.checked)}
+                className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
+              />
+              <span className={`text-sm ${dm.textMuted}`}>Korean</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.languages.includes('English')}
+                onChange={(e) => toggleLanguage('English', e.target.checked)}
+                className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
+              />
+              <span className={`text-sm ${dm.textMuted}`}>English</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Session Time and Price */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={getLabelClass(darkMode)}>{t.sessionTime}</label>
+          <input
+            type="number"
+            className={getInputClass(darkMode)}
+            value={formData.session_time_minutes ?? ''}
+            onChange={e => onChange({ ...formData, session_time_minutes: e.target.value ? parseInt(e.target.value) : null })}
+            placeholder="30"
+          />
+        </div>
+        <div>
+          <label className={getLabelClass(darkMode)}>{t.sessionPrice}</label>
+          <input
+            type="number"
+            step="0.01"
+            className={getInputClass(darkMode)}
+            value={formData.session_price_usd ?? ''}
+            onChange={e => onChange({ ...formData, session_price_usd: e.target.value ? parseFloat(e.target.value) : null })}
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      {/* Tags */}
       <div>
-        <label className={getLabelClass(darkMode)}>{t.languages}</label>
-        <div className="flex gap-4 pt-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.languages.includes('Korean')}
-              onChange={(e) => toggleLanguage('Korean', e.target.checked)}
-              className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
+        <label className={getLabelClass(darkMode)}>{t.tags}</label>
+        <input
+          type="text"
+          className={getInputClass(darkMode)}
+          value={formData.tags.join(', ')}
+          onChange={e => handleTagsChange(e.target.value)}
+          placeholder="Frontend, UX, AI, ..."
+        />
+      </div>
+
+      {/* Photo */}
+      <div>
+        <label className={getLabelClass(darkMode)}>{t.photo}</label>
+        <div className="flex items-center gap-4 pt-2">
+          {formData.picture_url && (
+            <img
+              src={formData.picture_url}
+              alt="Profile"
+              className="w-16 h-16 rounded-lg object-cover"
             />
-            <span className={`text-sm ${dm.textMuted}`}>Korean</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          )}
+          <label className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
+            darkMode
+              ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+          } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {isUploading ? (lang === 'ko' ? '업로드 중...' : 'Uploading...') : t.upload}
             <input
-              type="checkbox"
-              checked={formData.languages.includes('English')}
-              onChange={(e) => toggleLanguage('English', e.target.checked)}
-              className={`h-4 w-4 rounded ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} text-sky-600 focus:ring-sky-500`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+              disabled={isUploading}
             />
-            <span className={`text-sm ${dm.textMuted}`}>English</span>
           </label>
         </div>
       </div>

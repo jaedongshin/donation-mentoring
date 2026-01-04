@@ -3,54 +3,27 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { translations, Language } from '@/utils/i18n';
-import { FlaskConical, Users, Shield, ShieldCheck, User, ChevronDown } from 'lucide-react';
+import { Users, Shield, ShieldCheck, User, ChevronDown } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
-import { useAuth } from '@/hooks/useAuth';
-import { UserRole } from '@/utils/mockAuth';
+import { useAuth, UserRole } from '@/hooks/useAuth';
+import { supabase } from '@/utils/supabase';
 
-// Mock users data for development
-const MOCK_USER_LIST = [
-  {
-    id: 'mock-user-1',
-    email: 'mentor1@example.com',
-    displayName: 'Kim Mentor',
-    role: 'mentor' as UserRole,
-    isApproved: true,
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 'mock-user-2',
-    email: 'mentor2@example.com',
-    displayName: 'Lee Mentor',
-    role: 'mentor' as UserRole,
-    isApproved: false,
-    createdAt: '2024-02-20',
-  },
-  {
-    id: 'mock-user-3',
-    email: 'admin@example.com',
-    displayName: 'Park Admin',
-    role: 'admin' as UserRole,
-    isApproved: true,
-    createdAt: '2024-01-01',
-  },
-  {
-    id: 'mock-super-admin',
-    email: 'superadmin@example.com',
-    displayName: 'Super Admin',
-    role: 'super_admin' as UserRole,
-    isApproved: true,
-    createdAt: '2023-12-01',
-  },
-];
-
-type MockUserData = typeof MOCK_USER_LIST[number];
+interface ProfileUser {
+  id: string;
+  email: string;
+  display_name: string;
+  role: UserRole;
+  is_approved: boolean;
+  created_at: string;
+  mentor_id: string | null;
+}
 
 export default function UserManagementPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, isAuthenticated, isSuperAdmin, isMockAuth, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, isSuperAdmin, logout } = useAuth();
 
-  const [users, setUsers] = useState<MockUserData[]>(MOCK_USER_LIST);
+  const [users, setUsers] = useState<ProfileUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<Language>('ko');
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -79,6 +52,29 @@ export default function UserManagementPage() {
     rowHover: darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-sky-50',
   };
 
+  // Fetch users from profiles table
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!isSuperAdmin) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching users:', error);
+      } else {
+        setUsers(data || []);
+      }
+      setLoading(false);
+    };
+
+    if (!authLoading && isSuperAdmin) {
+      fetchUsers();
+    }
+  }, [authLoading, isSuperAdmin]);
+
   // Redirect if not authenticated or not super admin
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isSuperAdmin)) {
@@ -98,11 +94,37 @@ export default function UserManagementPage() {
     router.push('/');
   };
 
-  const handleRoleChange = (userId: string, newRole: UserRole) => {
-    setUsers(prev =>
-      prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
-    );
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: newRole })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error updating role:', error);
+      alert(lang === 'ko' ? '역할 변경에 실패했습니다.' : 'Failed to update role.');
+    } else {
+      setUsers(prev =>
+        prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
+      );
+    }
     setOpenDropdownId(null);
+  };
+
+  const handleApprovalToggle = async (userId: string, currentApproval: boolean) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_approved: !currentApproval })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error updating approval:', error);
+      alert(lang === 'ko' ? '승인 상태 변경에 실패했습니다.' : 'Failed to update approval status.');
+    } else {
+      setUsers(prev =>
+        prev.map(u => u.id === userId ? { ...u, is_approved: !currentApproval } : u)
+      );
+    }
   };
 
   const getRoleBadge = (role: UserRole) => {
@@ -133,7 +155,7 @@ export default function UserManagementPage() {
   };
 
   // Show loading while checking auth
-  if (authLoading || !isAuthenticated || !isSuperAdmin) {
+  if (authLoading || loading || !isAuthenticated || !isSuperAdmin) {
     return (
       <div className={`min-h-screen ${dm.bg} flex items-center justify-center`}>
         <p className={dm.textMuted}>{t.loading}</p>
@@ -159,14 +181,6 @@ export default function UserManagementPage() {
         } : undefined}
         onLogout={handleLogout}
       />
-
-      {/* Dev Mode Banner */}
-      {isMockAuth && (
-        <div className="bg-amber-500 text-amber-950 text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-          <FlaskConical size={16} />
-          {t.devModeBanner}
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,63 +215,90 @@ export default function UserManagementPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className={`font-medium ${dm.text}`}>
-                          {u.displayName}
+                          {u.display_name || u.email}
                         </span>
                         {getRoleBadge(u.role)}
                         {isCurrentUser && (
                           <span className={`text-xs ${dm.textSubtle}`}>(you)</span>
                         )}
                       </div>
-                      <div className={`text-sm ${dm.textMuted} truncate`}>
+                      <p className={`text-sm ${dm.textMuted} truncate`}>
                         {u.email}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className={`text-xs ${dm.textSubtle}`}>
+                          {new Date(u.created_at).toLocaleDateString()}
+                        </span>
+                        {u.mentor_id && (
+                          <span className={`text-xs ${darkMode ? 'text-sky-400' : 'text-sky-600'}`}>
+                            Linked to mentor
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Role Dropdown */}
-                    <div className="relative">
-                      {canModify ? (
-                        <>
+                    {/* Actions */}
+                    <div className="flex items-center gap-3">
+                      {/* Approval Toggle */}
+                      {canModify && (
+                        <button
+                          onClick={() => handleApprovalToggle(u.id, u.is_approved)}
+                          className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                            u.is_approved
+                              ? darkMode
+                                ? 'bg-green-900/40 text-green-300 hover:bg-green-900/60'
+                                : 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : darkMode
+                                ? 'bg-yellow-900/40 text-yellow-300 hover:bg-yellow-900/60'
+                                : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                          }`}
+                        >
+                          {u.is_approved ? (lang === 'ko' ? '승인됨' : 'Approved') : (lang === 'ko' ? '대기중' : 'Pending')}
+                        </button>
+                      )}
+
+                      {/* Role Dropdown */}
+                      {canModify && (
+                        <div className="relative">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setOpenDropdownId(openDropdownId === u.id ? null : u.id);
                             }}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                            className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
                               darkMode
-                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                           >
                             {t.changeRole}
-                            <ChevronDown size={14} />
+                            <ChevronDown size={12} />
                           </button>
 
                           {openDropdownId === u.id && (
                             <div
-                              className={`absolute right-0 mt-1 w-40 rounded-lg shadow-lg ${dm.bgCard} border ${dm.border} z-10`}
+                              className={`absolute right-0 mt-1 w-36 rounded-lg shadow-lg ${dm.bgCard} border ${dm.border} z-10`}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="py-1">
-                                <button
-                                  onClick={() => handleRoleChange(u.id, 'mentor')}
-                                  className={`w-full text-left px-4 py-2 text-sm ${dm.text} ${dm.rowHover} flex items-center gap-2`}
-                                >
-                                  <User size={14} className="text-green-500" />
-                                  {t.roleMentor}
-                                </button>
-                                <button
-                                  onClick={() => handleRoleChange(u.id, 'admin')}
-                                  className={`w-full text-left px-4 py-2 text-sm ${dm.text} ${dm.rowHover} flex items-center gap-2`}
-                                >
-                                  <Shield size={14} className="text-blue-500" />
-                                  {t.roleAdmin}
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => handleRoleChange(u.id, 'mentor')}
+                                className={`w-full px-3 py-2 text-left text-sm ${dm.text} ${dm.rowHover} rounded-t-lg`}
+                              >
+                                {t.roleMentor}
+                              </button>
+                              <button
+                                onClick={() => handleRoleChange(u.id, 'admin')}
+                                className={`w-full px-3 py-2 text-left text-sm ${dm.text} ${dm.rowHover} rounded-b-lg`}
+                              >
+                                {t.roleAdmin}
+                              </button>
                             </div>
                           )}
-                        </>
-                      ) : (
-                        <span className={`text-sm ${dm.textSubtle} italic`}>
+                        </div>
+                      )}
+
+                      {!canModify && (
+                        <span className={`text-xs ${dm.textSubtle}`}>
                           {t.cannotModify}
                         </span>
                       )}

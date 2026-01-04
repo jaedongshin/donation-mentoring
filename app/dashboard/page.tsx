@@ -1,19 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { translations, Language } from '@/utils/i18n';
-import { Clock, Pencil, Calendar, CalendarDays, FlaskConical, X, BarChart3 } from 'lucide-react';
+import { Clock, Pencil, Calendar, CalendarDays, X, BarChart3, Link2 } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import ProfileForm, { ProfileFormData } from '@/app/components/ProfileForm';
+import PolicyAcceptanceModal from '@/app/components/PolicyAcceptanceModal';
+import SearchableSelect from '@/app/components/SearchableSelect';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/utils/supabase';
 
 // Bento card type
 type BentoCardId = 'profile' | 'availability' | 'calendar' | 'stats' | 'bookings';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated, isMockAuth, logout, isApproved } = useAuth();
+  const { user, isLoading, isAuthenticated, logout, isApproved, policyAccepted, acceptPolicy, needsMentorLink, linkMentorProfile } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -38,25 +41,274 @@ export default function DashboardPage() {
     location_ko: '',
     linkedin_url: '',
     calendly_url: '',
+    email: '',
     languages: [],
+    session_time_minutes: null,
+    session_price_usd: null,
+    tags: [],
+    picture_url: '',
   });
+  const [mentorId, setMentorId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Initialize profile form with user data
+  // Mentor linking state
+  const [unlinkedMentors, setUnlinkedMentors] = useState<Array<{ id: string; name_en: string; name_ko: string; email: string }>>([]);
+  const [selectedMentorId, setSelectedMentorId] = useState<string>('');  // 'new' = register as new mentor
+  const [isSubmittingLink, setIsSubmittingLink] = useState(false);
+  const [linkSubmitSuccess, setLinkSubmitSuccess] = useState(false);
+  const [selectedMentorPreview, setSelectedMentorPreview] = useState<ProfileFormData | null>(null);
+
+  // Toast/feedback state (replaces alert())
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Auto-dismiss toast after 3 seconds
   useEffect(() => {
-    if (user) {
-      setProfileForm(prev => ({
-        ...prev,
-        name_en: user.displayName || '',
-        name_ko: user.displayName || '',
-      }));
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
     }
+  }, [toast]);
+
+  // Fetch mentor data linked to user profile
+  useEffect(() => {
+    const fetchMentorData = async () => {
+      if (!user) return;
+
+      // Get user's profile with linked mentor_id
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('mentor_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.mentor_id) {
+        setMentorId(profile.mentor_id);
+
+        // Fetch mentor data
+        const { data: mentor } = await supabase
+          .from('mentors')
+          .select('*')
+          .eq('id', profile.mentor_id)
+          .single();
+
+        if (mentor) {
+          setProfileForm({
+            name_en: mentor.name_en || '',
+            name_ko: mentor.name_ko || '',
+            description_en: mentor.description_en || '',
+            description_ko: mentor.description_ko || '',
+            position_en: mentor.position_en || '',
+            position_ko: mentor.position_ko || '',
+            company_en: mentor.company_en || '',
+            company_ko: mentor.company_ko || '',
+            location_en: mentor.location_en || '',
+            location_ko: mentor.location_ko || '',
+            linkedin_url: mentor.linkedin_url || '',
+            calendly_url: mentor.calendly_url || '',
+            email: mentor.email || '',
+            languages: mentor.languages || [],
+            session_time_minutes: mentor.session_time_minutes,
+            session_price_usd: mentor.session_price_usd,
+            tags: Array.isArray(mentor.tags) ? mentor.tags : [],
+            picture_url: mentor.picture_url || '',
+          });
+        }
+      } else {
+        // No linked mentor - only pre-fill email, not name
+        // (displayName might be email if user signed up with email/password)
+        const isEmailAsName = user.displayName?.includes('@');
+        setProfileForm(prev => ({
+          ...prev,
+          name_en: isEmailAsName ? '' : (user.displayName || ''),
+          name_ko: isEmailAsName ? '' : (user.displayName || ''),
+          email: user.email || '',
+        }));
+      }
+    };
+
+    fetchMentorData();
   }, [user]);
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  // Fetch unlinked mentors for linking dropdown
+  useEffect(() => {
+    const fetchUnlinkedMentors = async () => {
+      if (!needsMentorLink || !user) return;
+
+      // Get all mentor IDs that are already linked to a profile
+      const { data: linkedProfiles } = await supabase
+        .from('profiles')
+        .select('mentor_id')
+        .not('mentor_id', 'is', null);
+
+      const linkedMentorIds = linkedProfiles?.map(p => p.mentor_id) || [];
+
+      // Get all mentors NOT in the linked list
+      let query = supabase
+        .from('mentors')
+        .select('id, name_en, name_ko, email')
+        .order('name_ko', { ascending: true });
+
+      if (linkedMentorIds.length > 0) {
+        query = query.not('id', 'in', `(${linkedMentorIds.join(',')})`);
+      }
+
+      const { data: mentors } = await query;
+      setUnlinkedMentors(mentors || []);
+
+      // Pre-select if user's email matches a mentor
+      if (mentors && user.email) {
+        const matchingMentor = mentors.find(m =>
+          m.email?.toLowerCase() === user.email.toLowerCase()
+        );
+        if (matchingMentor) {
+          setSelectedMentorId(matchingMentor.id);
+        }
+      }
+    };
+
+    fetchUnlinkedMentors();
+  }, [needsMentorLink, user]);
+
+  // Fetch mentor preview when selection changes
+  useEffect(() => {
+    const fetchMentorPreview = async () => {
+      if (!selectedMentorId || selectedMentorId === 'new') {
+        setSelectedMentorPreview(null);
+        return;
+      }
+
+      const { data: mentor } = await supabase
+        .from('mentors')
+        .select('*')
+        .eq('id', selectedMentorId)
+        .single();
+
+      if (mentor) {
+        setSelectedMentorPreview({
+          name_en: mentor.name_en || '',
+          name_ko: mentor.name_ko || '',
+          description_en: mentor.description_en || '',
+          description_ko: mentor.description_ko || '',
+          position_en: mentor.position_en || '',
+          position_ko: mentor.position_ko || '',
+          company_en: mentor.company_en || '',
+          company_ko: mentor.company_ko || '',
+          location_en: mentor.location_en || '',
+          location_ko: mentor.location_ko || '',
+          linkedin_url: mentor.linkedin_url || '',
+          calendly_url: mentor.calendly_url || '',
+          email: mentor.email || '',
+          languages: mentor.languages || [],
+          session_time_minutes: mentor.session_time_minutes,
+          session_price_usd: mentor.session_price_usd,
+          tags: Array.isArray(mentor.tags) ? mentor.tags : [],
+          picture_url: mentor.picture_url || '',
+        });
+      }
+    };
+
+    fetchMentorPreview();
+  }, [selectedMentorId]);
+
+  // Handle mentor link submission
+  const handleLinkSubmit = async () => {
+    if (!selectedMentorId) return;
+
+    const isNewMentor = selectedMentorId === 'new';
+    setIsSubmittingLink(true);
+    setLinkSubmitSuccess(false);
+    try {
+      // For new mentors, pass the profile form data
+      await linkMentorProfile(
+        isNewMentor ? null : selectedMentorId,
+        isNewMentor,
+        isNewMentor ? profileForm : undefined
+      );
+      // Success - show success state
+      setLinkSubmitSuccess(true);
+      setToast({ type: 'success', message: t.linkSubmitSuccess });
+
+      // For existing mentor, update local state with the linked mentor's data
+      if (!isNewMentor && selectedMentorPreview) {
+        setMentorId(selectedMentorId);
+        setProfileForm(selectedMentorPreview);
+      }
+    } catch (error) {
+      console.error('Link error:', error);
+      setToast({ type: 'error', message: t.linkError });
+    } finally {
+      setIsSubmittingLink(false);
+    }
+  };
+
+  const handleImageUpload = useCallback(async (file: File): Promise<string | null> => {
+    if (!mentorId) return null;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${mentorId}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('mentor-pictures')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        return null;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('mentor-pictures')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } finally {
+      setIsUploading(false);
+    }
+  }, [mentorId]);
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In mock mode, just show success
-    alert(lang === 'ko' ? '프로필이 저장되었습니다!' : 'Profile saved!');
-    setIsProfileModalOpen(false);
+
+    if (!mentorId) {
+      setToast({ type: 'error', message: t.cannotSave });
+      return;
+    }
+
+    // Save to mentors table
+    const { error } = await supabase
+      .from('mentors')
+      .update({
+        name_en: profileForm.name_en,
+        name_ko: profileForm.name_ko,
+        description_en: profileForm.description_en,
+        description_ko: profileForm.description_ko,
+        position_en: profileForm.position_en,
+        position_ko: profileForm.position_ko,
+        company_en: profileForm.company_en,
+        company_ko: profileForm.company_ko,
+        location_en: profileForm.location_en,
+        location_ko: profileForm.location_ko,
+        linkedin_url: profileForm.linkedin_url,
+        calendly_url: profileForm.calendly_url,
+        email: profileForm.email,
+        languages: profileForm.languages,
+        session_time_minutes: profileForm.session_time_minutes,
+        session_price_usd: profileForm.session_price_usd,
+        tags: profileForm.tags,
+        picture_url: profileForm.picture_url,
+      })
+      .eq('id', mentorId);
+
+    if (error) {
+      console.error('Save error:', error);
+      setToast({ type: 'error', message: t.saveError });
+    } else {
+      setToast({ type: 'success', message: t.saveSuccess });
+      setIsProfileModalOpen(false);
+    }
   };
 
   const toggleDarkMode = () => {
@@ -66,6 +318,15 @@ export default function DashboardPage() {
   };
 
   const t = translations[lang];
+
+  // Build options for searchable select (new mentor at top)
+  const mentorOptions = [
+    { value: 'new', label: `➕ ${t.registerAsNewMentor}` },
+    ...unlinkedMentors.map(m => ({
+      value: m.id,
+      label: `${lang === 'ko' ? m.name_ko : m.name_en}${m.email?.toLowerCase() === user?.email.toLowerCase() ? ` (${t.emailMatch})` : ''}`,
+    })),
+  ];
 
   // Dark mode classes
   const dm = {
@@ -82,6 +343,29 @@ export default function DashboardPage() {
       router.push('/login');
     }
   }, [isLoading, isAuthenticated, router]);
+
+  // Check for pending policy acceptance from signup
+  useEffect(() => {
+    const checkPendingPolicyAcceptance = async () => {
+      if (!isAuthenticated || policyAccepted) return;
+
+      // Check localStorage (email signup) or sessionStorage (Google OAuth)
+      const pendingFromEmail = localStorage.getItem('policyAcceptedOnSignup');
+      const pendingFromGoogle = sessionStorage.getItem('policyAcceptedOnSignup');
+
+      if (pendingFromEmail === 'true' || pendingFromGoogle === 'true') {
+        try {
+          await acceptPolicy();
+          localStorage.removeItem('policyAcceptedOnSignup');
+          sessionStorage.removeItem('policyAcceptedOnSignup');
+        } catch (error) {
+          console.error('Failed to save policy acceptance:', error);
+        }
+      }
+    };
+
+    checkPendingPolicyAcceptance();
+  }, [isAuthenticated, policyAccepted, acceptPolicy]);
 
   const handleLogout = () => {
     logout();
@@ -115,11 +399,20 @@ export default function DashboardPage() {
         onLogout={handleLogout}
       />
 
-      {/* Dev Mode Banner */}
-      {isMockAuth && (
-        <div className="bg-amber-500 text-amber-950 text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-          <FlaskConical size={16} />
-          {t.devModeBanner}
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-200 ${
+          toast.type === 'success'
+            ? 'bg-green-600 text-white'
+            : 'bg-red-600 text-white'
+        }`}>
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button
+            onClick={() => setToast(null)}
+            className="p-1 hover:bg-white/20 rounded transition-colors"
+          >
+            <X size={16} />
+          </button>
         </div>
       )}
 
@@ -129,7 +422,7 @@ export default function DashboardPage() {
           {t.dashboardTitle}
         </h1>
 
-        {/* Pending Status - Only for unapproved mentors */}
+        {/* Pending Status - Shows for unapproved mentors */}
         {!isApproved && (
           <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-xl p-4 mb-6`}>
             <div className="flex items-center gap-3">
@@ -256,52 +549,188 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Main Content Area - Shows selected section, fills remaining height */}
-        <div className={`${dm.bgCard} border ${dm.border} rounded-2xl p-6 flex-1 overflow-y-auto`}>
-          {/* Profile Section - Shows form directly */}
+        {/* Main Content Area - Shows selected section */}
+        <div className={`${dm.bgCard} border ${dm.border} rounded-2xl flex flex-col flex-1 min-h-0`}>
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Profile Section */}
+            {selectedCard === 'profile' && (
+              <>
+                {/* Linking UI - when user hasn't linked yet */}
+                {/* Show linking UI if: needs link OR just successfully linked existing mentor (not approved yet) */}
+                {(needsMentorLink || (linkSubmitSuccess && !isApproved && selectedMentorId !== 'new')) ? (
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-xl ${darkMode ? 'bg-sky-500/20' : 'bg-sky-100'} flex items-center justify-center`}>
+                        <Link2 size={24} className="text-sky-500" />
+                      </div>
+                      <div>
+                        <h2 className={`text-xl font-semibold ${dm.text}`}>
+                          {t.linkProfileTitle}
+                        </h2>
+                        <p className={`text-sm ${dm.textMuted}`}>
+                          {t.linkProfileSubtitle}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Searchable dropdown - disabled after successful link */}
+                    <SearchableSelect
+                      options={mentorOptions}
+                      value={selectedMentorId}
+                      onChange={setSelectedMentorId}
+                      placeholder={t.selectMentorProfile}
+                      noOptionsMessage={t.noResults}
+                      darkMode={darkMode}
+                      disabled={linkSubmitSuccess}
+                    />
+
+                    {/* For EXISTING mentor: show preview */}
+                    {selectedMentorId && selectedMentorId !== 'new' && selectedMentorPreview && (
+                      <div className={`border ${dm.border} rounded-xl p-4 ${darkMode ? 'bg-gray-900/50' : 'bg-gray-50'}`}>
+                        <p className={`text-xs font-medium ${dm.textMuted} uppercase tracking-wide mb-3`}>
+                          {t.selectedMentorProfile}
+                        </p>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className={dm.textMuted}>{lang === 'ko' ? '이름' : 'Name'}:</span>
+                            <span className={`ml-2 ${dm.text}`}>{lang === 'ko' ? selectedMentorPreview.name_ko : selectedMentorPreview.name_en}</span>
+                          </div>
+                          {(selectedMentorPreview.company_ko || selectedMentorPreview.company_en) && (
+                            <div>
+                              <span className={dm.textMuted}>{lang === 'ko' ? '회사' : 'Company'}:</span>
+                              <span className={`ml-2 ${dm.text}`}>{lang === 'ko' ? selectedMentorPreview.company_ko : selectedMentorPreview.company_en}</span>
+                            </div>
+                          )}
+                          {(selectedMentorPreview.position_ko || selectedMentorPreview.position_en) && (
+                            <div>
+                              <span className={dm.textMuted}>{lang === 'ko' ? '직무' : 'Position'}:</span>
+                              <span className={`ml-2 ${dm.text}`}>{lang === 'ko' ? selectedMentorPreview.position_ko : selectedMentorPreview.position_en}</span>
+                            </div>
+                          )}
+                          {(selectedMentorPreview.location_ko || selectedMentorPreview.location_en) && (
+                            <div>
+                              <span className={dm.textMuted}>{lang === 'ko' ? '위치' : 'Location'}:</span>
+                              <span className={`ml-2 ${dm.text}`}>{lang === 'ko' ? selectedMentorPreview.location_ko : selectedMentorPreview.location_en}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* For NEW mentor: show full editable form */}
+                    {selectedMentorId === 'new' && (
+                      <div className={`border-t ${dm.border} pt-6`}>
+                        <p className={`text-sm ${dm.textMuted} mb-4`}>
+                          {t.fillProfileBelow}
+                        </p>
+                        <ProfileForm
+                          formData={profileForm}
+                          onChange={setProfileForm}
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            await handleLinkSubmit();
+                          }}
+                          onImageUpload={handleImageUpload}
+                          darkMode={darkMode}
+                          lang={lang}
+                          showSubmitButton={false}
+                          isUploading={isUploading}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Regular profile form when already linked */
+                  <ProfileForm
+                    formData={profileForm}
+                    onChange={setProfileForm}
+                    onSubmit={handleProfileSubmit}
+                    onImageUpload={handleImageUpload}
+                    darkMode={darkMode}
+                    lang={lang}
+                    showSubmitButton={false}
+                    isUploading={isUploading}
+                  />
+                )}
+              </>
+            )}
+
+            {/* Availability Section */}
+            {selectedCard === 'availability' && (
+              <div className={`flex flex-col items-center justify-center h-64 ${dm.textMuted}`}>
+                <Clock size={56} className="mb-4 opacity-20" />
+                <p className="font-medium text-lg">{t.comingSoon}</p>
+                <p className="text-sm mt-2 max-w-sm text-center">{t.availabilityCardDesc}</p>
+              </div>
+            )}
+
+            {/* Calendar Section */}
+            {selectedCard === 'calendar' && (
+              <div className={`flex flex-col items-center justify-center h-64 ${dm.textMuted}`}>
+                <CalendarDays size={56} className="mb-4 opacity-20" />
+                <p className="font-medium text-lg">{t.comingSoon}</p>
+                <p className="text-sm mt-2 max-w-sm text-center">{t.calendarCardDesc}</p>
+              </div>
+            )}
+
+            {/* Stats Section */}
+            {selectedCard === 'stats' && (
+              <div className={`flex flex-col items-center justify-center h-64 ${dm.textMuted}`}>
+                <BarChart3 size={56} className="mb-4 opacity-20" />
+                <p className="font-medium text-lg">{t.comingSoon}</p>
+                <p className="text-sm mt-2 max-w-sm text-center">{t.statsCardDesc}</p>
+              </div>
+            )}
+
+            {/* Bookings Section */}
+            {selectedCard === 'bookings' && (
+              <div className={`flex flex-col items-center justify-center h-64 ${dm.textMuted}`}>
+                <Calendar size={56} className="mb-4 opacity-20" />
+                <p className="font-medium text-lg">{t.noUpcomingBookings}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Footer - Submit Button */}
           {selectedCard === 'profile' && (
-            <ProfileForm
-              formData={profileForm}
-              onChange={setProfileForm}
-              onSubmit={handleProfileSubmit}
-              darkMode={darkMode}
-              lang={lang}
-              showSubmitButton
-            />
-          )}
-
-          {/* Availability Section */}
-          {selectedCard === 'availability' && (
-            <div className={`flex flex-col items-center justify-center h-full ${dm.textMuted}`}>
-              <Clock size={56} className="mb-4 opacity-20" />
-              <p className="font-medium text-lg">{t.comingSoon}</p>
-              <p className="text-sm mt-2 max-w-sm text-center">{t.availabilityCardDesc}</p>
-            </div>
-          )}
-
-          {/* Calendar Section */}
-          {selectedCard === 'calendar' && (
-            <div className={`flex flex-col items-center justify-center h-full ${dm.textMuted}`}>
-              <CalendarDays size={56} className="mb-4 opacity-20" />
-              <p className="font-medium text-lg">{t.comingSoon}</p>
-              <p className="text-sm mt-2 max-w-sm text-center">{t.calendarCardDesc}</p>
-            </div>
-          )}
-
-          {/* Stats Section */}
-          {selectedCard === 'stats' && (
-            <div className={`flex flex-col items-center justify-center h-full ${dm.textMuted}`}>
-              <BarChart3 size={56} className="mb-4 opacity-20" />
-              <p className="font-medium text-lg">{t.comingSoon}</p>
-              <p className="text-sm mt-2 max-w-sm text-center">{t.statsCardDesc}</p>
-            </div>
-          )}
-
-          {/* Bookings Section */}
-          {selectedCard === 'bookings' && (
-            <div className={`flex flex-col items-center justify-center h-full ${dm.textMuted}`}>
-              <Calendar size={56} className="mb-4 opacity-20" />
-              <p className="font-medium text-lg">{t.noUpcomingBookings}</p>
+            <div className={`flex-shrink-0 border-t ${dm.border} px-6 py-4`}>
+              {/* Show linking UI for: needs link OR just linked existing mentor (pending approval) */}
+              {(needsMentorLink || (linkSubmitSuccess && !isApproved && selectedMentorId !== 'new')) ? (
+                // Link/Register buttons
+                selectedMentorId && (
+                  linkSubmitSuccess ? (
+                    // Success state - clearly disabled button with "waiting for approval" message
+                    <button
+                      disabled
+                      className="w-full py-3 bg-gray-500/40 rounded-xl text-sm font-semibold text-gray-400 cursor-not-allowed"
+                    >
+                      {t.linkSubmitSuccess}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleLinkSubmit}
+                      disabled={isSubmittingLink}
+                      className="w-full py-3 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:hover:bg-sky-600 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingLink
+                        ? t.linkSubmitting
+                        : selectedMentorId === 'new'
+                          ? t.registerAsMentorButton
+                          : t.linkProfileButton}
+                    </button>
+                  )
+                )
+              ) : (
+                // Regular save button for linked users
+                <button
+                  onClick={handleProfileSubmit}
+                  className="w-full py-3 bg-sky-600 hover:bg-sky-700 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
+                >
+                  {t.save}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -330,9 +759,11 @@ export default function DashboardPage() {
                 formData={profileForm}
                 onChange={setProfileForm}
                 onSubmit={handleProfileSubmit}
+                onImageUpload={handleImageUpload}
                 darkMode={darkMode}
                 lang={lang}
                 formId="modal-profile-form"
+                isUploading={isUploading}
               />
             </div>
 
@@ -355,6 +786,15 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Policy Acceptance Modal - For users who haven't accepted policy */}
+      {isAuthenticated && !policyAccepted && (
+        <PolicyAcceptanceModal
+          darkMode={darkMode}
+          lang={lang}
+          onAccept={acceptPolicy}
+        />
       )}
     </div>
   );

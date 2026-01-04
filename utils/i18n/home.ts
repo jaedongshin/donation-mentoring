@@ -1,42 +1,19 @@
-export const translations = {
+// Homepage and public pages translations
+export const home = {
   en: {
     title: "Donation Mentoring",
     subtitle: "Connect with mentors for donation-based sessions",
     searchPlaceholder: "Search mentors...",
-    adminTitle: "Donation Mentoring Management",
-    name: "Name",
-    company: "Company",
-    description: "Description",
-    location: "Location",
-    position: "Position",
-    photo: "Photo",
-    tags: "Tags (comma separated)",
-    enabled: "Enabled",
-    save: "Save",
-    upload: "Upload",
-    edit: "Edit",
-    delete: "Delete",
-    viewAdmin: "Go to Admin",
-    applyMentor: "Apply Mentor",
-    cancel: "Cancel",
-    submitApplication: "Submit Application",
-    submitting: "Submitting...",
-    calendarUrl: "Available time URL (https://calendly.com)",
-    languages: "Languages",
-    sessionTime: "Session Time (minutes)",
-    sessionPrice: "Session Price (USD)",
-    unicefDonation: "UNICEF Donation",
-    viewHome: "Go to Home",
     noMentors: "No mentors found.",
-    loading: "Loading...",
-    todaysMentor: "Today's Mentor",
-    todaysMentorDesc: "Meet our featured mentor for today",
+    viewHome: "Go to Home",
+    findMentors: "Find Mentors",
+    // Navigation
     navMentors: "Mentors",
     navHowTo: "How To",
     navAbout: "About",
     navValues: "Values",
+    // How-to guide
     howToDonate: "How it Works",
-    // 4-step guide
     howToStepLabels: ["Choose", "Donate", "Book", "Meet"],
     howToStep1Title: "Choose a Mentor",
     howToStep1Desc: "Browse mentors and find someone who matches your needs",
@@ -58,7 +35,7 @@ export const translations = {
       "Book your session on the mentor's calendar.",
       "Attend the mentoring session at the scheduled time."
     ],
-    // Filter sidebar
+    // Filters
     filterTitle: "Filters",
     filterExpertise: "Expertise",
     filterLocation: "Location",
@@ -68,8 +45,9 @@ export const translations = {
     filterAnyLength: "Any Length",
     filterMin: "min",
     // Mentor card
-    bookSession: "Book",
-    findMentors: "Find Mentors",
+    viewProfile: "View Profile",
+    bookSession: "Book Session",
+    // About section
     mentoringTitle: "What is Mentorship?",
     mentoringDesc: "Mentorship is the process through which a mentee shares their challenges and inquiries with a mentor to independently discover their optimal solutions. While solo contemplation can be restricted by one's own limited perspective and experience, leveraging the mentor's diverse viewpoints and extensive expertise allows the mentee to achieve broader insights and discover more effective resolutions.",
     donationMentoringTitle: "The Value Proposition of Donation-Based Mentorship ",
@@ -89,105 +67,21 @@ export const translations = {
       "Societal Contribution: Actively participate in philanthropy, thereby exerting a positive influence on society.",
       "Fostering Enhanced Accountability and Motivation: The structured mentorship process cultivates a strong sense of self-directed ownership and a sustained impetus for growth."
     ],
-    applicationSuccess: "Application submitted successfully! Please wait for admin approval.",
-    // Auth
-    login: "Sign In",
-    logout: "Logout",
-    loginSubtitle: "Sign in to manage your mentor profile",
-    continueWithGoogle: "Continue with Google",
-    forMentorsAndAdmins: "For mentors and admins only",
-    lookingToBook: "Looking to book a session?",
-    browseMentorsNoLogin: "→ Browse mentors (no login needed)",
-    dashboard: "Dashboard",
-    mentorManagement: "Mentor Management",
-    manageUsers: "Manage Users",
-    home: "Home",
-    // Mock auth / Dev mode
-    devModeBanner: "Development Mode - Mock Authentication",
-    loginAs: "Login as",
-    loginAsPendingMentor: "Pending Mentor",
-    loginAsApprovedMentor: "Approved Mentor",
-    loginAsAdmin: "Admin",
-    loginAsSuperAdmin: "Super Admin",
-    // Roles
-    roleMentor: "Mentor",
-    roleAdmin: "Admin",
-    roleSuperAdmin: "Super Admin",
-    // Status
-    statusPending: "Pending Approval",
-    statusApproved: "Approved",
-    // Dashboard
-    dashboardTitle: "My Dashboard",
-    pendingApprovalMessage: "Your application is being reviewed. You'll be notified by email when approved.",
-    profileLive: "Your profile is live!",
-    editProfile: "Edit Profile",
-    setAvailability: "Set Availability",
-    connectCalendar: "Connect Calendar",
-    upcomingBookings: "Upcoming Bookings",
-    noUpcomingBookings: "No upcoming bookings",
-    comingSoon: "Coming Soon",
-    // Dashboard cards
-    profileCardTitle: "Profile",
-    profileCardDesc: "Edit your mentor profile and public information",
-    availabilityCardTitle: "Availability",
-    availabilityCardDesc: "Set your available times for mentoring sessions",
-    calendarCardTitle: "Calendar",
-    calendarCardDesc: "Connect your calendar for automatic booking",
-    statsCardTitle: "Stats",
-    statsCardDesc: "View your mentoring statistics and impact",
-    // Register
-    registerTitle: "Mentor Registration",
-    registerSubtitle: "Complete your profile to get started. Your application will be reviewed by an admin.",
-    // Admin
-    pendingApplications: "Pending Applications",
-    activeMentors: "Active Mentors",
-    approve: "Approve",
-    reject: "Reject",
-    // User management
-    userManagement: "User Management",
-    allUsers: "All Users",
-    changeRole: "Change Role",
-    cannotModify: "Cannot modify",
   },
   ko: {
     title: "기부 멘토링",
     subtitle: "기부를 통해 멘토와 연결되세요",
     searchPlaceholder: "멘토 검색...",
-    adminTitle: "기부 멘토링 관리",
-    name: "이름",
-    company: "회사",
-    description: "설명",
-    location: "위치",
-    position: "직무",
-    photo: "사진",
-    tags: "태그 (콤마로 구분)",
-    enabled: "활성화",
-    save: "저장",
-    upload: "업로드",
-    edit: "수정",
-    delete: "삭제",
-    viewAdmin: "관리자 페이지로 이동",
-    applyMentor: "멘토 신청",
-    cancel: "취소",
-    submitApplication: "신청서 제출",
-    submitting: "제출 중...",
-    calendarUrl: "가능한 시간 URL (https://calendly.com)",
-    languages: "멘토링 가능 언어",
-    sessionTime: "세션 시간 (분)",
-    sessionPrice: "세션 가격 (USD)",
-    unicefDonation: "UNICEF 기부",
-    viewHome: "홈으로 이동",
     noMentors: "멘토를 찾을 수 없습니다.",
-    loading: "로딩 중...",
-    todaysMentor: "오늘의 멘토",
-    todaysMentorDesc: "오늘 소개하는 멘토를 만나보세요",
+    viewHome: "홈으로 이동",
+    findMentors: "멘토 찾기",
+    // Navigation
     navMentors: "멘토 목록",
     navHowTo: "방법",
     navAbout: "소개",
     navValues: "가치",
+    // How-to guide
     howToDonate: "이용 방법",
-    findMentors: "멘토 찾기",
-    // 4-step guide
     howToStepLabels: ["선택", "기부", "예약", "만남"],
     howToStep1Title: "멘토 선택",
     howToStep1Desc: "원하는 분야의 멘토를 찾아보세요",
@@ -209,7 +103,7 @@ export const translations = {
       "멘토 캘린더 예약",
       "약속된 시간에 멘토링 진행"
     ],
-    // Filter sidebar
+    // Filters
     filterTitle: "필터",
     filterExpertise: "전문 분야",
     filterLocation: "위치",
@@ -219,7 +113,9 @@ export const translations = {
     filterAnyLength: "전체",
     filterMin: "분",
     // Mentor card
-    bookSession: "예약",
+    viewProfile: "프로필 보기",
+    bookSession: "예약하기",
+    // About section
     mentoringTitle: "멘토링이란?",
     mentoringDesc: "멘토링은 멘티가 자신의 고민과 질문을 멘토에게 공유하면서 자신만의 답을 찾아가는 과정입니다. 혼자서 고민하면 자신의 경험과 관점에 한정될 수 있지만, 멘토의 다양한 시각과 풍부한 경험과 함께라면, 더 넓은 시야와 해결책을 찾을 수 있습니다.",
     donationMentoringTitle: "기부 멘토링이란?",
@@ -239,67 +135,5 @@ export const translations = {
       "사회 공헌 참여: 기부 활동에 참여함으로써 사회에 긍정적인 영향을 미치는 데 동참합니다.",
       "책임감 및 동기 부여 강화: 멘토링 과정을 통해 자기 주도적 책임감과 성장 동기를 강화할 수 있습니다."
     ],
-    applicationSuccess: "신청서가 성공적으로 제출되었습니다! 관리자의 승인을 기다려주세요.",
-    // Auth
-    login: "로그인",
-    logout: "로그아웃",
-    loginSubtitle: "멘토 프로필을 관리하려면 로그인하세요",
-    continueWithGoogle: "Google로 계속하기",
-    forMentorsAndAdmins: "멘토와 관리자 전용입니다",
-    lookingToBook: "세션을 예약하시겠어요?",
-    browseMentorsNoLogin: "→ 멘토 둘러보기 (로그인 불필요)",
-    dashboard: "대시보드",
-    mentorManagement: "멘토 관리",
-    manageUsers: "사용자 관리",
-    home: "홈으로",
-    // Mock auth / Dev mode
-    devModeBanner: "개발 모드 - 모의 인증",
-    loginAs: "로그인:",
-    loginAsPendingMentor: "대기 중 멘토",
-    loginAsApprovedMentor: "승인된 멘토",
-    loginAsAdmin: "관리자",
-    loginAsSuperAdmin: "최고 관리자",
-    // Roles
-    roleMentor: "멘토",
-    roleAdmin: "관리자",
-    roleSuperAdmin: "최고 관리자",
-    // Status
-    statusPending: "승인 대기 중",
-    statusApproved: "승인됨",
-    // Dashboard
-    dashboardTitle: "내 대시보드",
-    pendingApprovalMessage: "신청서를 검토 중입니다. 승인되면 이메일로 알려드립니다.",
-    profileLive: "프로필이 게시되었습니다!",
-    editProfile: "프로필 수정",
-    setAvailability: "가능 시간 설정",
-    connectCalendar: "캘린더 연결",
-    upcomingBookings: "예정된 세션",
-    noUpcomingBookings: "예정된 세션이 없습니다",
-    comingSoon: "준비 중",
-    // Dashboard cards
-    profileCardTitle: "프로필",
-    profileCardDesc: "멘토 프로필과 공개 정보를 수정하세요",
-    availabilityCardTitle: "가능 시간",
-    availabilityCardDesc: "멘토링 가능한 시간을 설정하세요",
-    calendarCardTitle: "캘린더",
-    calendarCardDesc: "자동 예약을 위해 캘린더를 연결하세요",
-    statsCardTitle: "통계",
-    statsCardDesc: "멘토링 통계와 영향력을 확인하세요",
-    // Register
-    registerTitle: "멘토 등록",
-    registerSubtitle: "프로필을 작성해주세요. 관리자 검토 후 승인됩니다.",
-    // Admin
-    pendingApplications: "승인 대기 신청",
-    activeMentors: "활성 멘토",
-    approve: "승인",
-    reject: "거절",
-    // User management
-    userManagement: "사용자 관리",
-    allUsers: "전체 사용자",
-    changeRole: "역할 변경",
-    cannotModify: "수정 불가",
-  }
+  },
 };
-
-export type Language = 'en' | 'ko';
-export type TranslationKey = keyof typeof translations.en;

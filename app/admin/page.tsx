@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase';
 import { Mentor } from '@/types/mentor';
 import { translations, Language } from '@/utils/i18n';
 import Image from 'next/image';
-import { Trash2, Plus, X, Pencil, FlaskConical } from 'lucide-react';
+import { Trash2, Plus, X, Pencil } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -16,7 +16,7 @@ const getLabelClass = (dark: boolean) => `block text-sm font-medium ${dark ? 'te
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, isAuthenticated, isAdmin, isMockAuth, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, isAdmin, logout } = useAuth();
 
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -325,14 +325,6 @@ export default function AdminPage() {
         } : undefined}
         onLogout={handleLogout}
       />
-
-      {/* Dev Mode Banner */}
-      {isMockAuth && (
-        <div className="bg-amber-500 text-amber-950 text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
-          <FlaskConical size={16} />
-          {t.devModeBanner}
-        </div>
-      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Sticky CTA row */}
