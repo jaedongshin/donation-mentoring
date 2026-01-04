@@ -102,7 +102,7 @@ export default function PolicyAcceptanceModal({
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >
-          {isSubmitting ? (lang === 'ko' ? '처리 중...' : 'Processing...') : t.acceptAndContinue}
+          {isSubmitting ? t.processing : t.acceptAndContinue}
         </button>
       </div>
     </div>

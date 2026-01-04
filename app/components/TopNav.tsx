@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Moon, Sun, User, LogOut, Search, X, ChevronDown } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
@@ -61,8 +61,26 @@ export default function TopNav({
 }: TopNavProps) {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const t = translations[lang];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    if (profileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileDropdownOpen]);
 
   // Dark mode classes
   const dm = {
@@ -122,7 +140,7 @@ export default function TopNav({
                 >
                   {t.mentorManagement}
                 </Link>
-                {user.role === 'super_admin' && (
+                {(user.role === 'admin' || user.role === 'super_admin') && (
                   <Link
                     href="/permissions"
                     className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
@@ -204,7 +222,7 @@ export default function TopNav({
 
             {/* Authenticated: Profile dropdown */}
             {isAuthenticated && (
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                   className={`flex items-center gap-1.5 p-1.5 sm:p-2 ${dm.hoverBg} rounded-lg transition-colors cursor-pointer`}
@@ -224,24 +242,19 @@ export default function TopNav({
                   <ChevronDown size={14} className={`hidden sm:block ${dm.textMuted}`} />
                 </button>
 
-                {/* Dropdown */}
+                {/* Dropdown Menu */}
                 {profileDropdownOpen && (
-                  <>
-                    {/* Backdrop */}
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setProfileDropdownOpen(false)}
-                    />
-                    {/* Menu */}
-                    <div className={`absolute right-0 mt-2 w-56 ${dm.bgCard} border ${dm.border} rounded-xl shadow-lg z-50 py-1 overflow-hidden`}>
-                      {/* User info */}
-                      <div className={`px-4 py-3 border-b ${dm.border}`}>
-                        <p className={`text-sm font-medium ${dm.text} truncate`}>
-                          {user.displayName || user.email}
-                        </p>
-                        <p className={`text-xs ${dm.textMuted} truncate`}>
-                          {user.email}
-                        </p>
+                  <div className={`absolute right-0 mt-2 w-56 ${dm.bgCard} border ${dm.border} rounded-xl shadow-lg z-50 py-1 overflow-hidden`}>
+                    {/* User info */}
+                    <div className={`px-4 py-3 border-b ${dm.border}`}>
+                      <p className={`text-sm font-medium ${dm.text} truncate`}>
+                        {user.displayName || user.email}
+                      </p>
+                      <p className={`text-xs ${dm.textMuted} truncate`}>
+                        {user.email}
+                      </p>
+                      {/* Only show role badge if user is authenticated and has a role (not 'user' role) */}
+                      {user.role && user.role !== 'user' && (
                         <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${
                           user.role === 'super_admin'
                             ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
@@ -251,23 +264,23 @@ export default function TopNav({
                         }`}>
                           {user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'Mentor'}
                         </span>
-                      </div>
-
-                      {/* Logout */}
-                      <div className="py-1">
-                        <button
-                          onClick={() => {
-                            setProfileDropdownOpen(false);
-                            onLogout?.();
-                          }}
-                          className={`w-full text-left px-4 py-2 text-sm text-red-500 hover:text-red-600 ${dm.hoverBg} transition-colors flex items-center gap-2 cursor-pointer`}
-                        >
-                          <LogOut size={14} />
-                          {t.logout}
-                        </button>
-                      </div>
+                      )}
                     </div>
-                  </>
+
+                    {/* Logout */}
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          onLogout?.();
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm text-red-500 hover:text-red-600 ${dm.hoverBg} transition-colors flex items-center gap-2 cursor-pointer`}
+                      >
+                        <LogOut size={14} />
+                        {t.logout}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             )}

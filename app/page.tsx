@@ -38,6 +38,7 @@ export default function Home() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [showDetailedSteps, setShowDetailedSteps] = useState(false);
+  // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');

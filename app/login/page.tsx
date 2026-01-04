@@ -13,6 +13,7 @@ export default function LoginPage() {
   const { isLoading, loginWithGoogle, loginWithEmail, isAuthenticated, isAdmin } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
+  // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');
@@ -26,13 +27,22 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const t = translations[lang];
+
+  // Check for OAuth login error (user tried to login but account doesn't exist)
+  useEffect(() => {
+    const storedError = sessionStorage.getItem('loginError');
+    if (storedError === 'accountNotFound') {
+      setLoginError(t.accountNotFound);
+      sessionStorage.removeItem('loginError');
+    }
+  }, [t.accountNotFound]);
+
   const toggleDarkMode = () => {
     const newValue = !darkMode;
     setDarkMode(newValue);
     localStorage.setItem('darkMode', String(newValue));
   };
-
-  const t = translations[lang];
 
   // Dark mode classes
   const dm = {
@@ -60,6 +70,8 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setLoginError(null);
+      // Mark this as a LOGIN attempt (not signup) - useAuth will check this
+      sessionStorage.setItem('authMode', 'login');
       await loginWithGoogle();
     } catch (error) {
       console.error('Login failed:', error);

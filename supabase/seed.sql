@@ -210,9 +210,10 @@ INSERT INTO public.mentors (
 -- TEST AUTH USERS
 -- ============================================
 -- Note: Passwords use bcrypt via pgcrypto extension
--- super@test.com / super
 -- admin@test.com / admin
+-- admin2@test.com / admin2
 -- Plus regular mentor accounts
+-- Note: Only mulli2@gmail.com can be super_admin (not seeded here)
 
 INSERT INTO auth.users (
     id,
@@ -237,21 +238,6 @@ INSERT INTO auth.users (
     is_sso_user,
     is_anonymous
 ) VALUES
--- Super Admin
-(
-    '11111111-1111-1111-1111-111111111111',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'super@test.com',
-    crypt('super', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"]}',
-    '{"full_name": "Super Admin"}',
-    now(),
-    now(),
-    '', '', '', '', '', '', '', '', false, false
-),
 -- Admin
 (
     '22222222-2222-2222-2222-222222222222',
@@ -263,6 +249,21 @@ INSERT INTO auth.users (
     now(),
     '{"provider": "email", "providers": ["email"]}',
     '{"full_name": "Test Admin"}',
+    now(),
+    now(),
+    '', '', '', '', '', '', '', '', false, false
+),
+-- Admin 2
+(
+    '66666666-6666-6666-6666-666666666666',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'admin2@test.com',
+    crypt('admin2', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}',
+    '{"full_name": "Test Admin 2"}',
     now(),
     now(),
     '', '', '', '', '', '', '', '', false, false
@@ -315,38 +316,37 @@ INSERT INTO auth.users (
 -- UPDATE PROFILES FOR AUTH USERS
 -- ============================================
 -- Note: Trigger auto-creates profiles with defaults, we UPDATE to set correct values
-
--- Super Admin
-UPDATE public.profiles SET
-    role = 'super_admin',
-    is_approved = true,
-    policy_accepted_at = now()
-WHERE id = '11111111-1111-1111-1111-111111111111';
+-- Note: Only mulli2@gmail.com can be super_admin (not seeded here)
 
 -- Admin
 UPDATE public.profiles SET
     role = 'admin',
-    is_approved = true,
     policy_accepted_at = now()
 WHERE id = '22222222-2222-2222-2222-222222222222';
 
--- Mentor - Sarah Chen (approved, linked to mentor)
+-- Admin 2
 UPDATE public.profiles SET
-    is_approved = true,
+    role = 'admin',
+    policy_accepted_at = now()
+WHERE id = '66666666-6666-6666-6666-666666666666';
+
+-- Mentor - Sarah Chen (mentor role, linked to mentor)
+UPDATE public.profiles SET
+    role = 'mentor',
     mentor_id = 'aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa',
     policy_accepted_at = now()
 WHERE id = '33333333-3333-3333-3333-333333333333';
 
--- Mentor - Michael Park (approved, linked to mentor)
+-- Mentor - Michael Park (mentor role, linked to mentor)
 UPDATE public.profiles SET
-    is_approved = true,
+    role = 'mentor',
     mentor_id = 'aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa',
     policy_accepted_at = now()
 WHERE id = '44444444-4444-4444-4444-444444444444';
 
--- Pending Mentor - Applicant One (not approved, linked to unapproved mentor)
+-- Pending Mentor - Applicant One (user role, not approved yet, linked to unapproved mentor)
 UPDATE public.profiles SET
-    is_approved = false,
+    role = 'user',
     mentor_id = 'bbbbbbbb-0001-0001-0001-bbbbbbbbbbbb',
     policy_accepted_at = now()
 WHERE id = '55555555-5555-5555-5555-555555555555';
@@ -369,10 +369,12 @@ INSERT INTO public.reviews (review) VALUES
 -- ============================================
 --
 -- ADMIN ACCOUNTS:
--- | Email           | Password | Role        |
--- |-----------------|----------|-------------|
--- | super@test.com  | super    | super_admin |
--- | admin@test.com  | admin    | admin       |
+-- | Email            | Password | Role  |
+-- |------------------|----------|-------|
+-- | admin@test.com   | admin    | admin |
+-- | admin2@test.com  | admin2   | admin |
+--
+-- Note: Only mulli2@gmail.com can be super_admin (not seeded here)
 --
 -- MENTOR ACCOUNTS:
 -- | Email            | Password | Status   | Linked Mentor  |

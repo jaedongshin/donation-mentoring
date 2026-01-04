@@ -13,6 +13,7 @@ export default function SignupPage() {
   const { isLoading, loginWithGoogle, signUpWithEmail, isAuthenticated, acceptPolicy } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
+  // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');
@@ -64,12 +65,14 @@ export default function SignupPage() {
     if (!policyChecked) return;
     try {
       setSignupError(null);
+      // Mark this as a SIGNUP attempt - useAuth will allow new users
+      sessionStorage.setItem('authMode', 'signup');
       // Store that policy was accepted before Google redirect
       sessionStorage.setItem('policyAcceptedOnSignup', 'true');
       await loginWithGoogle();
     } catch (error) {
       console.error('Google signup failed:', error);
-      setSignupError(lang === 'ko' ? '회원가입에 실패했습니다.' : 'Signup failed. Please try again.');
+      setSignupError(t.signupFailed);
     }
   };
 
@@ -103,7 +106,7 @@ export default function SignupPage() {
       if (errorMessage.includes('already registered')) {
         setSignupError(t.emailAlreadyExists);
       } else {
-        setSignupError(lang === 'ko' ? '회원가입에 실패했습니다.' : 'Signup failed. Please try again.');
+        setSignupError(t.signupFailed);
       }
     } finally {
       setIsSubmitting(false);
@@ -168,7 +171,7 @@ export default function SignupPage() {
                 <Check size={32} className={darkMode ? 'text-green-400' : 'text-green-600'} />
               </div>
               <h2 className={`text-xl font-bold ${dm.text} mb-2`}>
-                {lang === 'ko' ? '회원가입 완료!' : 'Signup Complete!'}
+                {t.signupComplete}
               </h2>
               <p className={`text-sm ${dm.textMuted} mb-6`}>
                 {t.signUpSuccess}
@@ -317,7 +320,7 @@ export default function SignupPage() {
                       </button>
                     </div>
                     <p className={`text-xs ${dm.textMuted} mt-1`}>
-                      {lang === 'ko' ? '최소 8자 이상' : 'Minimum 8 characters'}
+                      {t.passwordMinLength}
                     </p>
                   </div>
 

@@ -14,6 +14,7 @@ export default function ResetPasswordPage() {
   const { updatePassword } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
+  // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');
@@ -108,7 +109,7 @@ export default function ResetPasswordPage() {
       }, 2000);
     } catch (err) {
       console.error('Update password error:', err);
-      setError(lang === 'ko' ? '비밀번호 재설정에 실패했습니다.' : 'Failed to reset password.');
+      setError(t.resetFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -146,12 +147,10 @@ export default function ResetPasswordPage() {
                 <AlertCircle size={32} className={darkMode ? 'text-red-400' : 'text-red-600'} />
               </div>
               <h2 className={`text-xl font-bold ${dm.text} mb-2`}>
-                {lang === 'ko' ? '잘못된 링크' : 'Invalid Link'}
+                {t.invalidResetLink}
               </h2>
               <p className={`text-sm ${dm.textMuted} mb-6`}>
-                {lang === 'ko'
-                  ? '유효하지 않거나 만료된 재설정 링크입니다. 새로 요청해주세요.'
-                  : 'Invalid or expired reset link. Please request a new one.'}
+                {t.invalidResetLinkMessage}
               </p>
               <Link
                 href="/forgot-password"
@@ -169,7 +168,7 @@ export default function ResetPasswordPage() {
                 <Check size={32} className={darkMode ? 'text-green-400' : 'text-green-600'} />
               </div>
               <h2 className={`text-xl font-bold ${dm.text} mb-2`}>
-                {lang === 'ko' ? '비밀번호 변경 완료!' : 'Password Changed!'}
+                {t.passwordChanged}
               </h2>
               <p className={`text-sm ${dm.textMuted} mb-6`}>
                 {t.passwordResetSuccess}
@@ -229,7 +228,7 @@ export default function ResetPasswordPage() {
                     </button>
                   </div>
                   <p className={`text-xs ${dm.textMuted} mt-1`}>
-                    {lang === 'ko' ? '최소 8자 이상' : 'Minimum 8 characters'}
+                    {t.passwordMinLength}
                   </p>
                 </div>
 

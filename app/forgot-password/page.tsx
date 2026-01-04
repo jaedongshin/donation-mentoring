@@ -11,6 +11,7 @@ export default function ForgotPasswordPage() {
   const { resetPassword } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
+  // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');
@@ -54,7 +55,7 @@ export default function ForgotPasswordPage() {
       setSuccess(true);
     } catch (err) {
       console.error('Reset password error:', err);
-      setError(lang === 'ko' ? '재설정 링크 전송에 실패했습니다.' : 'Failed to send reset link.');
+      setError(t.sendResetLinkFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +95,7 @@ export default function ForgotPasswordPage() {
                 <Check size={32} className={darkMode ? 'text-green-400' : 'text-green-600'} />
               </div>
               <h2 className={`text-xl font-bold ${dm.text} mb-2`}>
-                {lang === 'ko' ? '이메일 전송 완료!' : 'Email Sent!'}
+                {t.emailSent}
               </h2>
               <p className={`text-sm ${dm.textMuted} mb-6`}>
                 {t.resetLinkSent}

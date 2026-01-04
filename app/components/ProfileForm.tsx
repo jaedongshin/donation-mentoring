@@ -333,7 +333,7 @@ export default function ProfileForm({
               ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
               : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
           } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-            {isUploading ? (lang === 'ko' ? '업로드 중...' : 'Uploading...') : t.upload}
+            {isUploading ? t.uploading : t.upload}
             <input
               type="file"
               accept="image/*"

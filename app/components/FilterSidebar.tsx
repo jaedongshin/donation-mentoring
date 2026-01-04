@@ -149,12 +149,12 @@ export default function FilterSidebar({
             >
               {showAllTags ? (
                 <>
-                  <span>{lang === 'ko' ? '접기' : 'Show less'}</span>
+                  <span>{t.showLess}</span>
                   <ChevronUp size={14} />
                 </>
               ) : (
                 <>
-                  <span>{lang === 'ko' ? `+${availableTags.length - INITIAL_TAGS_SHOWN}개 더보기` : `+${availableTags.length - INITIAL_TAGS_SHOWN} more`}</span>
+                  <span>{lang === 'ko' ? `+${availableTags.length - INITIAL_TAGS_SHOWN}${t.showMoreCount}` : `+${availableTags.length - INITIAL_TAGS_SHOWN} ${t.showMoreCount}`}</span>
                   <ChevronDown size={14} />
                 </>
               )}

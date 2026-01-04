@@ -11,6 +11,9 @@ export const common = {
     noResults: "No results",
     or: "or",
     home: "Home",
+    // Show more/less
+    showLess: "Show less",
+    showMoreCount: "more",
   },
   ko: {
     save: "저장",
@@ -23,5 +26,8 @@ export const common = {
     noResults: "결과 없음",
     or: "또는",
     home: "홈으로",
+    // Show more/less
+    showLess: "접기",
+    showMoreCount: "개 더보기",
   },
 };

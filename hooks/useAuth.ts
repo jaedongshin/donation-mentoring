@@ -33,7 +33,6 @@ export interface AuthUser {
   displayName: string;
   avatarUrl?: string;
   role: UserRole;
-  isApproved: boolean;
   mentorId: string | null;  // NULL = needs to link/register mentor profile
   policyAcceptedAt: string | null;
 }
@@ -59,7 +58,7 @@ interface UseAuthReturn {
   isMentor: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
-  isApproved: boolean;
+  isApproved: boolean; // Derived from role: mentor/admin/super_admin = approved, user = not approved
 }
 
 /**
@@ -72,16 +71,55 @@ export function useAuth(): UseAuthReturn {
   const [policyAccepted, setPolicyAccepted] = useState(false);
 
   // Convert Supabase user to AuthUser
-  const mapSupabaseUser = useCallback(async (supabaseUser: User): Promise<AuthUser> => {
+  // Returns null if this is a LOGIN attempt but user doesn't exist (should have signed up first)
+  const mapSupabaseUser = useCallback(async (supabaseUser: User): Promise<AuthUser | null> => {
+    // Check if this was a login vs signup attempt
+    const authMode = typeof window !== 'undefined' ? sessionStorage.getItem('authMode') : null;
+    
     // Try to get user profile from profiles table
     // Use maybeSingle() instead of single() to handle missing profiles gracefully
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role, is_approved, display_name, mentor_id, policy_accepted_at')
+      .select('role, display_name, mentor_id, policy_accepted_at, created_at')
       .eq('id', supabaseUser.id)
       .maybeSingle();
+    
+    // Check if this is a LOGIN attempt with a newly created profile (created within last 30 seconds)
+    // This happens because the database trigger auto-creates profiles on auth.users insert
+    if (authMode === 'login' && profile?.created_at) {
+      const createdAt = new Date(profile.created_at).getTime();
+      const now = Date.now();
+      const isNewlyCreated = (now - createdAt) < 30000; // 30 seconds
+      
+      if (isNewlyCreated) {
+        console.warn('Login attempted but profile was just created - must signup first');
+        sessionStorage.removeItem('authMode');
+        sessionStorage.setItem('loginError', 'accountNotFound');
+        
+        // Delete the auto-created profile
+        await supabase.from('profiles').delete().eq('id', supabaseUser.id);
+        
+        // Sign out the user
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError) {
+          console.debug('SignOut error:', signOutError);
+        }
+        
+        // Redirect to login page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        return null;
+      }
+    }
+    
+    // Clear auth mode flag for existing users
+    if (typeof window !== 'undefined' && authMode) {
+      sessionStorage.removeItem('authMode');
+    }
 
-    // If profile doesn't exist, create it (fallback for users created before trigger)
+    // If profile doesn't exist, handle based on auth mode
     if (error || !profile) {
       if (error && error.code !== 'PGRST116') {
         // PGRST116 is "0 rows" which is expected if profile doesn't exist
@@ -99,30 +137,29 @@ export function useAuth(): UseAuthReturn {
           // Ignore signOut errors (e.g., 403) - session is already invalid
           console.debug('SignOut error (expected for invalid sessions):', signOutError);
         }
-        // Return null to indicate no valid user
         throw new Error('Invalid session: user does not exist');
-      } else {
-        // Auto-create profile if it doesn't exist
-        const userRole: UserRole = supabaseUser.email && 
-          ['mulli2@gmail.com', 'tk.hfes@gmail.com'].includes(supabaseUser.email)
-          ? 'super_admin'
-          : 'mentor';
-        
-        const isApproved = userRole === 'super_admin';
+      }
+      
+      // Auto-create profile (this is a signup flow - fallback if trigger didn't run)
+      // NOTE: We do NOT auto-link to mentor profiles here.
+      // Even if an email matches, users should explicitly choose to link via the dashboard UI.
 
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: supabaseUser.id,
-            email: supabaseUser.email || '',
-            display_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
-            avatar_url: supabaseUser.user_metadata?.avatar_url,
-            role: userRole,
-            is_approved: isApproved,
-            mentor_id: null,
-          })
-          .select('role, is_approved, display_name, mentor_id, policy_accepted_at')
-          .single();
+      const userRole: UserRole = supabaseUser.email === 'mulli2@gmail.com'
+        ? 'super_admin'
+        : 'user';
+
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          id: supabaseUser.id,
+          email: supabaseUser.email || '',
+          display_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+          avatar_url: supabaseUser.user_metadata?.avatar_url,
+          role: userRole,
+          mentor_id: null,  // Never auto-link - user must explicitly choose in dashboard
+        })
+        .select('role, display_name, mentor_id, policy_accepted_at')
+        .single();
 
         if (createError) {
           // Handle foreign key constraint violation (user doesn't exist in auth.users)
@@ -143,30 +180,35 @@ export function useAuth(): UseAuthReturn {
           // Use the newly created profile
           setPolicyAccepted(!!newProfile?.policy_accepted_at);
           
+          const finalRole = (newProfile?.role as UserRole) || userRole;
           return {
             id: supabaseUser.id,
             email: supabaseUser.email || '',
             displayName: newProfile?.display_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
-            role: (newProfile?.role as UserRole) || userRole,
-            isApproved: newProfile?.is_approved ?? isApproved,
+            role: finalRole,
             mentorId: newProfile?.mentor_id || null,
             policyAcceptedAt: newProfile?.policy_accepted_at || null,
           };
         }
-      }
     }
 
     // Update policy accepted state
     setPolicyAccepted(!!profile?.policy_accepted_at);
+
+    // If role is not set but mentor_id exists, infer role as 'mentor'
+    // Otherwise default to 'user'
+    let finalRole: UserRole = (profile?.role as UserRole) || 'user';
+    if (!profile?.role && profile?.mentor_id) {
+      finalRole = 'mentor';
+    }
 
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       displayName: profile?.display_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
       avatarUrl: supabaseUser.user_metadata?.avatar_url,
-      role: (profile?.role as UserRole) || 'mentor',
-      isApproved: profile?.is_approved ?? false,
+      role: finalRole,
       mentorId: profile?.mentor_id || null,
       policyAcceptedAt: profile?.policy_accepted_at || null,
     };
@@ -189,7 +231,10 @@ export function useAuth(): UseAuthReturn {
       if (session?.user) {
         try {
           const authUser = await mapSupabaseUser(session.user);
-          setUser(authUser);
+          if (authUser) {
+            setUser(authUser);
+          }
+          // If null, user was redirected (login without account) - do nothing
         } catch (error) {
           // Invalid session (e.g., user doesn't exist in auth.users)
           // Session has been cleared, set user to null
@@ -222,7 +267,10 @@ export function useAuth(): UseAuthReturn {
         if (event === 'SIGNED_IN' && session?.user) {
           try {
             const authUser = await mapSupabaseUser(session.user);
-            setUser(authUser);
+            if (authUser) {
+              setUser(authUser);
+            }
+            // If null, user was redirected (login without account) - do nothing
           } catch (error) {
             // Invalid session (e.g., user doesn't exist in auth.users)
             // Session has been cleared, set user to null
@@ -440,9 +488,10 @@ export function useAuth(): UseAuthReturn {
   const isMentor = user?.role === 'mentor';
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const isSuperAdmin = user?.role === 'super_admin';
-  const isApproved = user?.isApproved ?? false;
-  // Only mentors need to link mentor profiles (not 'user' role)
-  const needsMentorLink = isMentor && user?.mentorId === null;
+  // Approved = mentor/admin/super_admin (not 'user' role)
+  const isApproved = user ? (user.role === 'mentor' || user.role === 'admin' || user.role === 'super_admin') : false;
+  // Users with 'user' or 'mentor' role need to link mentor profiles if mentor_id is null
+  const needsMentorLink = !!(user && (user.role === 'user' || user.role === 'mentor') && user.mentorId === null);
 
   return {
     user,

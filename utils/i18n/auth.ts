@@ -43,10 +43,25 @@ export const auth = {
     acceptAndContinue: "Accept and Continue",
     // Errors
     invalidCredentials: "Invalid email or password",
+    accountNotFound: "Account not found. Please sign up first.",
     passwordMismatch: "Passwords do not match",
     passwordTooShort: "Password must be at least 8 characters",
     emailAlreadyExists: "This email is already registered",
     signUpSuccess: "Account created! Please check your email to verify.",
+    signupFailed: "Signup failed. Please try again.",
+    signupComplete: "Signup Complete!",
+    passwordMinLength: "Minimum 8 characters",
+    // Password Reset Additional
+    invalidResetLink: "Invalid Link",
+    invalidResetLinkMessage: "Invalid or expired reset link. Please request a new one.",
+    passwordChanged: "Password Changed!",
+    resetFailed: "Failed to reset password.",
+    sendResetLinkFailed: "Failed to send reset link.",
+    emailSent: "Email Sent!",
+    // Common actions
+    processing: "Processing...",
+    uploading: "Uploading...",
+    transfer: "Transfer",
     // Roles
     roleUser: "User",
     roleMentor: "Mentor",
@@ -96,10 +111,25 @@ export const auth = {
     acceptAndContinue: "동의하고 계속하기",
     // Errors
     invalidCredentials: "잘못된 이메일 또는 비밀번호입니다",
+    accountNotFound: "계정을 찾을 수 없습니다. 먼저 회원가입해 주세요.",
     passwordMismatch: "비밀번호가 일치하지 않습니다",
     passwordTooShort: "비밀번호는 8자 이상이어야 합니다",
     emailAlreadyExists: "이미 등록된 이메일입니다",
     signUpSuccess: "계정이 생성되었습니다! 이메일을 확인하여 인증해주세요.",
+    signupFailed: "회원가입에 실패했습니다.",
+    signupComplete: "회원가입 완료!",
+    passwordMinLength: "최소 8자 이상",
+    // Password Reset Additional
+    invalidResetLink: "잘못된 링크",
+    invalidResetLinkMessage: "유효하지 않거나 만료된 재설정 링크입니다. 새로 요청해주세요.",
+    passwordChanged: "비밀번호 변경 완료!",
+    resetFailed: "비밀번호 재설정에 실패했습니다.",
+    sendResetLinkFailed: "재설정 링크 전송에 실패했습니다.",
+    emailSent: "이메일 전송 완료!",
+    // Common actions
+    processing: "처리 중...",
+    uploading: "업로드 중...",
+    transfer: "이전하기",
     // Roles
     roleUser: "사용자",
     roleMentor: "멘토",
