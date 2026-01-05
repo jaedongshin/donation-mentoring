@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
 import { FilterState } from '@/utils/useMentorFilters';
@@ -35,9 +35,32 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
   const t = translations[lang];
   const [showAllTags, setShowAllTags] = useState(false);
+  const [showTopFade, setShowTopFade] = useState(false);
+  const [showBottomFade, setShowBottomFade] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const visibleTags = showAllTags ? availableTags : availableTags.slice(0, INITIAL_TAGS_SHOWN);
   const hasMoreTags = availableTags.length > INITIAL_TAGS_SHOWN;
+
+  // Check scroll position to show/hide fade indicators
+  useEffect(() => {
+    if (!showAllTags || !scrollContainerRef.current) {
+      setShowTopFade(false);
+      setShowBottomFade(false);
+      return;
+    }
+
+    const container = scrollContainerRef.current;
+    const checkScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      setShowTopFade(scrollTop > 10);
+      setShowBottomFade(scrollTop < scrollHeight - clientHeight - 10);
+    };
+
+    checkScroll();
+    container.addEventListener('scroll', checkScroll);
+    return () => container.removeEventListener('scroll', checkScroll);
+  }, [showAllTags, availableTags.length]);
 
   // Dark mode styles
   const dm = {
@@ -127,20 +150,60 @@ export default function FilterSidebar({
       {availableTags.length > 0 && (
         <div>
           <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterExpertise}</h4>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-            {visibleTags.map((tag) => (
-              <label key={tag} className="flex items-center cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={filters.expertise.includes(tag)}
-                  onChange={() => handleExpertiseToggle(tag)}
-                  className={`w-3.5 h-3.5 text-sky-600 rounded focus:ring-sky-500 ${dm.checkbox}`}
-                />
-                <span className={`ml-1.5 text-xs ${dm.textMuted} ${dm.hover} truncate`}>
-                  {tag}
-                </span>
-              </label>
-            ))}
+          <div className="relative">
+            {/* Scrollable container with border */}
+            <div
+              ref={scrollContainerRef}
+              className={`grid grid-cols-2 gap-x-2 gap-y-1.5 ${
+                showAllTags
+                  ? 'max-h-64 overflow-y-auto pr-2 border rounded-md p-2'
+                  : ''
+              } ${showAllTags ? (darkMode ? 'border-gray-600 bg-gray-700/30' : 'border-gray-200 bg-gray-50') : ''}`}
+              style={
+                showAllTags
+                  ? {
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: darkMode
+                        ? '#4b5563 #374151'
+                        : '#9ca3af #e5e7eb',
+                    }
+                  : undefined
+              }
+            >
+              {visibleTags.map((tag) => (
+                <label key={tag} className="flex items-center cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={filters.expertise.includes(tag)}
+                    onChange={() => handleExpertiseToggle(tag)}
+                    className={`w-3.5 h-3.5 text-sky-600 rounded focus:ring-sky-500 ${dm.checkbox}`}
+                  />
+                  <span className={`ml-1.5 text-xs ${dm.textMuted} ${dm.hover} truncate`}>
+                    {tag}
+                  </span>
+                </label>
+              ))}
+            </div>
+            {/* Fade gradient at top - overlay */}
+            {showAllTags && showTopFade && (
+              <div
+                className={`absolute top-0 left-0 right-0 h-6 pointer-events-none z-10 rounded-t-md ${
+                  darkMode
+                    ? 'bg-gradient-to-b from-gray-800/95 to-transparent'
+                    : 'bg-gradient-to-b from-white/95 to-transparent'
+                }`}
+              />
+            )}
+            {/* Fade gradient at bottom - overlay */}
+            {showAllTags && showBottomFade && (
+              <div
+                className={`absolute bottom-0 left-0 right-0 h-6 pointer-events-none z-10 rounded-b-md ${
+                  darkMode
+                    ? 'bg-gradient-to-t from-gray-800/95 to-transparent'
+                    : 'bg-gradient-to-t from-white/95 to-transparent'
+                }`}
+              />
+            )}
           </div>
           {hasMoreTags && (
             <button
@@ -149,12 +212,12 @@ export default function FilterSidebar({
             >
               {showAllTags ? (
                 <>
-                  <span>{lang === 'ko' ? '접기' : 'Show less'}</span>
+                  <span>{t.showLess}</span>
                   <ChevronUp size={14} />
                 </>
               ) : (
                 <>
-                  <span>{lang === 'ko' ? `+${availableTags.length - INITIAL_TAGS_SHOWN}개 더보기` : `+${availableTags.length - INITIAL_TAGS_SHOWN} more`}</span>
+                  <span>{lang === 'ko' ? `+${availableTags.length - INITIAL_TAGS_SHOWN}${t.showMoreCount}` : `+${availableTags.length - INITIAL_TAGS_SHOWN} ${t.showMoreCount}`}</span>
                   <ChevronDown size={14} />
                 </>
               )}

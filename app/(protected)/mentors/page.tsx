@@ -1,18 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
 import { Mentor } from '@/types/mentor';
 import { translations, Language } from '@/utils/i18n';
-import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, X, Home, Search, Moon, Sun, Pencil } from 'lucide-react';
+import { Trash2, Plus, X, Pencil } from 'lucide-react';
+import TopNav from '@/app/components/TopNav';
+import { useAuth } from '@/hooks/useAuth';
 
 // Input class generator (DRY)
 const getInputClass = (dark: boolean) => `block w-full rounded-lg ${dark ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border p-2.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40 transition-all text-sm`;
 const getLabelClass = (dark: boolean) => `block text-sm font-medium ${dark ? 'text-gray-300' : 'text-gray-700'} mb-1.5`;
 
 export default function AdminPage() {
+  const router = useRouter();
+  const { user, isLoading: authLoading, isAuthenticated, isAdmin, logout } = useAuth();
+
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState<Language>('ko');
@@ -20,7 +25,7 @@ export default function AdminPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
-  const [searchExpanded, setSearchExpanded] = useState(false);
+  // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('darkMode');
@@ -33,6 +38,13 @@ export default function AdminPage() {
     setDarkMode(newValue);
     localStorage.setItem('darkMode', String(newValue));
   };
+
+  // Redirect if not authenticated or not admin
+  useEffect(() => {
+    if (!authLoading && (!isAuthenticated || !isAdmin)) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, isAdmin, router]);
 
   const [formData, setFormData] = useState<{
     name_en: string;
@@ -110,7 +122,6 @@ export default function AdminPage() {
     textSubtle: darkMode ? 'text-gray-500' : 'text-gray-500',
     border: darkMode ? 'border-gray-700' : 'border-gray-200',
     divider: darkMode ? 'divide-gray-700' : 'divide-gray-200',
-    headerBg: darkMode ? 'bg-gray-900/95' : 'bg-white/95',
     input: darkMode
       ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400',
@@ -280,82 +291,41 @@ export default function AdminPage() {
     setIsFormOpen(true);
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  // Show loading while checking auth
+  if (authLoading || !isAuthenticated || !isAdmin) {
+    return (
+      <div className={`min-h-screen ${dm.bg} flex items-center justify-center`}>
+        <p className={dm.textMuted}>{t.loading}</p>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen ${dm.bg} transition-colors duration-300`}>
       {/* Header */}
-      <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm border-b ${dm.border} sticky top-0 z-40 transition-colors duration-300`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo */}
-            <h1 className={`text-lg font-bold ${dm.text} flex-shrink-0 mr-8`}>{t.adminTitle}</h1>
-
-            {/* Right side controls */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* Search */}
-              {!searchExpanded ? (
-                <button
-                  onClick={() => setSearchExpanded(true)}
-                  className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
-                  aria-label="Search"
-                >
-                  <Search size={18} />
-                </button>
-              ) : (
-                <div className="flex items-center gap-1.5 flex-1 max-w-xs">
-                  <div className="relative flex-1">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      autoFocus
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder={t.searchPlaceholder}
-                      className={`w-full pl-9 pr-3 py-1.5 text-sm ${dm.bgCard} ${dm.text} border ${dm.border} rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40`}
-                    />
-                  </div>
-                  <button
-                    onClick={() => { setSearchExpanded(false); setSearch(''); }}
-                    className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
-                    aria-label="Close search"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              )}
-
-              {/* Language selector */}
-              <select
-                value={lang}
-                onChange={(e) => setLang(e.target.value as Language)}
-                className={`text-sm font-medium ${dm.textMuted} ${dm.bgCard} border ${dm.border} rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40`}
-              >
-                <option value="ko">🇰🇷 KO</option>
-                <option value="en">🇺🇸 EN</option>
-              </select>
-
-              {/* Dark mode toggle */}
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-lg transition-all cursor-pointer ${
-                  darkMode ? 'bg-gray-700 text-amber-400' : 'bg-gray-100 text-gray-600'
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-
-              {/* Home */}
-              <Link
-                href="/"
-                className={`p-2 ${dm.textMuted} hover:${dm.text} ${darkMode ? 'hover:bg-gray-800 active:bg-gray-700' : 'hover:bg-gray-100 active:bg-gray-200'} rounded-lg transition-colors active:scale-95`}
-                aria-label="Home"
-              >
-                <Home size={18} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopNav
+        variant="admin"
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        lang={lang}
+        onLangChange={setLang}
+        showSearch={true}
+        searchValue={search}
+        onSearchChange={setSearch}
+        user={user ? {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+          avatarUrl: user.avatarUrl,
+          role: user.role,
+        } : undefined}
+        onLogout={handleLogout}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Sticky CTA row */}

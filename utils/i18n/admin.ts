@@ -1,0 +1,73 @@
+// Admin panel translations
+export const admin = {
+  en: {
+    adminTitle: "Mentor Management",
+    viewAdmin: "Go to Admin",
+    pendingApplications: "Pending Applications",
+    activeMentors: "Active Mentors",
+    approve: "Approve",
+    reject: "Reject",
+    // User management
+    userManagement: "Permission Management",
+    allUsers: "All Users",
+    changeRole: "Change Role",
+    cannotModify: "Cannot modify",
+    mentorManagement: "Manage Mentors",
+    manageUsers: "Manage Permissions",
+    // Role management
+    roleUpdateFailed: "Failed to update role.",
+    onlySuperAdminCanChangeRoles: "Only super_admin can change user roles.",
+    approveAsMentor: "Approve as Mentor",
+    unapproveFromMentor: "Unapprove from Mentor",
+    mentorApprovalFailed: "Failed to approve user as mentor.",
+    mentorUnapprovalFailed: "Failed to unapprove user from mentor.",
+    onlyUserCanBeMentor: "Only users with \"user\" role can be approved to become mentors.",
+    // Cannot modify messages
+    cannotModifySelf: "Cannot modify yourself",
+    cannotModifySuperAdmin: "Cannot modify super_admin",
+    cannotModifyAdmin: "Cannot modify admin",
+    // Super admin transfer
+    transferSuperAdmin: "Transfer Super Admin",
+    transferSuperAdminConfirm: "Transfer Super Admin",
+    transferSuperAdminFailed: "Failed to transfer super_admin.",
+    actionCannotBeUndone: "This action cannot be undone",
+    transferConfirmQuestion: "Are you sure you want to transfer super_admin role to",
+    transferWarning: "⚠️ After this action, you will no longer have super_admin privileges, and only the transferred user will have super_admin privileges.",
+    transferComplete: "Super_admin role has been transferred. Refreshing page...",
+  },
+  ko: {
+    adminTitle: "멘토 관리",
+    viewAdmin: "관리자 페이지로 이동",
+    pendingApplications: "승인 대기 신청",
+    activeMentors: "활성 멘토",
+    approve: "승인",
+    reject: "거절",
+    // User management
+    userManagement: "권한 관리",
+    allUsers: "전체 사용자",
+    changeRole: "역할 변경",
+    cannotModify: "수정 불가",
+    mentorManagement: "멘토 관리",
+    manageUsers: "권한 관리",
+    // Role management
+    roleUpdateFailed: "역할 변경에 실패했습니다.",
+    onlySuperAdminCanChangeRoles: "super_admin만 역할을 변경할 수 있습니다.",
+    approveAsMentor: "멘토로 승인",
+    unapproveFromMentor: "멘토 승인 취소",
+    mentorApprovalFailed: "멘토 승인에 실패했습니다.",
+    mentorUnapprovalFailed: "멘토 승인 취소에 실패했습니다.",
+    onlyUserCanBeMentor: "멘토로 승인할 수 있는 것은 사용자(user) 역할만 가능합니다.",
+    // Cannot modify messages
+    cannotModifySelf: "본인은 수정할 수 없습니다",
+    cannotModifySuperAdmin: "super_admin는 수정할 수 없습니다",
+    cannotModifyAdmin: "관리자는 수정할 수 없습니다",
+    // Super admin transfer
+    transferSuperAdmin: "super_admin 이전",
+    transferSuperAdminConfirm: "super_admin 이전 확인",
+    transferSuperAdminFailed: "super_admin 이전에 실패했습니다.",
+    actionCannotBeUndone: "이 작업은 되돌릴 수 없습니다",
+    transferConfirmQuestion: "에게 super_admin 역할을 이전하시겠습니까?",
+    transferWarning: "⚠️ 이 작업 후에는 더 이상 super_admin 권한이 없으며, 이전된 사용자만 super_admin 권한을 가집니다.",
+    transferComplete: "super_admin 역할이 이전되었습니다. 페이지를 새로고침합니다.",
+  },
+};

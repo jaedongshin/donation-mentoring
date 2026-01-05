@@ -1,42 +1,19 @@
-export const translations = {
+// Homepage and public pages translations
+export const home = {
   en: {
     title: "Donation Mentoring",
     subtitle: "Connect with mentors for donation-based sessions",
     searchPlaceholder: "Search mentors...",
-    adminTitle: "Donation Mentoring Management",
-    name: "Name",
-    company: "Company",
-    description: "Description",
-    location: "Location",
-    position: "Position",
-    photo: "Photo",
-    tags: "Tags (comma separated)",
-    enabled: "Enabled",
-    save: "Save",
-    upload: "Upload",
-    edit: "Edit",
-    delete: "Delete",
-    viewAdmin: "Go to Admin",
-    applyMentor: "Apply Mentor",
-    cancel: "Cancel",
-    submitApplication: "Submit Application",
-    submitting: "Submitting...",
-    calendarUrl: "Available time URL (https://calendly.com)",
-    languages: "Languages",
-    sessionTime: "Session Time (minutes)",
-    sessionPrice: "Session Price (USD)",
-    unicefDonation: "UNICEF Donation",
-    viewHome: "Go to Home",
     noMentors: "No mentors found.",
-    loading: "Loading...",
-    todaysMentor: "Today's Mentor",
-    todaysMentorDesc: "Meet our featured mentor for today",
+    viewHome: "Go to Home",
+    findMentors: "Find Mentors",
+    // Navigation
     navMentors: "Mentors",
     navHowTo: "How To",
     navAbout: "About",
     navValues: "Values",
+    // How-to guide
     howToDonate: "How it Works",
-    // 4-step guide
     howToStepLabels: ["Choose", "Donate", "Book", "Meet"],
     howToStep1Title: "Choose a Mentor",
     howToStep1Desc: "Browse mentors and find someone who matches your needs",
@@ -58,7 +35,7 @@ export const translations = {
       "Book your session on the mentor's calendar.",
       "Attend the mentoring session at the scheduled time."
     ],
-    // Filter sidebar
+    // Filters
     filterTitle: "Filters",
     filterExpertise: "Expertise",
     filterLocation: "Location",
@@ -68,8 +45,9 @@ export const translations = {
     filterAnyLength: "Any Length",
     filterMin: "min",
     // Mentor card
-    bookSession: "Book",
-    findMentors: "Find Mentors",
+    viewProfile: "View Profile",
+    bookSession: "Book Session",
+    // About section
     mentoringTitle: "What is Mentorship?",
     mentoringDesc: "Mentorship is the process through which a mentee shares their challenges and inquiries with a mentor to independently discover their optimal solutions. While solo contemplation can be restricted by one's own limited perspective and experience, leveraging the mentor's diverse viewpoints and extensive expertise allows the mentee to achieve broader insights and discover more effective resolutions.",
     donationMentoringTitle: "The Value Proposition of Donation-Based Mentorship ",
@@ -90,46 +68,23 @@ export const translations = {
       "Fostering Enhanced Accountability and Motivation: The structured mentorship process cultivates a strong sense of self-directed ownership and a sustained impetus for growth."
     ],
     applicationSuccess: "Application submitted successfully! Please wait for admin approval.",
+    todaysMentor: "Today's Mentor",
+    todaysMentorDesc: "Meet our featured mentor for today",
   },
   ko: {
     title: "기부 멘토링",
     subtitle: "기부를 통해 멘토와 연결되세요",
     searchPlaceholder: "멘토 검색...",
-    adminTitle: "기부 멘토링 관리",
-    name: "이름",
-    company: "회사",
-    description: "설명",
-    location: "위치",
-    position: "직무",
-    photo: "사진",
-    tags: "태그 (콤마로 구분)",
-    enabled: "활성화",
-    save: "저장",
-    upload: "업로드",
-    edit: "수정",
-    delete: "삭제",
-    viewAdmin: "관리자 페이지로 이동",
-    applyMentor: "멘토 신청",
-    cancel: "취소",
-    submitApplication: "신청서 제출",
-    submitting: "제출 중...",
-    calendarUrl: "가능한 시간 URL (https://calendly.com)",
-    languages: "멘토링 가능 언어",
-    sessionTime: "세션 시간 (분)",
-    sessionPrice: "세션 가격 (USD)",
-    unicefDonation: "UNICEF 기부",
-    viewHome: "홈으로 이동",
     noMentors: "멘토를 찾을 수 없습니다.",
-    loading: "로딩 중...",
-    todaysMentor: "오늘의 멘토",
-    todaysMentorDesc: "오늘 소개하는 멘토를 만나보세요",
+    viewHome: "홈으로 이동",
+    findMentors: "멘토 찾기",
+    // Navigation
     navMentors: "멘토 목록",
     navHowTo: "방법",
     navAbout: "소개",
     navValues: "가치",
+    // How-to guide
     howToDonate: "이용 방법",
-    findMentors: "멘토 찾기",
-    // 4-step guide
     howToStepLabels: ["선택", "기부", "예약", "만남"],
     howToStep1Title: "멘토 선택",
     howToStep1Desc: "원하는 분야의 멘토를 찾아보세요",
@@ -151,7 +106,7 @@ export const translations = {
       "멘토 캘린더 예약",
       "약속된 시간에 멘토링 진행"
     ],
-    // Filter sidebar
+    // Filters
     filterTitle: "필터",
     filterExpertise: "전문 분야",
     filterLocation: "위치",
@@ -161,7 +116,9 @@ export const translations = {
     filterAnyLength: "전체",
     filterMin: "분",
     // Mentor card
-    bookSession: "예약",
+    viewProfile: "프로필 보기",
+    bookSession: "예약하기",
+    // About section
     mentoringTitle: "멘토링이란?",
     mentoringDesc: "멘토링은 멘티가 자신의 고민과 질문을 멘토에게 공유하면서 자신만의 답을 찾아가는 과정입니다. 혼자서 고민하면 자신의 경험과 관점에 한정될 수 있지만, 멘토의 다양한 시각과 풍부한 경험과 함께라면, 더 넓은 시야와 해결책을 찾을 수 있습니다.",
     donationMentoringTitle: "기부 멘토링이란?",
@@ -182,8 +139,7 @@ export const translations = {
       "책임감 및 동기 부여 강화: 멘토링 과정을 통해 자기 주도적 책임감과 성장 동기를 강화할 수 있습니다."
     ],
     applicationSuccess: "신청서가 성공적으로 제출되었습니다! 관리자의 승인을 기다려주세요.",
-  }
+    todaysMentor: "오늘의 멘토",
+    todaysMentorDesc: "오늘의 추천 멘토를 만나보세요",
+  },
 };
-
-export type Language = 'en' | 'ko';
-export type TranslationKey = keyof typeof translations.en;
