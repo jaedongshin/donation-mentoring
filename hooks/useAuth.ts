@@ -141,12 +141,27 @@ export function useAuth(): UseAuthReturn {
       }
       
       // Auto-create profile (this is a signup flow - fallback if trigger didn't run)
-      // NOTE: We do NOT auto-link to mentor profiles here.
+      // NOTE: We do NOT auto-link to mentor profiles here for regular users.
       // Even if an email matches, users should explicitly choose to link via the dashboard UI.
+      // EXCEPTION: mulli2@gmail.com (super admin) auto-links to existing mentor profile.
 
-      const userRole: UserRole = supabaseUser.email === 'mulli2@gmail.com'
-        ? 'super_admin'
-        : 'user';
+      const isSuperAdminEmail = supabaseUser.email === 'mulli2@gmail.com';
+      const userRole: UserRole = isSuperAdminEmail ? 'super_admin' : 'user';
+
+      // For super admin (mulli2@gmail.com only), auto-detect and link existing mentor profile
+      let autoLinkedMentorId: string | null = null;
+      if (isSuperAdminEmail && supabaseUser.email) {
+        const { data: existingMentor } = await supabase
+          .from('mentors')
+          .select('id')
+          .eq('email', supabaseUser.email)
+          .maybeSingle();
+        
+        if (existingMentor) {
+          autoLinkedMentorId = existingMentor.id;
+          console.log('Super admin auto-linked to existing mentor profile:', autoLinkedMentorId);
+        }
+      }
 
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
@@ -156,7 +171,7 @@ export function useAuth(): UseAuthReturn {
           display_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
           avatar_url: supabaseUser.user_metadata?.avatar_url,
           role: userRole,
-          mentor_id: null,  // Never auto-link - user must explicitly choose in dashboard
+          mentor_id: autoLinkedMentorId,  // Auto-link for super admin, null for others
         })
         .select('role, display_name, mentor_id, policy_accepted_at')
         .single();
@@ -203,13 +218,48 @@ export function useAuth(): UseAuthReturn {
       finalRole = 'mentor';
     }
 
+    let finalMentorId = profile?.mentor_id || null;
+    const isSuperAdminEmail = supabaseUser.email === 'mulli2@gmail.com';
+
+    // For super admin (mulli2@gmail.com only), ensure role is super_admin and auto-link to existing mentor
+    if (isSuperAdminEmail) {
+      // Ensure role is super_admin
+      if (finalRole !== 'super_admin') {
+        finalRole = 'super_admin';
+        await supabase
+          .from('profiles')
+          .update({ role: 'super_admin' })
+          .eq('id', supabaseUser.id);
+        console.log('Super admin role set for mulli2@gmail.com');
+      }
+    }
+
+    // For super admin (mulli2@gmail.com only), auto-link to existing mentor if not already linked
+    if (isSuperAdminEmail && !finalMentorId) {
+      const { data: existingMentor } = await supabase
+        .from('mentors')
+        .select('id')
+        .eq('email', supabaseUser.email)
+        .maybeSingle();
+      
+      if (existingMentor) {
+        finalMentorId = existingMentor.id;
+        // Update the profile to link the mentor
+        await supabase
+          .from('profiles')
+          .update({ mentor_id: finalMentorId })
+          .eq('id', supabaseUser.id);
+        console.log('Super admin auto-linked to existing mentor profile:', finalMentorId);
+      }
+    }
+
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       displayName: profile?.display_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
       avatarUrl: supabaseUser.user_metadata?.avatar_url,
       role: finalRole,
-      mentorId: profile?.mentor_id || null,
+      mentorId: finalMentorId,
       policyAcceptedAt: profile?.policy_accepted_at || null,
     };
   }, []);

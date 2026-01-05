@@ -24,6 +24,8 @@ export const dashboard = {
     calendarCardDesc: "Connect your calendar for automatic booking",
     statsCardTitle: "Stats",
     statsCardDesc: "View your mentoring statistics and impact",
+    bookingsCardTitle: "Bookings",
+    bookingsCardDesc: "View and manage your scheduled mentoring sessions",
   },
   ko: {
     dashboardTitle: "내 대시보드",
@@ -49,5 +51,7 @@ export const dashboard = {
     calendarCardDesc: "자동 예약을 위해 캘린더를 연결하세요",
     statsCardTitle: "통계",
     statsCardDesc: "멘토링 통계와 영향력을 확인하세요",
+    bookingsCardTitle: "예정된 세션",
+    bookingsCardDesc: "예정된 멘토링 세션을 확인하고 관리하세요",
   },
 };

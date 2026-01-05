@@ -463,7 +463,8 @@ export default function DashboardPage() {
                         {selectedCard === 'bookings' && (
                             <PlaceholderSection
                                 icon={Calendar}
-                                title={t.noUpcomingBookings}
+                                title={t.comingSoon}
+                                description={t.bookingsCardDesc}
                                 darkMode={darkMode}
                             />
                         )}
