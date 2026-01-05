@@ -66,12 +66,9 @@ describe('Seed SQL validation', () => {
   });
 
   describe('test users', () => {
-    it('should include super admin test user', () => {
-      expect(seedContent).toContain("'super@test.com'");
-    });
-
-    it('should include admin test user', () => {
+    it('should include admin test users', () => {
       expect(seedContent).toContain("'admin@test.com'");
+      expect(seedContent).toContain("'admin2@test.com'");
     });
 
     it('should include mentor test users', () => {
@@ -82,15 +79,24 @@ describe('Seed SQL validation', () => {
     it('should include pending test user', () => {
       expect(seedContent).toContain("'pending1@test.com'");
     });
+
+    it('should note that super_admin is not seeded (only mulli2@gmail.com)', () => {
+      // Super admin is not seeded - only mulli2@gmail.com can be super_admin
+      expect(seedContent).toContain('Only mulli2@gmail.com can be super_admin');
+    });
   });
 
   describe('profiles table', () => {
-    it('should update super admin profile with super_admin role', () => {
-      expect(seedContent).toContain("role = 'super_admin'");
+    it('should update admin profiles with admin role', () => {
+      expect(seedContent).toContain("role = 'admin'");
     });
 
-    it('should update admin profile with admin role', () => {
-      expect(seedContent).toContain("role = 'admin'");
+    it('should update mentor profiles with mentor role', () => {
+      expect(seedContent).toContain("role = 'mentor'");
+    });
+
+    it('should update pending user with user role', () => {
+      expect(seedContent).toContain("role = 'user'");
     });
   });
 });
@@ -100,7 +106,7 @@ describe('Migration validation', () => {
     process.cwd(),
     'supabase',
     'migrations',
-    '20260105000002_auth_profiles.sql'
+    '20250101000001_add_user_features.sql'
   );
   let migrationContent: string;
 
