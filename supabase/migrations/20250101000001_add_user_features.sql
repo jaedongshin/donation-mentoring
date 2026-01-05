@@ -1,53 +1,46 @@
--- Auth Profiles: User authentication and authorization
--- Links Supabase Auth users to the application
+-- ============================================
+-- ADD USER FEATURES MIGRATION
+-- ============================================
+-- This migration adds new features on top of the production baseline:
+-- 1. Add 'user' role option (new default for signups)
+-- 2. Add policy_accepted_at column
+-- 3. Add role validation functions and triggers
+-- 4. Update handle_new_user() with super_admin auto-promotion
+-- 5. Add new RLS policies
+--
+-- SAFE: Uses IF NOT EXISTS, CREATE OR REPLACE, doesn't drop existing data
+-- ============================================
 
 -- ============================================
--- PROFILES TABLE
+-- 1. ADD NEW COLUMN: policy_accepted_at
 -- ============================================
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-    email TEXT,
-    display_name TEXT,
-    avatar_url TEXT,
-    role TEXT DEFAULT 'user' CHECK (role IN ('user', 'mentor', 'admin', 'super_admin')),
-    mentor_id UUID REFERENCES public.mentors(id) ON DELETE SET NULL,  -- NULL = needs to link/register
-    policy_accepted_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS policy_accepted_at TIMESTAMPTZ;
 
--- Indexes
+-- ============================================
+-- 2. UPDATE ROLE CHECK CONSTRAINT
+-- ============================================
+-- Add 'user' role to allowed values
+-- Production has: mentor, admin, super_admin
+-- New: user, mentor, admin, super_admin
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check 
+    CHECK (role IN ('user', 'mentor', 'admin', 'super_admin'));
+
+-- Update default role from 'mentor' to 'user' for new signups
+ALTER TABLE public.profiles ALTER COLUMN role SET DEFAULT 'user';
+
+-- ============================================
+-- 3. NEW INDEXES
+-- ============================================
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
-CREATE INDEX IF NOT EXISTS idx_profiles_mentor_id ON public.profiles(mentor_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_unlinked ON public.profiles(id) WHERE mentor_id IS NULL;
 CREATE INDEX IF NOT EXISTS idx_profiles_policy_not_accepted ON public.profiles(policy_accepted_at) WHERE policy_accepted_at IS NULL;
 
 -- ============================================
--- SECURITY DEFINER FUNCTIONS (avoid RLS recursion)
+-- 4. NEW HELPER FUNCTIONS
 -- ============================================
-
--- Check if current user is admin or super_admin
-CREATE OR REPLACE FUNCTION public.is_admin_or_super_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
-
--- Check if current user is super_admin
-CREATE OR REPLACE FUNCTION public.is_super_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid() AND role = 'super_admin'
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Check if there's already a super_admin (enforce only 1 super admin)
 CREATE OR REPLACE FUNCTION public.has_super_admin(exclude_id UUID DEFAULT NULL)
@@ -104,38 +97,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- ============================================
--- ROW LEVEL SECURITY
--- ============================================
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
--- Users can view their own profile
-DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
-CREATE POLICY "Users can view own profile" ON public.profiles
-    FOR SELECT USING (auth.uid() = id);
-
--- Users can insert their own profile (fallback if trigger fails)
-DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
-CREATE POLICY "Users can insert own profile" ON public.profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
-
--- Users can update their own profile (limited fields handled by app)
-DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-CREATE POLICY "Users can update own profile" ON public.profiles
-    FOR UPDATE USING (auth.uid() = id);
-
--- Admins can view all profiles
-DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
-CREATE POLICY "Admins can view all profiles" ON public.profiles
-    FOR SELECT USING (public.is_admin_or_super_admin());
-
--- Admins can update any profile (for approval)
--- Note: Role changes restricted to super_admin via validate_role_change function
-DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
-CREATE POLICY "Admins can update all profiles" ON public.profiles
-    FOR UPDATE USING (public.is_admin_or_super_admin());
-
--- ============================================
--- AUTO-CREATE PROFILE ON USER SIGNUP
+-- 5. UPDATE handle_new_user() WITH AUTO-PROMOTION
 -- ============================================
 -- NOTE: We do NOT auto-link mentor profiles here.
 -- Even if an email matches an existing mentor, users must explicitly
@@ -176,30 +138,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger on user signup
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
 -- ============================================
--- UPDATED_AT TRIGGER
--- ============================================
-CREATE OR REPLACE FUNCTION public.handle_profiles_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS on_profiles_updated ON public.profiles;
-CREATE TRIGGER on_profiles_updated
-    BEFORE UPDATE ON public.profiles
-    FOR EACH ROW EXECUTE FUNCTION public.handle_profiles_updated_at();
-
--- ============================================
--- ROLE CHANGE VALIDATION TRIGGER
+-- 6. ROLE CHANGE VALIDATION TRIGGER
 -- ============================================
 CREATE OR REPLACE FUNCTION public.validate_role_change_trigger()
 RETURNS TRIGGER AS $$
@@ -208,6 +148,11 @@ DECLARE
 BEGIN
     -- Only validate if role is actually changing
     IF OLD.role = NEW.role THEN
+        RETURN NEW;
+    END IF;
+
+    -- Skip validation if no authenticated user (e.g., during seed/migration)
+    IF auth.uid() IS NULL THEN
         RETURN NEW;
     END IF;
 
@@ -247,6 +192,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Create the validation trigger
 DROP TRIGGER IF EXISTS validate_role_change_on_profiles ON public.profiles;
 CREATE TRIGGER validate_role_change_on_profiles
     BEFORE UPDATE OF role ON public.profiles
@@ -255,13 +201,24 @@ CREATE TRIGGER validate_role_change_on_profiles
     EXECUTE FUNCTION public.validate_role_change_trigger();
 
 -- ============================================
--- GRANTS
+-- 7. NEW RLS POLICIES
 -- ============================================
-GRANT ALL ON public.profiles TO anon;
-GRANT ALL ON public.profiles TO authenticated;
-GRANT ALL ON public.profiles TO service_role;
 
-GRANT EXECUTE ON FUNCTION public.is_admin_or_super_admin() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.is_super_admin() TO authenticated;
+-- Users can insert their own profile (fallback if trigger fails)
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+CREATE POLICY "Users can insert own profile" ON public.profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Update: Admins (not just super_admin) can update all profiles
+-- Note: Role changes still restricted via validate_role_change_trigger
+DROP POLICY IF EXISTS "Super admins can update all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
+CREATE POLICY "Admins can update all profiles" ON public.profiles
+    FOR UPDATE USING (public.is_admin_or_super_admin());
+
+-- ============================================
+-- 8. GRANTS FOR NEW FUNCTIONS
+-- ============================================
 GRANT EXECUTE ON FUNCTION public.has_super_admin(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.validate_role_change(UUID, TEXT, UUID) TO authenticated;
+

@@ -46,3 +46,6 @@ next-env.d.ts
 .mcp.json
 CLAUDE.md
 .claude/
+
+# backup
+supabase/seed_prod_backup.sql
