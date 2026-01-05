@@ -1,45 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Donation Mentoring Platform
 
-## Getting Started
+A Next.js application for connecting mentors with mentees.
 
-First, set the environment variables. For your local development, you should set them in .env.local file. You can ask me, Jaedong Shin, the variable values.
+## Local Development Setup
 
-- NEXT_PUBLIC_SUPABASE_URL
-- NEXT_PUBLIC_SUPABASE_ANON_KEY
+### Prerequisites
 
-Second, install required packages:
+- Node.js 18+
+- Docker Desktop running
+- Supabase CLI: `brew install supabase/tap/supabase`
+
+### 1. Install dependencies
+
 ```bash
 npm install
 ```
 
-Third, run the development server:
+### 2. Set up environment variables
+
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This configures your app to use local Supabase Docker containers. The example file contains pre-configured local development values that work out of the box.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Start local Supabase
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+supabase start      # Start Docker containers
+supabase db reset   # Apply migrations + seed test data
+```
+
+### 4. Start the dev server
+
+```bash
+npm run dev
+```
+
+### 5. Access local services
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| App | http://localhost:3000 | Your Next.js app |
+| Supabase Studio | http://localhost:54323 | Database UI, table editor |
+| Inbucket | http://localhost:54324 | Test email inbox |
+
+### Google OAuth (Optional)
+
+Google login requires extra setup. See [docs/LOCAL_SUPABASE.md](docs/LOCAL_SUPABASE.md#google-oauth-optional).
+
+### When done
+
+```bash
+supabase stop
+```
+
+## Test Accounts (Local)
+
+After running `supabase db reset`, these test accounts are available:
+
+| Email | Type | Notes |
+|-------|------|-------|
+| test.mentor@example.com | Test | Approved mentor |
+| test.pending@example.com | Test | Pending mentor |
+| test.admin@example.com | Test | Admin user |
+
+## Common Commands
+
+```bash
+# Check Supabase status
+supabase status
+
+# Reset database (reapply migrations + seed)
+supabase db reset
+
+# View Supabase logs
+supabase logs
+
+# Run tests
+npm test
+```
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Local Supabase Guide](docs/LOCAL_SUPABASE.md) - Detailed local development docs
+- [Next.js Documentation](https://nextjs.org/docs) - Next.js features and API
+- [Supabase Documentation](https://supabase.com/docs) - Supabase features and API
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check out [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
