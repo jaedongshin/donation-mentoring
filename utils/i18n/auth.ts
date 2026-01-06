@@ -1,7 +1,7 @@
 // Authentication related translations
 export const auth = {
   en: {
-    login: "Sign In",
+    login: "Mentor Sign In",
     logout: "Logout",
     loginSubtitle: "Sign in to manage your mentor profile",
     continueWithGoogle: "Continue with Google",
@@ -21,7 +21,6 @@ export const auth = {
     email: "Email",
     password: "Password",
     confirmPassword: "Confirm Password",
-    logIn: "Log In",
     loginWithGoogle: "Log in with Google",
     // Password Reset
     forgotPassword: "Forgot password?",
@@ -69,7 +68,7 @@ export const auth = {
     roleSuperAdmin: "Super Admin",
   },
   ko: {
-    login: "로그인",
+    login: "멘토 로그인",
     logout: "로그아웃",
     loginSubtitle: "멘토 프로필을 관리하려면 로그인하세요",
     continueWithGoogle: "Google로 계속하기",
@@ -89,7 +88,6 @@ export const auth = {
     email: "이메일",
     password: "비밀번호",
     confirmPassword: "비밀번호 확인",
-    logIn: "로그인",
     loginWithGoogle: "Google로 로그인",
     // Password Reset
     forgotPassword: "비밀번호를 잊으셨나요?",

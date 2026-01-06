@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import Image from 'next/image';
 import { translations, Language } from '@/utils/i18n';
 
 // Input/Label class generators
@@ -55,6 +57,14 @@ export default function ProfileForm({
     textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
   };
 
+  const [tagsInput, setTagsInput] = useState(formData.tags.join(', '));
+  const [prevTags, setPrevTags] = useState(formData.tags);
+
+  if (formData.tags !== prevTags) {
+    setPrevTags(formData.tags);
+    setTagsInput(formData.tags.join(', '));
+  }
+
   const updateField = (field: keyof ProfileFormData, value: string | string[]) => {
     onChange({ ...formData, [field]: value });
   };
@@ -78,6 +88,7 @@ export default function ProfileForm({
   };
 
   const handleTagsChange = (value: string) => {
+    setTagsInput(value);
     const tags = value.split(',').map(tag => tag.trim()).filter(Boolean);
     onChange({ ...formData, tags });
   };
@@ -311,7 +322,7 @@ export default function ProfileForm({
         <input
           type="text"
           className={getInputClass(darkMode)}
-          value={formData.tags.join(', ')}
+          value={tagsInput}
           onChange={e => handleTagsChange(e.target.value)}
           placeholder="Frontend, UX, AI, ..."
         />
@@ -322,10 +333,13 @@ export default function ProfileForm({
         <label className={getLabelClass(darkMode)}>{t.photo}</label>
         <div className="flex items-center gap-4 pt-2">
           {formData.picture_url && (
-            <img
+            <Image
               src={formData.picture_url}
               alt="Profile"
-              className="w-16 h-16 rounded-lg object-cover"
+              width={64}
+              height={64}
+              className="rounded-lg object-cover"
+              unoptimized
             />
           )}
           <label className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${

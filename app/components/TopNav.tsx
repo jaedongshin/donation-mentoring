@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Moon, Sun, User, LogOut, Search, X, ChevronDown } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
 import { UserRole } from '@/hooks/useAuth';
@@ -229,10 +230,13 @@ export default function TopNav({
                   aria-label="Profile menu"
                 >
                   {user.avatarUrl ? (
-                    <img
+                    <Image
                       src={user.avatarUrl}
                       alt={user.displayName || user.email}
-                      className="w-6 h-6 rounded-full object-cover"
+                      width={24}
+                      height={24}
+                      className="rounded-full object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className={`w-6 h-6 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} flex items-center justify-center`}>

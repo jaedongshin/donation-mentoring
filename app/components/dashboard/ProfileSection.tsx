@@ -24,7 +24,6 @@ interface ProfileSectionProps {
     selectedMentorPreview?: ProfileFormData | null;
     linkSubmitSuccess?: boolean;
     onLinkSubmit?: () => void;
-    isSubmittingLink?: boolean;
 }
 
 export default function ProfileSection({
@@ -42,7 +41,6 @@ export default function ProfileSection({
     selectedMentorPreview,
     linkSubmitSuccess = false,
     onLinkSubmit,
-    isSubmittingLink = false,
 }: ProfileSectionProps) {
     const t = translations[lang];
 
