@@ -172,7 +172,6 @@ export function useAuth(): UseAuthReturn {
           avatar_url: supabaseUser.user_metadata?.avatar_url,
           role: userRole,
           mentor_id: autoLinkedMentorId,  // Auto-link for super admin, null for others
-          policy_accepted_at: new Date().toISOString(), // Auto-accept policy on signup
         })
         .select('role, display_name, mentor_id, policy_accepted_at')
         .single();

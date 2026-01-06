@@ -1,5 +1,6 @@
 import { ensureProtocol, getMentorDisplay, shuffleArray, getDailyMentor } from '@/utils/helpers';
 import { Mentor } from '@/types/mentor';
+import { Language } from '@/utils/i18n';
 
 describe('helpers', () => {
   describe('ensureProtocol', () => {

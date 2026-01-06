@@ -241,7 +241,7 @@ export default function LoginPage() {
                   : 'bg-sky-600 hover:bg-sky-700 text-white cursor-pointer'
               }`}
             >
-              {isSubmitting ? t.loading : t.login}
+              {isSubmitting ? t.loading : t.logIn}
             </button>
           </form>
 

@@ -44,28 +44,23 @@ export default function FilterSidebar({
 
   // Check scroll position to show/hide fade indicators
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!showAllTags || !container) return;
+    if (!showAllTags || !scrollContainerRef.current) {
+      setShowTopFade(false);
+      setShowBottomFade(false);
+      return;
+    }
 
+    const container = scrollContainerRef.current;
     const checkScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       setShowTopFade(scrollTop > 10);
       setShowBottomFade(scrollTop < scrollHeight - clientHeight - 10);
     };
 
-    // Use a small delay to ensure DOM is updated after showAllTags toggle
-    const timeoutId = setTimeout(checkScroll, 0);
-    
+    checkScroll();
     container.addEventListener('scroll', checkScroll);
-    return () => {
-      clearTimeout(timeoutId);
-      container.removeEventListener('scroll', checkScroll);
-    };
+    return () => container.removeEventListener('scroll', checkScroll);
   }, [showAllTags, availableTags.length]);
-
-  // Derived fade visibility
-  const topFadeVisible = showAllTags && showTopFade;
-  const bottomFadeVisible = showAllTags && showBottomFade;
 
   // Dark mode styles
   const dm = {
@@ -190,7 +185,7 @@ export default function FilterSidebar({
               ))}
             </div>
             {/* Fade gradient at top - overlay */}
-            {topFadeVisible && (
+            {showAllTags && showTopFade && (
               <div
                 className={`absolute top-0 left-0 right-0 h-6 pointer-events-none z-10 rounded-t-md ${
                   darkMode
@@ -200,7 +195,7 @@ export default function FilterSidebar({
               />
             )}
             {/* Fade gradient at bottom - overlay */}
-            {bottomFadeVisible && (
+            {showAllTags && showBottomFade && (
               <div
                 className={`absolute bottom-0 left-0 right-0 h-6 pointer-events-none z-10 rounded-b-md ${
                   darkMode

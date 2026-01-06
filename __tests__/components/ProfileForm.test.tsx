@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import ProfileForm, { ProfileFormData } from '@/app/components/ProfileForm';
+import { translations } from '@/utils/i18n';
 
 // Mock translations
 jest.mock('@/utils/i18n', () => ({
@@ -193,6 +194,7 @@ describe('ProfileForm', () => {
       );
 
       const koreanCheckbox = screen.getByLabelText(/korean/i);
+      const englishCheckbox = screen.getByLabelText(/english/i);
 
       // Click Korean first
       fireEvent.click(koreanCheckbox);

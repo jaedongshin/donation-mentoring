@@ -8,8 +8,9 @@ import FilterSidebar from '@/app/components/FilterSidebar';
 import MentorModal from '@/app/components/MentorModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from '@/utils/helpers';
+import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Mail, Linkedin } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Moon, Sun, User, Mail, Linkedin } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
@@ -44,6 +45,7 @@ export default function Home() {
     return saved !== null ? saved === 'true' : true;
   });
   const [scrollY, setScrollY] = useState(0);
+  const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const [todaysMentor, setTodaysMentor] = useState<Mentor | null>(null);
   const mentorsSectionRef = useRef<HTMLElement>(null);
 
@@ -123,7 +125,6 @@ export default function Home() {
         lang={lang}
         onLangChange={setLang}
         onScrollToAbout={() => scrollToElement('hero')}
-        onScrollToTodayMentor={() => scrollToElement('today-mentor')}
         onScrollToMentors={scrollToMentors}
       />
 
@@ -301,7 +302,7 @@ export default function Home() {
 
       {/* Today's Mentor Section */}
       {todaysMentor && !loading && (
-        <section id="today-mentor" className={`${dm.bg} pt-8 pb-4 transition-colors duration-300 scroll-mt-20`}>
+        <section className={`${dm.bg} pt-8 pb-4 transition-colors duration-300`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className={`text-xl font-bold ${dm.text} mb-4 flex items-center gap-2`}>
               <span className="text-2xl">✨</span> {t.todaysMentor}
