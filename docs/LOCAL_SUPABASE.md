@@ -122,35 +122,3 @@ supabase stop
 supabase start
 supabase db reset
 ```
-
-### Containers hibernate/go to sleep too quickly
-
-Docker Desktop on macOS can pause containers after a period of inactivity to save resources. To prevent this:
-
-1. **Check current Docker Desktop settings:**
-   - Open Docker Desktop
-   - Go to **Settings** (gear icon) → **Resources** → **Advanced**
-   - Look for "Pause containers when inactive" or similar setting
-
-2. **Disable container hibernation:**
-   - In Docker Desktop Settings → **General**
-   - Uncheck "Pause containers when inactive" (if available)
-   - Or increase the timeout if there's a setting for it
-
-3. **Alternative: Keep containers active:**
-   - You can periodically ping the API to keep it active:
-   ```bash
-   # Run this in a separate terminal to keep Supabase active
-   watch -n 30 curl -s http://localhost:54321/rest/v1/ > /dev/null
-   ```
-
-4. **Check if containers are paused:**
-   ```bash
-   docker ps -a
-   # Look for containers with status "Paused"
-   ```
-
-5. **Unpause containers if needed:**
-   ```bash
-   docker unpause $(docker ps -aq --filter "status=paused")
-   ```
