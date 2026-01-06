@@ -31,6 +31,7 @@ interface TopNavProps {
   // For guest: scroll handlers
   onScrollToAbout?: () => void;
   onScrollToMentors?: () => void;
+  onScrollToTodayMentor?: () => void;
 
   // For admin: search
   showSearch?: boolean;
@@ -53,6 +54,7 @@ export default function TopNav({
   variant,
   onScrollToAbout,
   onScrollToMentors,
+  onScrollToTodayMentor,
   showSearch = false,
   searchValue = '',
   onSearchChange,
@@ -109,7 +111,7 @@ export default function TopNav({
           {/* Right side controls */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Guest: Nav links - only on homepage when scroll handlers provided */}
-            {variant === 'guest' && (onScrollToAbout || onScrollToMentors) && (
+            {variant === 'guest' && (onScrollToAbout || onScrollToMentors || onScrollToTodayMentor) && (
               <nav className="hidden md:flex items-center gap-1 mr-2">
                 <button
                   onClick={onScrollToAbout}
@@ -117,6 +119,14 @@ export default function TopNav({
                 >
                   {t.navAbout}
                 </button>
+                {onScrollToTodayMentor && (
+                  <button
+                    onClick={onScrollToTodayMentor}
+                    className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap cursor-pointer`}
+                  >
+                    {t.navTodayMentor}
+                  </button>
+                )}
                 <button
                   onClick={onScrollToMentors}
                   className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap cursor-pointer`}

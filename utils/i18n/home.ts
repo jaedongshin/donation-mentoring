@@ -12,6 +12,7 @@ export const home = {
     navHowTo: "How To",
     navAbout: "About",
     navValues: "Values",
+    navTodayMentor: "Today's Mentor",
     // How-to guide
     howToDonate: "How it Works",
     howToStepLabels: ["Choose", "Donate", "Book", "Meet"],
@@ -83,6 +84,7 @@ export const home = {
     navHowTo: "방법",
     navAbout: "소개",
     navValues: "가치",
+    navTodayMentor: "오늘의 멘토",
     // How-to guide
     howToDonate: "이용 방법",
     howToStepLabels: ["선택", "기부", "예약", "만남"],

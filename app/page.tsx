@@ -123,6 +123,7 @@ export default function Home() {
         lang={lang}
         onLangChange={setLang}
         onScrollToAbout={() => scrollToElement('hero')}
+        onScrollToTodayMentor={() => scrollToElement('today-mentor')}
         onScrollToMentors={scrollToMentors}
       />
 
@@ -300,7 +301,7 @@ export default function Home() {
 
       {/* Today's Mentor Section */}
       {todaysMentor && !loading && (
-        <section className={`${dm.bg} pt-8 pb-4 transition-colors duration-300`}>
+        <section id="today-mentor" className={`${dm.bg} pt-8 pb-4 transition-colors duration-300 scroll-mt-20`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className={`text-xl font-bold ${dm.text} mb-4 flex items-center gap-2`}>
               <span className="text-2xl">✨</span> {t.todaysMentor}
