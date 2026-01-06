@@ -79,7 +79,7 @@ export default function ProfileSection({
                     placeholder={t.selectMentorProfile}
                     noOptionsMessage={t.noResults}
                     darkMode={darkMode}
-                    disabled={linkSubmitSuccess}
+                    disabled={linkSubmitSuccess || isSubmittingLink}
                 />
 
                 {/* Existing mentor preview */}
