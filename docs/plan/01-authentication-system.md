@@ -228,24 +228,6 @@ User visits /signup → Checks policy checkbox → Clicks "Sign up with email"
                                              User accepts → policy_accepted_at set
 ```
 
-### Google OAuth Flow (Signup)
-
-```
-User visits /signup → Checks policy checkbox → Store in sessionStorage
-                                                        │
-                                                        ▼
-                                             Click Google button → OAuth redirect
-                                                        │
-                                                        ▼
-                                             Return to /dashboard
-                                                        │
-                                                        ▼
-                                             Check sessionStorage, call acceptPolicy()
-                                                        │
-                                                        ▼
-                                             policy_accepted_at set
-```
-
 ### Password Reset Flow
 
 ```
@@ -266,25 +248,6 @@ User clicks "Forgot password?" on /login → Goes to /forgot-password
                                                         ▼
                                              Redirected to /login
 ```
-
-### Existing User Policy Flow
-
-```
-Existing user logs in → Dashboard loaded → policyAccepted = false
-                                                        │
-                                                        ▼
-                                             PolicyAcceptanceModal shown
-                                                        │
-                                                        ▼
-                                             User checks box, clicks accept
-                                                        │
-                                                        ▼
-                                             acceptPolicy() → policy_accepted_at set
-                                                        │
-                                                        ▼
-                                             Modal closes, dashboard accessible
-```
-
 ---
 
 ## Files Structure
@@ -340,12 +303,7 @@ interface UseAuthReturn {
   isSuperAdmin: boolean;
   isApproved: boolean;
 
-  // Policy
-  policyAccepted: boolean;
-  acceptPolicy: () => Promise<void>;
-
   // Auth methods
-  loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;

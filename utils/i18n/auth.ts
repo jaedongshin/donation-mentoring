@@ -1,28 +1,28 @@
 // Authentication related translations
 export const auth = {
   en: {
-    login: "Sign In",
+    login: "Donation Mentor Sign In",
+    logIn: "Log In",
     logout: "Logout",
     loginSubtitle: "Sign in to manage your mentor profile",
-    continueWithGoogle: "Continue with Google",
+
     forMentorsAndAdmins: "For mentors and admins only",
     lookingToBook: "Looking to book a session?",
     browseMentorsNoLogin: "→ Browse mentors (no login needed)",
     dashboard: "Dashboard",
     // Signup
-    signUp: "Sign Up",
-    signUpSubtitle: "Get started with your account",
+    signUp: "Mentor Sign Up",
+    signUpSubtitle: "Get started with your Donation Mentor account",
     alreadyHaveAccount: "Already have an account?",
     dontHaveAccount: "Don't have an account?",
-    signUpWithGoogle: "Sign up with Google",
+
     signUpWithEmail: "Sign up with email",
     createAccount: "Create Account",
     // Email/Password
     email: "Email",
     password: "Password",
     confirmPassword: "Confirm Password",
-    logIn: "Log In",
-    loginWithGoogle: "Log in with Google",
+
     // Password Reset
     forgotPassword: "Forgot password?",
     forgotPasswordTitle: "Reset Your Password",
@@ -35,12 +35,6 @@ export const auth = {
     newPassword: "New Password",
     passwordResetSuccess: "Password reset successfully! You can now log in.",
     backToLogin: "Back to Login",
-    // Policy
-    acceptPolicy: "I accept Donation Mentoring's policy",
-    policyRequired: "You must accept the policy to continue",
-    policyAcceptanceRequired: "Policy Acceptance Required",
-    policyAcceptanceMessage: "Please accept our policy to continue using the platform.",
-    acceptAndContinue: "Accept and Continue",
     // Errors
     invalidCredentials: "Invalid email or password",
     accountNotFound: "Account not found. Please sign up first.",
@@ -69,28 +63,28 @@ export const auth = {
     roleSuperAdmin: "Super Admin",
   },
   ko: {
-    login: "로그인",
+    login: "기부 멘토 로그인",
+    logIn: "로그인",
     logout: "로그아웃",
     loginSubtitle: "멘토 프로필을 관리하려면 로그인하세요",
-    continueWithGoogle: "Google로 계속하기",
+
     forMentorsAndAdmins: "멘토와 관리자 전용입니다",
     lookingToBook: "세션을 예약하시겠어요?",
     browseMentorsNoLogin: "→ 멘토 둘러보기 (로그인 불필요)",
     dashboard: "대시보드",
     // Signup
-    signUp: "회원가입",
-    signUpSubtitle: "계정을 생성하세요",
+    signUp: "멘토 신청",
+    signUpSubtitle: "기부 멘토 계정을 생성하세요",
     alreadyHaveAccount: "이미 계정이 있으신가요?",
     dontHaveAccount: "계정이 없으신가요?",
-    signUpWithGoogle: "Google로 회원가입",
+
     signUpWithEmail: "이메일로 회원가입",
     createAccount: "계정 생성",
     // Email/Password
     email: "이메일",
     password: "비밀번호",
     confirmPassword: "비밀번호 확인",
-    logIn: "로그인",
-    loginWithGoogle: "Google로 로그인",
+
     // Password Reset
     forgotPassword: "비밀번호를 잊으셨나요?",
     forgotPasswordTitle: "비밀번호 재설정",
@@ -103,12 +97,6 @@ export const auth = {
     newPassword: "새 비밀번호",
     passwordResetSuccess: "비밀번호가 재설정되었습니다! 이제 로그인할 수 있습니다.",
     backToLogin: "로그인으로 돌아가기",
-    // Policy
-    acceptPolicy: "Donation Mentoring의 이용약관에 동의합니다",
-    policyRequired: "계속하려면 정책에 동의해야 합니다",
-    policyAcceptanceRequired: "정책 동의 필요",
-    policyAcceptanceMessage: "플랫폼을 계속 사용하려면 정책에 동의해주세요.",
-    acceptAndContinue: "동의하고 계속하기",
     // Errors
     invalidCredentials: "잘못된 이메일 또는 비밀번호입니다",
     accountNotFound: "계정을 찾을 수 없습니다. 먼저 회원가입해 주세요.",

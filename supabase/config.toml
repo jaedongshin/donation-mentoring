@@ -290,9 +290,9 @@ skip_nonce_check = false
 email_optional = false
 
 [auth.external.google]
-enabled = true
-client_id = "env(GOOGLE_CLIENT_ID)"
-secret = "env(GOOGLE_CLIENT_SECRET)"
+enabled = false
+# client_id = ""
+# secret = ""
 redirect_uri = ""
 url = ""
 skip_nonce_check = true
@@ -325,12 +325,6 @@ enabled = false
 # Obtain from https://clerk.com/setup/supabase
 # domain = "example.clerk.accounts.dev"
 
-# OAuth server configuration
-[auth.oauth_server]
-# Enable OAuth server functionality
-enabled = false
-# Path for OAuth consent flow UI
-authorization_url_path = "/oauth/consent"
 # Allow dynamic client registration
 allow_dynamic_registration = false
 

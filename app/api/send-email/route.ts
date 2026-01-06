@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
     // Initialize Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch admin emails
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     // Only attempt to send if API key is present, otherwise log it
     if (process.env.RESEND_API_KEY) {
         const { data, error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+            from: 'onboarding@resend.dev',
             to: adminEmails,
             subject: emailSubject,
             text: emailContent,

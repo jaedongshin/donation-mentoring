@@ -69,17 +69,6 @@ Authentication layer:
 4. Click verification link
 5. Log in at http://localhost:3000/login
 
-### Google OAuth (Optional)
-Requires Google Cloud Console setup:
-1. Create OAuth 2.0 credentials at https://console.cloud.google.com/apis/credentials
-2. Add redirect URI: `http://127.0.0.1:54321/auth/v1/callback`
-3. Add to `.env.local`:
-   ```
-   GOOGLE_CLIENT_ID=your-client-id
-   GOOGLE_CLIENT_SECRET=your-client-secret
-   ```
-4. Restart Supabase: `supabase stop && supabase start`
-
 ## Common Commands
 
 ```bash
@@ -100,14 +89,6 @@ supabase migration new my_migration_name
 ```
 
 ## Troubleshooting
-
-### "Provider not enabled" error
-Google OAuth not configured. Either:
-- Set up Google credentials (see above)
-- Use email/password login instead
-
-### "Redirect URI mismatch" error
-Add `http://127.0.0.1:54321/auth/v1/callback` to Google OAuth credentials.
 
 ### Database won't start
 ```bash

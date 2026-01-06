@@ -44,22 +44,30 @@ export default function FilterSidebar({
 
   // Check scroll position to show/hide fade indicators
   useEffect(() => {
-    if (!showAllTags || !scrollContainerRef.current) {
-      setShowTopFade(false);
-      setShowBottomFade(false);
-      return;
-    }
-
     const container = scrollContainerRef.current;
+    
     const checkScroll = () => {
+      if (!container || !showAllTags) {
+        setShowTopFade(false);
+        setShowBottomFade(false);
+        return;
+      }
       const { scrollTop, scrollHeight, clientHeight } = container;
       setShowTopFade(scrollTop > 10);
       setShowBottomFade(scrollTop < scrollHeight - clientHeight - 10);
     };
 
-    checkScroll();
-    container.addEventListener('scroll', checkScroll);
-    return () => container.removeEventListener('scroll', checkScroll);
+    // Use setTimeout to avoid synchronous setState in effect
+    const timeoutId = setTimeout(checkScroll, 0);
+    
+    if (container && showAllTags) {
+      container.addEventListener('scroll', checkScroll);
+    }
+    
+    return () => {
+      container?.removeEventListener('scroll', checkScroll);
+      clearTimeout(timeoutId);
+    };
   }, [showAllTags, availableTags.length]);
 
   // Dark mode styles

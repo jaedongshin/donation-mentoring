@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Moon, Sun, User, LogOut, Search, X, ChevronDown } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
 import { UserRole } from '@/hooks/useAuth';
@@ -40,8 +41,9 @@ interface TopNavProps {
   user?: AuthUser | null;
   onLogout?: () => void;
 
-  // Hide login link (e.g., on login page itself)
+  // Hide login/signup links (e.g., on auth pages)
   hideLoginLink?: boolean;
+  hideSignupLink?: boolean;
 }
 
 export default function TopNav({
@@ -58,6 +60,7 @@ export default function TopNav({
   user,
   onLogout,
   hideLoginLink = false,
+  hideSignupLink = false,
 }: TopNavProps) {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -209,15 +212,26 @@ export default function TopNav({
               {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-            {/* Guest: Login link */}
-            {variant === 'guest' && !hideLoginLink && (
-              <Link
-                href="/login"
-                className={`p-2 ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors`}
-                aria-label="Login"
-              >
-                <User size={18} />
-              </Link>
+            {/* Guest: Login & Signup links */}
+            {variant === 'guest' && (!hideLoginLink || !hideSignupLink) && (
+              <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2">
+                {!hideLoginLink && (
+                  <Link
+                    href="/login"
+                    className={`px-2.5 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
+                  >
+                    {t.logIn}
+                  </Link>
+                )}
+                {!hideSignupLink && (
+                  <Link
+                    href="/signup"
+                    className="px-3 py-1.5 text-sm font-medium bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors whitespace-nowrap shadow-sm hover:shadow"
+                  >
+                    {t.signUp}
+                  </Link>
+                )}
+              </div>
             )}
 
             {/* Authenticated: Profile dropdown */}
@@ -229,11 +243,15 @@ export default function TopNav({
                   aria-label="Profile menu"
                 >
                   {user.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.displayName || user.email}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
+                    <div className="relative w-6 h-6 flex-shrink-0">
+                      <Image
+                        src={user.avatarUrl}
+                        alt={user.displayName || user.email}
+                        fill
+                        className="rounded-full object-cover"
+                        unoptimized={user.avatarUrl.includes('googleusercontent.com') || user.avatarUrl.includes('supabase.co')}
+                      />
+                    </div>
                   ) : (
                     <div className={`w-6 h-6 rounded-full ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} flex items-center justify-center`}>
                       <User size={14} className={dm.textMuted} />

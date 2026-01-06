@@ -1,6 +1,7 @@
 'use client';
 
 import { translations, Language } from '@/utils/i18n';
+import Image from 'next/image';
 
 // Input/Label class generators
 const getInputClass = (dark: boolean) => `block w-full rounded-lg ${dark ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border p-2.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40 transition-all text-sm`;
@@ -322,11 +323,15 @@ export default function ProfileForm({
         <label className={getLabelClass(darkMode)}>{t.photo}</label>
         <div className="flex items-center gap-4 pt-2">
           {formData.picture_url && (
-            <img
-              src={formData.picture_url}
-              alt="Profile"
-              className="w-16 h-16 rounded-lg object-cover"
-            />
+            <div className="relative w-16 h-16 flex-shrink-0">
+              <Image
+                src={formData.picture_url}
+                alt="Profile"
+                fill
+                className="rounded-lg object-cover"
+                unoptimized={formData.picture_url.includes('supabase.co')}
+              />
+            </div>
           )}
           <label className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
             darkMode

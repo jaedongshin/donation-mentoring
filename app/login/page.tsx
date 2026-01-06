@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { translations, Language } from '@/utils/i18n';
-import { Chrome, Mail, Eye, EyeOff } from 'lucide-react';
+import { Mail, Eye, EyeOff } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isLoading, loginWithGoogle, loginWithEmail, isAuthenticated, isAdmin } = useAuth();
+  const { isLoading, loginWithEmail, isAuthenticated, isAdmin } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
   // Dark mode default: true. Read from localStorage if available.
@@ -67,18 +67,6 @@ export default function LoginPage() {
     }
   }, [isLoading, isAuthenticated, isAdmin, router]);
 
-  const handleGoogleLogin = async () => {
-    try {
-      setLoginError(null);
-      // Mark this as a LOGIN attempt (not signup) - useAuth will check this
-      sessionStorage.setItem('authMode', 'login');
-      await loginWithGoogle();
-    } catch (error) {
-      console.error('Login failed:', error);
-      setLoginError(t.invalidCredentials);
-    }
-  };
-
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -115,27 +103,11 @@ export default function LoginPage() {
         lang={lang}
         onLangChange={setLang}
         hideLoginLink
+        hideSignupLink={false}
       />
 
       {/* Login content */}
-      <div className="flex flex-col items-center justify-center p-4 pt-12">
-        {/* Sign up link - top right of card */}
-        <div className="max-w-sm w-full flex justify-end mb-4">
-          <div className="flex items-center gap-2">
-            <span className={`text-sm ${dm.textMuted}`}>{t.dontHaveAccount}</span>
-            <Link
-              href="/signup"
-              className={`text-sm font-medium px-4 py-1.5 rounded-lg border transition-colors ${
-                darkMode
-                  ? 'border-sky-500 text-sky-400 hover:bg-sky-500/10'
-                  : 'border-sky-500 text-sky-600 hover:bg-sky-50'
-              }`}
-            >
-              {t.signUp}
-            </Link>
-          </div>
-        </div>
-
+      <div className="flex flex-col items-center justify-center p-4 pt-20">
         {/* Login card */}
         <div className={`${dm.bgCard} border ${dm.border} rounded-2xl shadow-xl max-w-sm w-full p-8`}>
           {/* Header */}
@@ -155,25 +127,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Google Sign In Button */}
-          <button
-            onClick={handleGoogleLogin}
-            className={`w-full flex items-center justify-center gap-3 ${
-              darkMode
-                ? 'bg-white text-gray-900 hover:bg-gray-100'
-                : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'
-            } py-3 px-4 rounded-xl font-medium transition-colors cursor-pointer`}
-          >
-            <Chrome size={20} className="text-blue-500" />
-            {t.loginWithGoogle}
-          </button>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className={`flex-1 border-t ${dm.border}`} />
-            <span className={`text-sm ${dm.textMuted}`}>{t.or}</span>
-            <div className={`flex-1 border-t ${dm.border}`} />
-          </div>
 
           {/* Email Login Form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
@@ -241,7 +194,7 @@ export default function LoginPage() {
                   : 'bg-sky-600 hover:bg-sky-700 text-white cursor-pointer'
               }`}
             >
-              {isSubmitting ? t.loading : t.logIn}
+              {isSubmitting ? t.loading : t.login}
             </button>
           </form>
 

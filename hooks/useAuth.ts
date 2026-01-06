@@ -42,15 +42,11 @@ interface UseAuthReturn {
   isLoading: boolean;
   isAuthenticated: boolean;
   // Auth methods
-  loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
   logout: () => Promise<void>;
-  // Policy
-  policyAccepted: boolean;
-  acceptPolicy: () => Promise<void>;
   // Mentor linking
   needsMentorLink: boolean;  // true if mentor_id is NULL
   linkMentorProfile: (mentorId: string | null, isNewMentor: boolean, profileData?: MentorProfileData) => Promise<void>;
@@ -68,7 +64,6 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [policyAccepted, setPolicyAccepted] = useState(false);
 
   // Convert Supabase user to AuthUser
   // Returns null if this is a LOGIN attempt but user doesn't exist (should have signed up first)
@@ -80,7 +75,7 @@ export function useAuth(): UseAuthReturn {
     // Use maybeSingle() instead of single() to handle missing profiles gracefully
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('role, display_name, mentor_id, policy_accepted_at, created_at')
+      .select('role, display_name, mentor_id, created_at')
       .eq('id', supabaseUser.id)
       .maybeSingle();
     
@@ -173,7 +168,7 @@ export function useAuth(): UseAuthReturn {
           role: userRole,
           mentor_id: autoLinkedMentorId,  // Auto-link for super admin, null for others
         })
-        .select('role, display_name, mentor_id, policy_accepted_at')
+        .select('role, display_name, mentor_id')
         .single();
 
         if (createError) {
@@ -192,9 +187,6 @@ export function useAuth(): UseAuthReturn {
             console.error('Error creating profile:', createError);
           }
         } else if (newProfile) {
-          // Use the newly created profile
-          setPolicyAccepted(!!newProfile?.policy_accepted_at);
-          
           const finalRole = (newProfile?.role as UserRole) || userRole;
           return {
             id: supabaseUser.id,
@@ -203,13 +195,10 @@ export function useAuth(): UseAuthReturn {
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
             role: finalRole,
             mentorId: newProfile?.mentor_id || null,
-            policyAcceptedAt: newProfile?.policy_accepted_at || null,
+            policyAcceptedAt: null, // Removed field
           };
         }
     }
-
-    // Update policy accepted state
-    setPolicyAccepted(!!profile?.policy_accepted_at);
 
     // If role is not set but mentor_id exists, infer role as 'mentor'
     // Otherwise default to 'user'
@@ -260,7 +249,7 @@ export function useAuth(): UseAuthReturn {
       avatarUrl: supabaseUser.user_metadata?.avatar_url,
       role: finalRole,
       mentorId: finalMentorId,
-      policyAcceptedAt: profile?.policy_accepted_at || null,
+      policyAcceptedAt: null, // Removed field
     };
   }, []);
 
@@ -273,7 +262,6 @@ export function useAuth(): UseAuthReturn {
       if (sessionError) {
         console.debug('Error getting session on mount:', sessionError);
         setUser(null);
-        setPolicyAccepted(false);
         setIsLoading(false);
         return;
       }
@@ -295,12 +283,10 @@ export function useAuth(): UseAuthReturn {
             console.warn('Failed to map user, clearing session:', error);
           }
           setUser(null);
-          setPolicyAccepted(false);
         }
       } else {
         // No session - ensure state is cleared
         setUser(null);
-        setPolicyAccepted(false);
       }
       setIsLoading(false);
     };
@@ -331,12 +317,10 @@ export function useAuth(): UseAuthReturn {
               console.warn('Failed to map user after sign in, clearing session:', error);
             }
             setUser(null);
-            setPolicyAccepted(false);
           }
         } else if (event === 'SIGNED_OUT' || (!session && event !== 'SIGNED_IN')) {
           // Clear state on sign out or when session is removed
           setUser(null);
-          setPolicyAccepted(false);
         } else if (event === 'PASSWORD_RECOVERY') {
           // User clicked password reset link - they're now authenticated
           // The reset-password page will handle the actual password update
@@ -347,21 +331,6 @@ export function useAuth(): UseAuthReturn {
     return () => subscription.unsubscribe();
   }, [mapSupabaseUser]);
 
-  // Google OAuth login
-  const loginWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      console.error('Google login error:', error);
-      throw error;
-    }
-  }, []);
-
   // Email/Password login
   const loginWithEmail = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -370,7 +339,6 @@ export function useAuth(): UseAuthReturn {
     });
 
     if (error) {
-      console.error('Email login error:', error);
       throw error;
     }
   }, []);
@@ -386,7 +354,10 @@ export function useAuth(): UseAuthReturn {
     });
 
     if (error) {
-      console.error('Signup error:', error);
+      // Don't log "User already registered" as an error in console, as it's a validation case
+      if (error.message && !error.message.includes('already registered')) {
+        console.error('Signup error:', error);
+      }
       throw error;
     }
   }, []);
@@ -415,30 +386,10 @@ export function useAuth(): UseAuthReturn {
     }
   }, []);
 
-  // Accept policy
-  const acceptPolicy = useCallback(async () => {
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ policy_accepted_at: new Date().toISOString() })
-      .eq('id', user.id);
-
-    if (error) {
-      console.error('Accept policy error:', error);
-      throw error;
-    }
-
-    // Update local state
-    setPolicyAccepted(true);
-    setUser(prev => prev ? { ...prev, policyAcceptedAt: new Date().toISOString() } : null);
-  }, [user]);
-
   // Logout
   const logout = useCallback(async () => {
     // Clear local state immediately to prevent race conditions
     setUser(null);
-    setPolicyAccepted(false);
     
     // Sign out from Supabase (this will trigger SIGNED_OUT event)
     const { error } = await supabase.auth.signOut();
@@ -547,14 +498,11 @@ export function useAuth(): UseAuthReturn {
     user,
     isLoading,
     isAuthenticated,
-    loginWithGoogle,
     loginWithEmail,
     signUpWithEmail,
     resetPassword,
     updatePassword,
     logout,
-    policyAccepted,
-    acceptPolicy,
     needsMentorLink,
     linkMentorProfile,
     isMentor,

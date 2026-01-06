@@ -6,7 +6,6 @@ import { translations, Language } from '@/utils/i18n';
 import { Calendar, CalendarDays, BarChart3, Clock } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { ProfileFormData } from '@/app/components/ProfileForm';
-import PolicyAcceptanceModal from '@/app/components/PolicyAcceptanceModal';
 import { BentoNav, BentoCardId, ProfileSection, ProfileFooter, PlaceholderSection, Toast, PendingStatusBanner } from '@/app/components/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabase';
@@ -59,7 +58,7 @@ function mentorToFormData(mentor: Record<string, unknown>): ProfileFormData {
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, isLoading, isAuthenticated, logout, isApproved, policyAccepted, acceptPolicy, needsMentorLink, linkMentorProfile } = useAuth();
+    const { user, isLoading, isAuthenticated, logout, needsMentorLink, linkMentorProfile } = useAuth();
 
     // Approved = mentor/admin/super_admin (not 'user' role)
     const isUserRole = user?.role === 'user';
@@ -331,28 +330,6 @@ export default function DashboardPage() {
         }
     }, [isLoading, isAuthenticated, router]);
 
-    // Check for pending policy acceptance
-    useEffect(() => {
-        const checkPendingPolicy = async () => {
-            if (!isAuthenticated || policyAccepted) return;
-
-            const pendingFromEmail = localStorage.getItem('policyAcceptedOnSignup');
-            const pendingFromGoogle = sessionStorage.getItem('policyAcceptedOnSignup');
-
-            if (pendingFromEmail === 'true' || pendingFromGoogle === 'true') {
-                try {
-                    await acceptPolicy();
-                    localStorage.removeItem('policyAcceptedOnSignup');
-                    sessionStorage.removeItem('policyAcceptedOnSignup');
-                } catch (error) {
-                    console.error('Failed to save policy acceptance:', error);
-                }
-            }
-        };
-
-        checkPendingPolicy();
-    }, [isAuthenticated, policyAccepted, acceptPolicy]);
-
     const handleLogout = () => {
         logout();
         router.push('/');
@@ -422,7 +399,6 @@ export default function DashboardPage() {
                                 selectedMentorPreview={selectedMentorPreview}
                                 linkSubmitSuccess={linkSubmitSuccess}
                                 onLinkSubmit={handleLinkSubmit}
-                                isSubmittingLink={isSubmittingLink}
                             />
                         )}
 
@@ -478,15 +454,6 @@ export default function DashboardPage() {
                     )}
                 </div>
             </main>
-
-            {/* Policy Modal */}
-            {isAuthenticated && !policyAccepted && (
-                <PolicyAcceptanceModal
-                    darkMode={darkMode}
-                    lang={lang}
-                    onAccept={acceptPolicy}
-                />
-            )}
         </div>
     );
 }

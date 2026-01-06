@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { translations, Language } from '@/utils/i18n';
-import { Chrome, Mail, Eye, EyeOff, Check } from 'lucide-react';
+import { Mail, Eye, EyeOff, Check } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { isLoading, loginWithGoogle, signUpWithEmail, isAuthenticated, acceptPolicy } = useAuth();
+  const { isLoading, signUpWithEmail, isAuthenticated } = useAuth();
 
   const [lang, setLang] = useState<Language>('ko');
   // Dark mode default: true. Read from localStorage if available.
@@ -20,11 +20,6 @@ export default function SignupPage() {
     return saved !== null ? saved === 'true' : true;
   });
 
-  // Policy checkbox
-  const [policyChecked, setPolicyChecked] = useState(false);
-
-  // Email signup form state
-  const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -61,24 +56,10 @@ export default function SignupPage() {
     }
   }, [isLoading, isAuthenticated, router]);
 
-  const handleGoogleSignup = async () => {
-    if (!policyChecked) return;
-    try {
-      setSignupError(null);
-      // Mark this as a SIGNUP attempt - useAuth will allow new users
-      sessionStorage.setItem('authMode', 'signup');
-      // Store that policy was accepted before Google redirect
-      sessionStorage.setItem('policyAcceptedOnSignup', 'true');
-      await loginWithGoogle();
-    } catch (error) {
-      console.error('Google signup failed:', error);
-      setSignupError(t.signupFailed);
-    }
-  };
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!policyChecked || !email || !password || !confirmPassword) return;
+    if (!email || !password || !confirmPassword) return;
 
     // Validate password length
     if (password.length < 8) {
@@ -96,32 +77,22 @@ export default function SignupPage() {
     setSignupError(null);
 
     try {
-      // Store policy acceptance for after email verification
-      localStorage.setItem('policyAcceptedOnSignup', 'true');
       await signUpWithEmail(email, password);
       setSignupSuccess(true);
     } catch (error: unknown) {
-      console.error('Email signup failed:', error);
       const errorMessage = error instanceof Error ? error.message : '';
+      
       if (errorMessage.includes('already registered')) {
+        // Expected validation error, don't log as console.error
         setSignupError(t.emailAlreadyExists);
       } else {
+        console.error('Email signup failed:', error);
         setSignupError(t.signupFailed);
       }
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Check if user came back from Google OAuth with policy accepted
-  useEffect(() => {
-    const policyAcceptedOnSignup = sessionStorage.getItem('policyAcceptedOnSignup');
-    if (policyAcceptedOnSignup === 'true' && isAuthenticated) {
-      sessionStorage.removeItem('policyAcceptedOnSignup');
-      // Accept policy for the newly created user
-      acceptPolicy().catch(console.error);
-    }
-  }, [isAuthenticated, acceptPolicy]);
 
   if (isLoading) {
     return (
@@ -140,28 +111,12 @@ export default function SignupPage() {
         onToggleDarkMode={toggleDarkMode}
         lang={lang}
         onLangChange={setLang}
-        hideLoginLink
+        hideLoginLink={false}
+        hideSignupLink
       />
 
       {/* Signup content */}
-      <div className="flex flex-col items-center justify-center p-4 pt-12">
-        {/* Login link - top right of card */}
-        <div className="max-w-sm w-full flex justify-end mb-4">
-          <div className="flex items-center gap-2">
-            <span className={`text-sm ${dm.textMuted}`}>{t.alreadyHaveAccount}</span>
-            <Link
-              href="/login"
-              className={`text-sm font-medium px-4 py-1.5 rounded-lg border transition-colors ${
-                darkMode
-                  ? 'border-sky-500 text-sky-400 hover:bg-sky-500/10'
-                  : 'border-sky-500 text-sky-600 hover:bg-sky-50'
-              }`}
-            >
-              {t.login}
-            </Link>
-          </div>
-        </div>
-
+      <div className="flex flex-col items-center justify-center p-4 pt-20">
         {/* Signup card */}
         <div className={`${dm.bgCard} border ${dm.border} rounded-2xl shadow-xl max-w-sm w-full p-8`}>
           {/* Success message */}
@@ -199,84 +154,7 @@ export default function SignupPage() {
                 </div>
               )}
 
-              {/* Policy Checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer mb-6">
-                <div className="relative flex-shrink-0 mt-0.5">
-                  <input
-                    type="checkbox"
-                    checked={policyChecked}
-                    onChange={(e) => setPolicyChecked(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                      policyChecked
-                        ? 'bg-sky-500 border-sky-500'
-                        : darkMode
-                          ? 'border-gray-600 bg-gray-700'
-                          : 'border-gray-300 bg-white'
-                    }`}
-                  >
-                    {policyChecked && <Check size={14} className="text-white" />}
-                  </div>
-                </div>
-                <span className={`text-sm ${dm.text}`}>
-                  {t.acceptPolicy}
-                </span>
-              </label>
-
-              {/* Policy required warning */}
-              {!policyChecked && (
-                <p className={`text-xs ${darkMode ? 'text-yellow-400' : 'text-yellow-600'} text-center mb-4`}>
-                  {t.policyRequired}
-                </p>
-              )}
-
-              {/* Google Sign Up Button */}
-              <button
-                onClick={handleGoogleSignup}
-                disabled={!policyChecked}
-                className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl font-medium transition-colors ${
-                  policyChecked
-                    ? darkMode
-                      ? 'bg-white text-gray-900 hover:bg-gray-100 cursor-pointer'
-                      : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300 cursor-pointer'
-                    : darkMode
-                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                <Chrome size={20} className={policyChecked ? 'text-blue-500' : ''} />
-                {t.signUpWithGoogle}
-              </button>
-
-              {/* Divider */}
-              <div className="flex items-center gap-4 my-6">
-                <div className={`flex-1 border-t ${dm.border}`} />
-                <span className={`text-sm ${dm.textMuted}`}>{t.or}</span>
-                <div className={`flex-1 border-t ${dm.border}`} />
-              </div>
-
-              {/* Email Signup Button / Form Toggle */}
-              {!showEmailForm ? (
-                <button
-                  onClick={() => setShowEmailForm(true)}
-                  disabled={!policyChecked}
-                  className={`w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl font-medium border transition-colors ${
-                    policyChecked
-                      ? darkMode
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700/50 cursor-pointer'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
-                      : darkMode
-                        ? 'border-gray-700 text-gray-500 cursor-not-allowed'
-                        : 'border-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  <Mail size={20} />
-                  {t.signUpWithEmail}
-                </button>
-              ) : (
-                /* Email Signup Form */
+                {/* Email Signup Form */}
                 <form onSubmit={handleEmailSignup} className="space-y-4">
                   {/* Email */}
                   <div>
@@ -351,9 +229,9 @@ export default function SignupPage() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={isSubmitting || !email || !password || !confirmPassword || !policyChecked}
+                    disabled={isSubmitting || !email || !password || !confirmPassword}
                     className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
-                      isSubmitting || !email || !password || !confirmPassword || !policyChecked
+                      isSubmitting || !email || !password || !confirmPassword
                         ? darkMode
                           ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -363,7 +241,6 @@ export default function SignupPage() {
                     {isSubmitting ? t.loading : t.createAccount}
                   </button>
                 </form>
-              )}
             </>
           )}
         </div>
