@@ -331,13 +331,6 @@ export default function DashboardPage() {
         }
     }, [isLoading, isAuthenticated, router]);
 
-    // Clean up Supabase auth hash fragment
-    useEffect(() => {
-        if (typeof window !== 'undefined' && window.location.hash) {
-            window.history.replaceState(null, '', window.location.pathname);
-        }
-    }, []);
-
     // Check for pending policy acceptance
     useEffect(() => {
         const checkPendingPolicy = async () => {
