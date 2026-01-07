@@ -58,9 +58,7 @@ function mentorToFormData(mentor: Record<string, unknown>): ProfileFormData {
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, isLoading, isAuthenticated, logout, needsMentorLink, linkMentorProfile, isApproved } = useAuth();
-
-    const isPending = !isApproved;
+    const { user, isLoading, isAuthenticated, logout, needsMentorLink, linkMentorProfile } = useAuth();
 
     const [lang, setLang] = useState<Language>('ko');
     const [selectedCard, setSelectedCard] = useState<BentoCardId>('profile');
@@ -74,6 +72,7 @@ export default function DashboardPage() {
 
     // Profile form state
     const [profileForm, setProfileForm] = useState<ProfileFormData>(EMPTY_PROFILE);
+    const [initialProfile, setInitialProfile] = useState<ProfileFormData>(EMPTY_PROFILE);
     const [mentorId, setMentorId] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -142,7 +141,9 @@ export default function DashboardPage() {
                     .single();
 
                 if (mentor) {
-                    setProfileForm(mentorToFormData(mentor));
+                    const formData = mentorToFormData(mentor);
+                    setProfileForm(formData);
+                    setInitialProfile(formData);
                 }
                 setLinkSubmitSuccess(false);
             } else {
@@ -312,6 +313,50 @@ export default function DashboardPage() {
             setToast({ type: 'error', message: t.saveError });
         } else {
             setToast({ type: 'success', message: t.saveSuccess });
+            
+            // Calculate changes for email
+            const changes: string[] = [];
+            const fields: (keyof ProfileFormData)[] = [
+                'name_en', 'name_ko', 'description_en', 'description_ko',
+                'position_en', 'position_ko', 'company_en', 'company_ko',
+                'location_en', 'location_ko', 'linkedin_url', 'calendly_url',
+                'email', 'languages', 'session_time_minutes', 'session_price_usd', 'tags'
+            ];
+
+            fields.forEach(field => {
+                const initial = initialProfile[field];
+                const current = profileForm[field];
+                
+                if (JSON.stringify(initial) !== JSON.stringify(current)) {
+                    const formatValue = (val: unknown) => {
+                        if (val === null || val === undefined || val === '') return '(empty)';
+                        if (Array.isArray(val)) return val.length > 0 ? val.join(', ') : '(empty)';
+                        return String(val);
+                    };
+                    changes.push(`${field}: ${formatValue(initial)} -> ${formatValue(current)}`);
+                }
+            });
+
+            if (changes.length > 0) {
+                try {
+                    await fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'profile_update',
+                            name_ko: profileForm.name_ko,
+                            name_en: profileForm.name_en,
+                            email: profileForm.email,
+                            changes: changes.join('\n')
+                        }),
+                    });
+                } catch (emailError) {
+                    console.error('Error sending update notification:', emailError);
+                }
+            }
+            
+            // Update initial profile after successful save
+            setInitialProfile(profileForm);
         }
     };
 
