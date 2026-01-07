@@ -168,8 +168,8 @@ export default function Home() {
                   <span className={`text-sm font-medium ${dm.text}`}>{t.mentorValueTitle}</span>
                 </div>
                 <ul className="space-y-1.5">
-                  {t.mentorValuePoints.map((point, i) => (
-                    <li key={i} className={`${dm.textMuted} text-sm flex items-start gap-2`}>
+                  {t.mentorValuePoints.map((point) => (
+                    <li key={point} className={`${dm.textMuted} text-sm flex items-start gap-2`}>
                       <span className={`${theme.bullet} mt-0.5`}>•</span>
                       <span>{point}</span>
                     </li>
@@ -184,8 +184,8 @@ export default function Home() {
                   <span className={`text-sm font-medium ${dm.text}`}>{t.menteeValueTitle}</span>
                 </div>
                 <ul className="space-y-1.5">
-                  {t.menteeValuePoints.map((point, i) => (
-                    <li key={i} className={`${dm.textMuted} text-sm flex items-start gap-2`}>
+                  {t.menteeValuePoints.map((point) => (
+                    <li key={point} className={`${dm.textMuted} text-sm flex items-start gap-2`}>
                       <span className={`${theme.bullet} mt-0.5`}>•</span>
                       <span>{point}</span>
                     </li>
@@ -264,7 +264,7 @@ export default function Home() {
                         const url = urlMatch[0].slice(1, -1);
                         const parts = step.split(urlMatch[0]);
                         return (
-                          <li key={index} className={`flex items-start gap-2 ${dm.textMuted}`}>
+                          <li key={step} className={`flex items-start gap-2 ${dm.textMuted}`}>
                             <span className={`flex-shrink-0 w-5 h-5 ${theme.accentBg} text-white rounded-full flex items-center justify-center text-[10px] font-bold`}>
                               {index + 1}
                             </span>
@@ -279,7 +279,7 @@ export default function Home() {
                         );
                       }
                       return (
-                        <li key={index} className={`flex items-start gap-2 ${dm.textMuted}`}>
+                        <li key={step} className={`flex items-start gap-2 ${dm.textMuted}`}>
                           <span className={`flex-shrink-0 w-5 h-5 ${theme.accentBg} text-white rounded-full flex items-center justify-center text-[10px] font-bold`}>
                             {index + 1}
                           </span>

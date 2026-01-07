@@ -129,9 +129,9 @@ export default function MentorModal({ mentor, lang, onClose, theme = defaultThem
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-6">
-            {mentor.tags?.map((tag, index) => (
+            {mentor.tags?.map((tag) => (
               <span
-                key={index}
+                key={tag}
                 className={`px-3 py-1 ${theme.primaryLight} ${theme.primaryText} text-sm font-medium rounded-full`}
               >
                 {tag}

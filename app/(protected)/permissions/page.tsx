@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { translations, Language } from '@/utils/i18n';
-import { Users, Shield, ShieldCheck, User, ChevronDown, AlertTriangle } from 'lucide-react';
+import { Users, Shield, User, ChevronDown } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useAuth, UserRole } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabase';

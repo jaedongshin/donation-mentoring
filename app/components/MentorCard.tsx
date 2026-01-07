@@ -189,9 +189,9 @@ export default function MentorCard({ mentor, lang, onClick, theme = defaultTheme
         {/* Tags - single row */}
         {(visibleTags.length > 0 || hiddenTagCount > 0) && (
           <div className="flex items-center gap-1.5 pt-2">
-            {visibleTags.map((tag, index) => (
+            {visibleTags.map((tag) => (
               <span
-                key={index}
+                key={tag}
                 className={`px-2 py-0.5 ${theme.primaryLight} ${theme.primaryText} text-xs font-small rounded-full overflow-hidden whitespace-nowrap text-clip`}>
                 {tag}
               </span>
