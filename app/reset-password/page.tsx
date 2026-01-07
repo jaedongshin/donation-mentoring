@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { translations, Language } from '@/utils/i18n';
 import { Eye, EyeOff, Check, AlertCircle } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/utils/supabase';
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
-  const { updatePassword } = useAuth();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
 
   const [lang, setLang] = useState<Language>('ko');
   // Dark mode default: true. Read from localStorage if available.
@@ -50,40 +49,17 @@ export default function ResetPasswordPage() {
       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400',
   };
 
-  // Check for valid password recovery session
   useEffect(() => {
-    const checkSession = async () => {
-      // Listen for PASSWORD_RECOVERY event
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event) => {
-          if (event === 'PASSWORD_RECOVERY') {
-            setIsValidSession(true);
-          }
-        }
-      );
-
-      // Also check current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setIsValidSession(true);
-      } else {
-        // Give it a moment for the auth event to fire
-        setTimeout(() => {
-          if (isValidSession === null) {
-            setIsValidSession(false);
-          }
-        }, 2000);
-      }
-
-      return () => subscription.unsubscribe();
-    };
-
-    checkSession();
-  }, [isValidSession]);
+    if (token) {
+      setIsValidSession(true);
+    } else {
+      setIsValidSession(false);
+    }
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password || !confirmPassword) return;
+    if (!password || !confirmPassword || !token) return;
 
     // Validate password length
     if (password.length < 8) {
@@ -101,7 +77,20 @@ export default function ResetPasswordPage() {
     setError(null);
 
     try {
-      await updatePassword(password);
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || t.resetFailed);
+      }
+
       setSuccess(true);
       // Redirect to login after 2 seconds
       setTimeout(() => {
@@ -109,7 +98,11 @@ export default function ResetPasswordPage() {
       }, 2000);
     } catch (err) {
       console.error('Update password error:', err);
-      setError(t.resetFailed);
+      const errorMessage = err instanceof Error ? err.message : t.resetFailed;
+      setError(errorMessage || t.resetFailed);
+      if (errorMessage === 'Invalid or expired token') {
+        setIsValidSession(false);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -276,5 +269,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

@@ -5,11 +5,8 @@ import Link from 'next/link';
 import { translations, Language } from '@/utils/i18n';
 import { Mail, ArrowLeft, Check } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function ForgotPasswordPage() {
-  const { resetPassword } = useAuth();
-
   const [lang, setLang] = useState<Language>('ko');
   // Dark mode default: true. Read from localStorage if available.
   const [darkMode, setDarkMode] = useState(() => {
@@ -51,7 +48,20 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      await resetPassword(email);
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, lang }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reset link');
+      }
+
       setSuccess(true);
     } catch (err) {
       console.error('Reset password error:', err);

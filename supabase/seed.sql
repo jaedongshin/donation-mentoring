@@ -1,389 +1,572 @@
--- Seed data for local Supabase development
--- This runs during `supabase db reset`
+SET session_replication_role = replica;
 
--- ============================================
--- REAL MENTORS (from production)
--- ============================================
-INSERT INTO public.mentors (
-    id,
-    name_en, name_ko,
-    position_en, position_ko,
-    company_en, company_ko,
-    location_en, location_ko,
-    description_en, description_ko,
-    picture_url, linkedin_url, calendly_url, email,
-    languages, tags, is_active, display_order,
-    session_time_minutes, session_price_usd
-) VALUES
-(
-    '9ea4f911-fb5b-4f6c-8f59-de909137bff0',
-    'Taeho (TK) Kim', '김태호',
-    'UX Engineer', 'UX Engineer',
-    'Powder (YC W24)', 'Powder (YC W24)',
-    'USA', '미국',
-    'Has experience from Samsung to 5th startup. Currently VP of Bay Area K-Group and operates a K-group Design.',
-    '삼성부터 5번째 스타트업까지 여러 경험 보유. 현재 Bay Area K-Group VP 와 디자인 그룹 운영.',
-    'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6772318297576914.jpeg',
-    'https://www.linkedin.com/in/tkhfes/',
-    'https://calendly.com/tk-hfes/mentoring',
-    'tk.hfes@gmail.com',
-    ARRAY['Korean'],
-    '["Frontend", "UX", "UXE", "AI", "Interview", "Resume", "React"]',
-    true, 1,
-    30, 10
-),
-(
-    '649db9fb-a801-4fdf-b0ab-ec7c7d1b0c40',
-    'Jaedong Shin', '신재동',
-    'Senior Software Engineer', 'Senior Software Engineer',
-    'Uber', 'Uber',
-    'USA', '미국',
-    '19-year SWE. Founded the donation mentoring model and Study Club++. Interested in community and development.',
-    '19년 차 SWE. 기부 멘토링 모델과 Study Club++를 창립. 커뮤니티와 개발에 관심 많음.',
-    'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.4726313691281572.jpeg',
-    'https://www.linkedin.com/in/jaedong-shin/',
-    'https://calendly.com/mulli2/1on1',
-    'mulli2@gmail.com',
-    ARRAY['Korean', 'English'],
-    '["resume", "mock interview", "community"]',
-    true, 2,
-    60, 30
-);
-
--- ============================================
--- TEST MENTORS (8 approved + 2 unapproved)
--- ============================================
-INSERT INTO public.mentors (
-    id,
-    name_en, name_ko,
-    position_en, position_ko,
-    company_en, company_ko,
-    location_en, location_ko,
-    description_en, description_ko,
-    email, languages, tags, is_active, display_order,
-    session_time_minutes, session_price_usd
-) VALUES
--- APPROVED MENTORS (8)
-(
-    'aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa',
-    'Sarah Chen', '사라 첸',
-    'Staff Engineer', '스태프 엔지니어',
-    'Google', 'Google',
-    'USA', '미국',
-    'Staff engineer at Google with 12 years experience. Specializes in distributed systems.',
-    'Google 스태프 엔지니어, 12년 경력. 분산 시스템 전문.',
-    'sarah.chen@test.com',
-    ARRAY['English', 'Korean'],
-    '["Backend", "System Design", "Career Growth"]',
-    false,10,
-    45, 25
-),
-(
-    'aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa',
-    'Michael Park', '박마이클',
-    'Engineering Manager', '엔지니어링 매니저',
-    'Meta', 'Meta',
-    'USA', '미국',
-    'Engineering manager at Meta. Former IC at Netflix. Passionate about leadership.',
-    'Meta 엔지니어링 매니저. 전 Netflix IC. 리더십에 열정적.',
-    'michael.park@test.com',
-    ARRAY['English', 'Korean'],
-    '["Leadership", "Management", "Career"]',
-    false,11,
-    60, 40
-),
-(
-    'aaaaaaaa-0003-0003-0003-aaaaaaaaaaaa',
-    'Emily Kim', '김에밀리',
-    'Product Designer', '프로덕트 디자이너',
-    'Airbnb', 'Airbnb',
-    'USA', '미국',
-    'Lead product designer at Airbnb. Focus on user research and design systems.',
-    'Airbnb 리드 프로덕트 디자이너. 사용자 리서치와 디자인 시스템에 집중.',
-    'emily.kim@test.com',
-    ARRAY['English'],
-    '["Design", "UX Research", "Design Systems"]',
-    true, 12,
-    30, 20
-),
-(
-    'aaaaaaaa-0004-0004-0004-aaaaaaaaaaaa',
-    'David Lee', '이데이비드',
-    'Senior PM', '시니어 PM',
-    'Amazon', 'Amazon',
-    'USA', '미국',
-    'Senior Product Manager at AWS. 8 years in product management.',
-    'AWS 시니어 프로덕트 매니저. 프로덕트 관리 8년 경력.',
-    'david.lee@test.com',
-    ARRAY['English', 'Korean'],
-    '["Product Management", "AWS", "Strategy"]',
-    false,13,
-    45, 30
-),
-(
-    'aaaaaaaa-0005-0005-0005-aaaaaaaaaaaa',
-    'Jennifer Wang', '왕제니퍼',
-    'Data Scientist', '데이터 사이언티스트',
-    'Netflix', 'Netflix',
-    'USA', '미국',
-    'Senior data scientist at Netflix. ML/AI specialist with PhD from Stanford.',
-    'Netflix 시니어 데이터 사이언티스트. Stanford 박사, ML/AI 전문가.',
-    'jennifer.wang@test.com',
-    ARRAY['English'],
-    '["Data Science", "Machine Learning", "AI"]',
-    false,14,
-    60, 50
-),
-(
-    'aaaaaaaa-0006-0006-0006-aaaaaaaaaaaa',
-    'Kevin Cho', '조케빈',
-    'iOS Engineer', 'iOS 엔지니어',
-    'Apple', 'Apple',
-    'USA', '미국',
-    'iOS engineer at Apple. Building consumer apps for 10 years.',
-    'Apple iOS 엔지니어. 10년간 소비자 앱 개발.',
-    'kevin.cho@test.com',
-    ARRAY['Korean', 'English'],
-    '["iOS", "Swift", "Mobile"]',
-    false,15,
-    30, 15
-),
-(
-    'aaaaaaaa-0007-0007-0007-aaaaaaaaaaaa',
-    'Lisa Nguyen', '리사 응우옌',
-    'DevOps Lead', 'DevOps 리드',
-    'Stripe', 'Stripe',
-    'USA', '미국',
-    'DevOps lead at Stripe. Expert in Kubernetes and cloud infrastructure.',
-    'Stripe DevOps 리드. Kubernetes와 클라우드 인프라 전문가.',
-    'lisa.nguyen@test.com',
-    ARRAY['English'],
-    '["DevOps", "Kubernetes", "Infrastructure"]',
-    false,16,
-    45, 35
-),
-(
-    'aaaaaaaa-0008-0008-0008-aaaaaaaaaaaa',
-    'James Yoon', '윤제임스',
-    'Security Engineer', '보안 엔지니어',
-    'Microsoft', 'Microsoft',
-    'USA', '미국',
-    'Principal security engineer at Microsoft. Focus on application security.',
-    'Microsoft 수석 보안 엔지니어. 애플리케이션 보안에 집중.',
-    'james.yoon@test.com',
-    ARRAY['English', 'Korean'],
-    '["Security", "AppSec", "Cloud Security"]',
-    false,17,
-    60, 45
-),
--- UNAPPROVED MENTORS (2)
-(
-    'bbbbbbbb-0001-0001-0001-bbbbbbbbbbbb',
-    'New Applicant One', '신규 지원자 1',
-    'Junior Developer', '주니어 개발자',
-    'Startup ABC', '스타트업 ABC',
-    'Korea', '한국',
-    'Recent bootcamp graduate looking to mentor others.',
-    '최근 부트캠프 졸업생, 다른 사람들을 멘토링하고 싶습니다.',
-    'applicant1@test.com',
-    ARRAY['Korean'],
-    '["Bootcamp", "Junior", "Frontend"]',
-    false, 100,
-    30, 0
-),
-(
-    'bbbbbbbb-0002-0002-0002-bbbbbbbbbbbb',
-    'New Applicant Two', '신규 지원자 2',
-    'Mid-level Engineer', '미드레벨 엔지니어',
-    'Tech Corp', '테크 회사',
-    'Korea', '한국',
-    'Mid-level engineer with 3 years experience wanting to give back.',
-    '3년 경력 미드레벨 엔지니어, 기여하고 싶습니다.',
-    'applicant2@test.com',
-    ARRAY['Korean', 'English'],
-    '["Backend", "Python", "Django"]',
-    false, 101,
-    45, 10
-);
-
--- ============================================
--- TEST AUTH USERS
--- ============================================
--- Note: Passwords use bcrypt via pgcrypto extension
--- admin@test.com / admin
--- admin2@test.com / admin2
--- Plus regular mentor accounts
--- Note: Only mulli2@gmail.com can be super_admin (not seeded here)
-
-INSERT INTO auth.users (
-    id,
-    instance_id,
-    aud,
-    role,
-    email,
-    encrypted_password,
-    email_confirmed_at,
-    raw_app_meta_data,
-    raw_user_meta_data,
-    created_at,
-    updated_at,
-    confirmation_token,
-    recovery_token,
-    email_change,
-    email_change_token_new,
-    email_change_token_current,
-    phone_change,
-    phone_change_token,
-    reauthentication_token,
-    is_sso_user,
-    is_anonymous
-) VALUES
--- Admin
-(
-    '22222222-2222-2222-2222-222222222222',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'admin@test.com',
-    crypt('admin', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"]}',
-    '{"full_name": "Test Admin"}',
-    now(),
-    now(),
-    '', '', '', '', '', '', '', '', false, false
-),
--- Admin 2
-(
-    '66666666-6666-6666-6666-666666666666',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'admin2@test.com',
-    crypt('admin2', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"]}',
-    '{"full_name": "Test Admin 2"}',
-    now(),
-    now(),
-    '', '', '', '', '', '', '', '', false, false
-),
--- Regular mentor users (some linked to mentors above)
-(
-    '33333333-3333-3333-3333-333333333333',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'mentor1@test.com',
-    crypt('mentor1', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"]}',
-    '{"full_name": "Sarah Chen"}',
-    now(),
-    now(),
-    '', '', '', '', '', '', '', '', false, false
-),
-(
-    '44444444-4444-4444-4444-444444444444',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'mentor2@test.com',
-    crypt('mentor2', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"]}',
-    '{"full_name": "Michael Park"}',
-    now(),
-    now(),
-    '', '', '', '', '', '', '', '', false, false
-),
-(
-    '55555555-5555-5555-5555-555555555555',
-    '00000000-0000-0000-0000-000000000000',
-    'authenticated',
-    'authenticated',
-    'pending1@test.com',
-    crypt('pending1', gen_salt('bf')),
-    now(),
-    '{"provider": "email", "providers": ["email"]}',
-    '{"full_name": "New Applicant One"}',
-    now(),
-    now(),
-    '', '', '', '', '', '', '', '', false, false
-);
-
--- ============================================
--- UPDATE PROFILES FOR AUTH USERS
--- ============================================
--- Note: Trigger auto-creates profiles with defaults, we UPDATE to set correct values
--- Note: Only mulli2@gmail.com can be super_admin (not seeded here)
-
--- Admin
-UPDATE public.profiles SET
-    role = 'admin',
-    policy_accepted_at = now()
-WHERE id = '22222222-2222-2222-2222-222222222222';
-
--- Admin 2
-UPDATE public.profiles SET
-    role = 'admin',
-    policy_accepted_at = now()
-WHERE id = '66666666-6666-6666-6666-666666666666';
-
--- Mentor - Sarah Chen (mentor role, linked to mentor)
-UPDATE public.profiles SET
-    role = 'mentor',
-    mentor_id = 'aaaaaaaa-0001-0001-0001-aaaaaaaaaaaa',
-    policy_accepted_at = now()
-WHERE id = '33333333-3333-3333-3333-333333333333';
-
--- Mentor - Michael Park (mentor role, linked to mentor)
-UPDATE public.profiles SET
-    role = 'mentor',
-    mentor_id = 'aaaaaaaa-0002-0002-0002-aaaaaaaaaaaa',
-    policy_accepted_at = now()
-WHERE id = '44444444-4444-4444-4444-444444444444';
-
--- Pending Mentor - Applicant One (user role, not approved yet, linked to unapproved mentor)
-UPDATE public.profiles SET
-    role = 'user',
-    mentor_id = 'bbbbbbbb-0001-0001-0001-bbbbbbbbbbbb',
-    policy_accepted_at = now()
-WHERE id = '55555555-5555-5555-5555-555555555555';
-
--- ============================================
--- SAMPLE REVIEWS
--- ============================================
-INSERT INTO public.reviews (review) VALUES
-('Great mentoring session! Very helpful advice on career transitions.'),
-('Learned so much about frontend development best practices.'),
-('Highly recommend for anyone looking to grow in tech. Super insightful!'),
-('TK helped me prepare for my FAANG interview. Got the offer!'),
-('Jaedong gave practical advice on building community. 10/10 would recommend.'),
-('Sarah is amazing! Her system design tips landed me a job at Google.'),
-('Michael''s leadership advice changed how I approach management.'),
-('The best investment in my career. Thank you donation mentoring!');
-
--- ============================================
--- TEST ACCOUNTS SUMMARY
--- ============================================
 --
--- ADMIN ACCOUNTS:
--- | Email            | Password | Role  |
--- |------------------|----------|-------|
--- | admin@test.com   | admin    | admin |
--- | admin2@test.com  | admin2   | admin |
+-- PostgreSQL database dump
 --
--- Note: Only mulli2@gmail.com can be super_admin (not seeded here)
+
+-- \restrict hvq2ZeXZ9OzMdLPxxB15EdOsDilIoYlroakdfbyMegimbSViLzLv8qhNwFSbUbR
+
+-- Dumped from database version 17.6
+-- Dumped by pg_dump version 17.6
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
 --
--- MENTOR ACCOUNTS:
--- | Email            | Password | Status   | Linked Mentor  |
--- |------------------|----------|----------|----------------|
--- | mentor1@test.com | mentor1  | approved | Sarah Chen     |
--- | mentor2@test.com | mentor2  | approved | Michael Park   |
--- | pending1@test.com| pending1 | pending  | Applicant One  |
+-- Data for Name: audit_log_entries; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
 --
--- MENTORS (no account - just profiles):
--- - 8 approved mentors (visible on homepage)
--- - 2 unapproved mentors (in admin pending list)
+
+INSERT INTO "auth"."audit_log_entries" ("instance_id", "id", "payload", "created_at", "ip_address") VALUES
+	('00000000-0000-0000-0000-000000000000', 'c4029d9d-65fa-4a4c-b77a-920490b24dbd', '{"action":"user_invited","actor_id":"00000000-0000-0000-0000-000000000000","actor_username":"service_role","actor_via_sso":false,"log_type":"team","traits":{"user_email":"tk.hfes@gmail.com","user_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed"}}', '2026-01-03 02:05:18.787402+00', ''),
+	('00000000-0000-0000-0000-000000000000', '77643465-c40f-438a-82ef-77dac894d9bd', '{"action":"user_confirmation_requested","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"user","traits":{"provider":"email"}}', '2026-01-03 02:07:01.667164+00', ''),
+	('00000000-0000-0000-0000-000000000000', '93cda262-3051-4f9d-aac6-edb49e2531e9', '{"action":"user_signedup","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"google"}}', '2026-01-04 03:55:51.480954+00', ''),
+	('00000000-0000-0000-0000-000000000000', '40c4cb14-0a70-46b8-a9dd-80998b7671d9', '{"action":"token_refreshed","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-04 07:11:25.854418+00', ''),
+	('00000000-0000-0000-0000-000000000000', '7c2ad1b6-fd3c-469c-a32e-1268bd6b13ad', '{"action":"token_revoked","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-04 07:11:25.874484+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'a420d122-26d4-40ad-81ea-b3efa403ebaf', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-04 07:11:29.0669+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'b855e6ae-846d-4c06-b5ea-702f11b9d610', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-04 07:14:34.224784+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ce6345f1-00e2-4f47-8bb7-bd3dd6b293f6', '{"action":"token_refreshed","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-04 08:40:56.606907+00', ''),
+	('00000000-0000-0000-0000-000000000000', '162ad2c6-f4eb-492e-a931-66a30e42e7bf', '{"action":"token_revoked","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-04 08:40:56.628876+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'd4172335-2d3a-4700-af4b-ed141a1dfff4', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-04 08:41:02.056367+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'dac53369-4758-4636-a9a7-4a16ec3e81af', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-04 08:41:08.719478+00', ''),
+	('00000000-0000-0000-0000-000000000000', '4554c033-746e-4d6b-af21-0bfc2e2a77c1', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-04 08:41:32.948468+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ac6040fd-d330-4e90-9bee-f60bf83ec745', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-04 08:41:40.37641+00', ''),
+	('00000000-0000-0000-0000-000000000000', '160de847-2a0d-4bf0-97dd-597efb6c6a47', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 04:10:34.047055+00', ''),
+	('00000000-0000-0000-0000-000000000000', '80d46753-4c40-4eed-b8a2-a9eb0f6d5875', '{"action":"token_refreshed","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-05 05:11:45.510223+00', ''),
+	('00000000-0000-0000-0000-000000000000', '126374b5-9447-4e68-abd3-530a474b7a6e', '{"action":"token_revoked","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-05 05:11:45.518554+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'dde06047-fbbe-48b4-b58c-b1ef4bf4e0d3', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-05 05:37:20.504673+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'd9166e3c-e766-496a-8d71-a328ee6b4063', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 05:37:57.644847+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'b1defe1f-8103-422e-8184-1004db6b2f7c', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-05 05:38:49.740039+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'd163b273-4171-4488-9c52-b4e57d26cf51', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 05:48:50.065409+00', ''),
+	('00000000-0000-0000-0000-000000000000', '3f2e9092-9f28-4f34-a53d-ad03f69b5d92', '{"action":"user_signedup","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"google"}}', '2026-01-05 07:52:08.059115+00', ''),
+	('00000000-0000-0000-0000-000000000000', '48144cbe-6840-4dcd-90b1-be55feae9e58', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 17:44:34.123108+00', ''),
+	('00000000-0000-0000-0000-000000000000', '6b19f9be-6c64-4807-86c0-649dad9ff35b', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 17:52:15.367908+00', ''),
+	('00000000-0000-0000-0000-000000000000', '483f194a-4bf9-488b-9d34-975b0d53cf07', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 17:53:41.130759+00', ''),
+	('00000000-0000-0000-0000-000000000000', '85efb30f-da7f-47a5-ac73-821e069fd7bf', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 17:54:28.695337+00', ''),
+	('00000000-0000-0000-0000-000000000000', '53c4ad07-fe3e-4cca-8e27-b6d9e4e15fae', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:10:28.599283+00', ''),
+	('00000000-0000-0000-0000-000000000000', '83e3c9bc-ea93-4b10-9d21-1a09a6186205', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:10:32.018304+00', ''),
+	('00000000-0000-0000-0000-000000000000', '26647762-eb43-46bc-a068-bbb566b2d238', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:10:42.304874+00', ''),
+	('00000000-0000-0000-0000-000000000000', '6b7aa067-0f25-4bf9-9d04-efb38d50be0f', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:14:41.28925+00', ''),
+	('00000000-0000-0000-0000-000000000000', '38035c54-4378-4fe7-bfeb-c436ee67858d', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:15:04.720466+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ec4bb130-1a36-451d-9a66-1b3191e66b60', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:15:24.844825+00', ''),
+	('00000000-0000-0000-0000-000000000000', '9fc31cb3-f35b-4fa9-8276-e63282d72135', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 18:15:42.892747+00', ''),
+	('00000000-0000-0000-0000-000000000000', '311aefe3-a65f-49bf-bbe4-6abdab745b31', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 20:50:16.754782+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'edb9eb99-c408-41da-9c53-5b4c4a7112aa', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 20:50:27.189498+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ea3d14c4-31ae-42fa-ad4a-cfc80922eec1', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 21:10:41.823714+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f2869ad7-f977-43e0-b7e5-ef0c8ff450fb', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 21:10:45.957768+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ebbda3c1-87ad-407f-a5ba-ab647bf5d0ed', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-05 22:40:33.602595+00', ''),
+	('00000000-0000-0000-0000-000000000000', '5ca86fe1-0cc2-4995-a4c5-fbb627a1676f', '{"action":"token_refreshed","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-06 01:04:09.04253+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f599e2c0-7bd8-4f5e-922c-5425aabf8a05', '{"action":"token_revoked","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-06 01:04:09.066312+00', ''),
+	('00000000-0000-0000-0000-000000000000', '44c6f2fe-4634-4634-8d12-21ce6d00b086', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 01:07:27.515168+00', ''),
+	('00000000-0000-0000-0000-000000000000', '5eb7bd2a-2b1e-45f2-9b55-6ac285d821d6', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 01:39:07.121599+00', ''),
+	('00000000-0000-0000-0000-000000000000', '4668acfc-8fe7-4859-ba00-7a0207d05402', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 01:40:31.828093+00', ''),
+	('00000000-0000-0000-0000-000000000000', '2a7555b2-095e-4d60-ac88-f8221545c115', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 01:40:41.954512+00', ''),
+	('00000000-0000-0000-0000-000000000000', '09221c9b-7758-4796-967d-bae744ec690d', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 02:33:32.626088+00', ''),
+	('00000000-0000-0000-0000-000000000000', '0440b1a5-a9f0-4508-9539-3449ff405b9e', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:34:03.225923+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'e9f47a66-d43d-4f3d-a611-a70a5ba8fc0d', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider_type":"google"}}', '2026-01-06 02:34:04.459293+00', ''),
+	('00000000-0000-0000-0000-000000000000', '1c541c1b-4247-4a8d-bf2d-ba8314630d74', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 02:36:29.535898+00', ''),
+	('00000000-0000-0000-0000-000000000000', '55102244-0159-410f-bce0-482142a20a6a', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:36:42.410159+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ad546a57-0008-4593-8b3e-9f80cd9601f8', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider_type":"google"}}', '2026-01-06 02:36:43.533801+00', ''),
+	('00000000-0000-0000-0000-000000000000', '4f0a8769-a597-4b29-9eb9-4a78cbfe0896', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 02:36:54.710803+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'c37702a9-8098-4c64-9e33-8dde272df1d0', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:37:29.276322+00', ''),
+	('00000000-0000-0000-0000-000000000000', '39b3e426-a164-42c4-9b24-a3bbc093b3fc', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider_type":"google"}}', '2026-01-06 02:37:30.13477+00', ''),
+	('00000000-0000-0000-0000-000000000000', '84565244-1076-4510-869b-214538129896', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:39:24.313223+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f4bdfab0-cb21-45a0-9baf-60cb61cc9343', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider_type":"google"}}', '2026-01-06 02:39:24.772326+00', ''),
+	('00000000-0000-0000-0000-000000000000', '2d6b7b1b-191d-4ddc-8d23-76daa8621da5', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 02:40:25.297762+00', ''),
+	('00000000-0000-0000-0000-000000000000', '8f93c98f-5b09-4a5d-8307-6430fcdd6e79', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:40:29.627148+00', ''),
+	('00000000-0000-0000-0000-000000000000', '1bc6f83f-6b7d-4de5-864b-bec97e0a011f', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 02:40:34.790771+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'd6568511-faed-41e7-9813-93b57a4ded96', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:40:53.169744+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f87a4561-4188-4c38-af74-3e747c7cf06b', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 02:41:04.253077+00', ''),
+	('00000000-0000-0000-0000-000000000000', '2432c32b-72f2-4bdb-a03d-a94a7112a334', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:48:03.85115+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f88f3601-0c24-420c-aa78-0caf931af60b', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:48:08.652759+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f60f9f86-ea68-4132-aa15-aeb9fc8adf64', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:48:12.98837+00', ''),
+	('00000000-0000-0000-0000-000000000000', '01f78ce5-e9fc-41eb-bf1c-7c6371a43a7f', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:48:34.321564+00', ''),
+	('00000000-0000-0000-0000-000000000000', '4c7dac45-896f-49b6-bbcf-a671e7ce60c7', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 02:58:05.988482+00', ''),
+	('00000000-0000-0000-0000-000000000000', '7e48ee1f-4bf6-4e67-a1e8-4ce3149368a2', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 03:04:34.604367+00', ''),
+	('00000000-0000-0000-0000-000000000000', '5cf0a0f4-1453-4ab1-a233-090684d0e52e', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 03:04:44.568592+00', ''),
+	('00000000-0000-0000-0000-000000000000', '31575862-6748-4a51-895a-ec82e6253b11', '{"action":"logout","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 03:04:52.703313+00', ''),
+	('00000000-0000-0000-0000-000000000000', '5fad4b17-6668-4888-9e67-3a8873fc31fa', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 03:25:56.553702+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'a0d3cbb7-d205-4879-b3de-96f4a66f14b3', '{"action":"logout","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 03:27:34.898254+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'c24738ae-0a63-4a9c-906b-ac7af3cb3e78', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 03:28:10.901213+00', ''),
+	('00000000-0000-0000-0000-000000000000', '8238e42c-16cb-48c0-bfca-1f2fc08edeec', '{"action":"logout","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 03:30:02.90567+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'a332bb7d-7d09-43cf-8ac5-c08c03240381', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 03:36:42.136696+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'f624724a-86c0-487c-a4c3-c2a4bb3f77ee', '{"action":"login","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 09:07:53.986459+00', ''),
+	('00000000-0000-0000-0000-000000000000', '26928c9f-6153-4771-a862-4225c32f7db9', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 17:11:45.779617+00', ''),
+	('00000000-0000-0000-0000-000000000000', '9f4d3a4e-a547-4a57-8337-842490db5e33', '{"action":"login","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"google"}}', '2026-01-06 19:30:41.873355+00', ''),
+	('00000000-0000-0000-0000-000000000000', '98a691ed-3f10-4d62-85ad-33125ac577cd', '{"action":"token_refreshed","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-06 20:01:51.947107+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'bae97368-8444-4d8b-bc34-79a031af357b', '{"action":"token_revoked","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-06 20:01:51.95761+00', ''),
+	('00000000-0000-0000-0000-000000000000', '7ea8b164-88e3-40be-a0a7-369064cbf631', '{"action":"token_refreshed","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-06 20:33:05.484917+00', ''),
+	('00000000-0000-0000-0000-000000000000', 'ac5abe51-9b80-4a7e-b53c-0ef0f8e02f77', '{"action":"token_revoked","actor_id":"9ab2152e-3344-4a7f-a582-9a74445d17ed","actor_name":"TK Kim","actor_username":"tk.hfes@gmail.com","actor_via_sso":false,"log_type":"token"}', '2026-01-06 20:33:05.498727+00', ''),
+	('00000000-0000-0000-0000-000000000000', '3c3016c1-b9aa-41b9-bf37-fa2dd78e3a10', '{"action":"user_signedup","actor_id":"d8f463d1-b8a1-4985-a761-3bf8820e9c9d","actor_name":"Sam Park","actor_username":"swp100@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"google"}}', '2026-01-06 20:36:49.280475+00', ''),
+	('00000000-0000-0000-0000-000000000000', '89149f9e-08dc-4528-964a-b7b885d0d27d', '{"action":"logout","actor_id":"d8f463d1-b8a1-4985-a761-3bf8820e9c9d","actor_name":"Sam Park","actor_username":"swp100@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 20:36:51.768831+00', ''),
+	('00000000-0000-0000-0000-000000000000', '95937a99-19d0-443b-aaa5-91d6a144490a', '{"action":"logout","actor_id":"029cb204-e133-4935-a321-a61921a59b42","actor_name":"Jaedong Shin","actor_username":"mulli2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2026-01-06 20:39:10.096376+00', ''),
+	('00000000-0000-0000-0000-000000000000', '9e6c4848-ebfd-412e-930b-0a2766dc161d', '{"action":"user_signedup","actor_id":"fdbd9409-b85d-4631-ae83-75f0b6a30ad0","actor_name":"Shin Jaedong","actor_username":"jade.jaedong@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"google"}}', '2026-01-06 20:39:31.988461+00', '');
+
+
 --
+-- Data for Name: flow_state; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."flow_state" ("id", "user_id", "auth_code", "code_challenge_method", "code_challenge", "provider_type", "provider_access_token", "provider_refresh_token", "created_at", "updated_at", "authentication_method", "auth_code_issued_at") VALUES
+	('d223bc8d-de97-43dd-a207-6dc673d73979', NULL, 'afb5430d-a247-43ab-81c0-e087f2e673c7', 's256', '1ODBnjN9JzHCNW1V0kTsrP_7P0iC_DhlBnCQpjk8Zzs', 'google', '', '', '2026-01-06 02:39:09.879642+00', '2026-01-06 02:39:09.879642+00', 'oauth', NULL);
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_password", "email_confirmed_at", "invited_at", "confirmation_token", "confirmation_sent_at", "recovery_token", "recovery_sent_at", "email_change_token_new", "email_change", "email_change_sent_at", "last_sign_in_at", "raw_app_meta_data", "raw_user_meta_data", "is_super_admin", "created_at", "updated_at", "phone", "phone_confirmed_at", "phone_change", "phone_change_token", "phone_change_sent_at", "email_change_token_current", "email_change_confirm_status", "banned_until", "reauthentication_token", "reauthentication_sent_at", "is_sso_user", "deleted_at", "is_anonymous") VALUES
+	('00000000-0000-0000-0000-000000000000', '029cb204-e133-4935-a321-a61921a59b42', 'authenticated', 'authenticated', 'mulli2@gmail.com', NULL, '2026-01-05 07:52:08.067876+00', NULL, '', NULL, '', NULL, '', '', NULL, '2026-01-06 09:07:54.003083+00', '{"provider": "google", "providers": ["google"]}', '{"iss": "https://accounts.google.com", "sub": "103706003932591370984", "name": "Jaedong Shin", "email": "mulli2@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocL9952BuyjYZ3vEoCY2WJUzoTsoQD8x2LE-w34thdiqqIK1uKdhyQ=s96-c", "full_name": "Jaedong Shin", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocL9952BuyjYZ3vEoCY2WJUzoTsoQD8x2LE-w34thdiqqIK1uKdhyQ=s96-c", "provider_id": "103706003932591370984", "email_verified": true, "phone_verified": false}', NULL, '2026-01-05 07:52:07.977222+00', '2026-01-06 20:01:51.980204+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false),
+	('00000000-0000-0000-0000-000000000000', '9ab2152e-3344-4a7f-a582-9a74445d17ed', 'authenticated', 'authenticated', 'tk.hfes@gmail.com', NULL, '2026-01-04 03:55:51.489041+00', '2026-01-03 02:05:18.811607+00', '', '2026-01-03 02:07:01.669578+00', '', NULL, '', '', NULL, '2026-01-06 19:30:41.884872+00', '{"provider": "google", "providers": ["google"]}', '{"iss": "https://accounts.google.com", "sub": "102535102567903390226", "name": "TK Kim", "email": "tk.hfes@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocJRpzNnIlI8IkeAbdC1l2GEFs6YAYBXUFMihAsvwBiPkuZpLsC_=s96-c", "full_name": "TK Kim", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJRpzNnIlI8IkeAbdC1l2GEFs6YAYBXUFMihAsvwBiPkuZpLsC_=s96-c", "provider_id": "102535102567903390226", "email_verified": true, "phone_verified": false}', NULL, '2026-01-03 02:05:18.734531+00', '2026-01-06 20:33:05.518218+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false),
+	('00000000-0000-0000-0000-000000000000', 'd8f463d1-b8a1-4985-a761-3bf8820e9c9d', 'authenticated', 'authenticated', 'swp100@gmail.com', NULL, '2026-01-06 20:36:49.281259+00', NULL, '', NULL, '', NULL, '', '', NULL, '2026-01-06 20:36:49.287582+00', '{"provider": "google", "providers": ["google"]}', '{"iss": "https://accounts.google.com", "sub": "101400021893127820688", "name": "Sam Park", "email": "swp100@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocLJy8Pst_mSB4z2Sk5Q7pVYQj8FxSG2L0AX70WaXjYT2U8dpbyl2A=s96-c", "full_name": "Sam Park", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLJy8Pst_mSB4z2Sk5Q7pVYQj8FxSG2L0AX70WaXjYT2U8dpbyl2A=s96-c", "provider_id": "101400021893127820688", "email_verified": true, "phone_verified": false}', NULL, '2026-01-06 20:36:49.209805+00', '2026-01-06 20:36:49.298564+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false),
+	('00000000-0000-0000-0000-000000000000', 'fdbd9409-b85d-4631-ae83-75f0b6a30ad0', 'authenticated', 'authenticated', 'jade.jaedong@gmail.com', NULL, '2026-01-06 20:39:31.989+00', NULL, '', NULL, '', NULL, '', '', NULL, '2026-01-06 20:39:31.991572+00', '{"provider": "google", "providers": ["google"]}', '{"iss": "https://accounts.google.com", "sub": "106081730210847672187", "name": "Shin Jaedong", "email": "jade.jaedong@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocKSEPc47dsKjqzbaG3q1sJWKz_4sT8I6fqqWgnv2WVkj332pQ=s96-c", "full_name": "Shin Jaedong", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKSEPc47dsKjqzbaG3q1sJWKz_4sT8I6fqqWgnv2WVkj332pQ=s96-c", "provider_id": "106081730210847672187", "email_verified": true, "phone_verified": false}', NULL, '2026-01-06 20:39:31.98051+00', '2026-01-06 20:39:31.993732+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false);
+
+
+--
+-- Data for Name: identities; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."identities" ("provider_id", "user_id", "identity_data", "provider", "last_sign_in_at", "created_at", "updated_at", "id") VALUES
+	('102535102567903390226', '9ab2152e-3344-4a7f-a582-9a74445d17ed', '{"iss": "https://accounts.google.com", "sub": "102535102567903390226", "name": "TK Kim", "email": "tk.hfes@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocJRpzNnIlI8IkeAbdC1l2GEFs6YAYBXUFMihAsvwBiPkuZpLsC_=s96-c", "full_name": "TK Kim", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJRpzNnIlI8IkeAbdC1l2GEFs6YAYBXUFMihAsvwBiPkuZpLsC_=s96-c", "provider_id": "102535102567903390226", "email_verified": true, "phone_verified": false}', 'google', '2026-01-04 03:55:51.462231+00', '2026-01-04 03:55:51.462977+00', '2026-01-06 19:30:41.8525+00', '42200ec8-6603-4dc2-ba4c-49b3fe47fa74'),
+	('101400021893127820688', 'd8f463d1-b8a1-4985-a761-3bf8820e9c9d', '{"iss": "https://accounts.google.com", "sub": "101400021893127820688", "name": "Sam Park", "email": "swp100@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocLJy8Pst_mSB4z2Sk5Q7pVYQj8FxSG2L0AX70WaXjYT2U8dpbyl2A=s96-c", "full_name": "Sam Park", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLJy8Pst_mSB4z2Sk5Q7pVYQj8FxSG2L0AX70WaXjYT2U8dpbyl2A=s96-c", "provider_id": "101400021893127820688", "email_verified": true, "phone_verified": false}', 'google', '2026-01-06 20:36:49.271582+00', '2026-01-06 20:36:49.271635+00', '2026-01-06 20:36:49.271635+00', '5ea8ac9e-cc94-4faf-a4f4-d440c0965945'),
+	('106081730210847672187', 'fdbd9409-b85d-4631-ae83-75f0b6a30ad0', '{"iss": "https://accounts.google.com", "sub": "106081730210847672187", "name": "Shin Jaedong", "email": "jade.jaedong@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocKSEPc47dsKjqzbaG3q1sJWKz_4sT8I6fqqWgnv2WVkj332pQ=s96-c", "full_name": "Shin Jaedong", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKSEPc47dsKjqzbaG3q1sJWKz_4sT8I6fqqWgnv2WVkj332pQ=s96-c", "provider_id": "106081730210847672187", "email_verified": true, "phone_verified": false}', 'google', '2026-01-06 20:39:31.985242+00', '2026-01-06 20:39:31.98529+00', '2026-01-06 20:39:31.98529+00', '99fee35f-3752-40d6-819e-82bfe2e6ed28'),
+	('103706003932591370984', '029cb204-e133-4935-a321-a61921a59b42', '{"iss": "https://accounts.google.com", "sub": "103706003932591370984", "name": "Jaedong Shin", "email": "mulli2@gmail.com", "picture": "https://lh3.googleusercontent.com/a/ACg8ocL9952BuyjYZ3vEoCY2WJUzoTsoQD8x2LE-w34thdiqqIK1uKdhyQ=s96-c", "full_name": "Jaedong Shin", "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocL9952BuyjYZ3vEoCY2WJUzoTsoQD8x2LE-w34thdiqqIK1uKdhyQ=s96-c", "provider_id": "103706003932591370984", "email_verified": true, "phone_verified": false}', 'google', '2026-01-05 07:52:08.042741+00', '2026-01-05 07:52:08.042797+00', '2026-01-06 09:07:53.948944+00', '6d6cbf42-bae0-4574-a3ea-90a8b61b655d');
+
+
+--
+-- Data for Name: instances; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_clients; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: sessions; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."sessions" ("id", "user_id", "created_at", "updated_at", "factor_id", "aal", "not_after", "refreshed_at", "user_agent", "ip", "tag", "oauth_client_id", "refresh_token_hmac_key", "refresh_token_counter", "scopes") VALUES
+	('48947c0f-e061-4bd9-bc6f-d1de85138e4b', '9ab2152e-3344-4a7f-a582-9a74445d17ed', '2026-01-06 17:11:45.795922+00', '2026-01-06 17:11:45.795922+00', NULL, 'aal1', NULL, NULL, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '98.35.140.72', NULL, NULL, NULL, NULL, NULL),
+	('c49933ac-5019-443d-9170-2b67ddeb4d30', '9ab2152e-3344-4a7f-a582-9a74445d17ed', '2026-01-06 19:30:41.884977+00', '2026-01-06 20:33:05.528462+00', NULL, 'aal1', NULL, '2026-01-06 20:33:05.528355', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '172.56.176.82', NULL, NULL, NULL, NULL, NULL),
+	('13db6bd6-5195-4872-8e34-be3dfd91d73d', 'fdbd9409-b85d-4631-ae83-75f0b6a30ad0', '2026-01-06 20:39:31.991665+00', '2026-01-06 20:39:31.991665+00', NULL, 'aal1', NULL, NULL, 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36', '23.126.176.16', NULL, NULL, NULL, NULL, NULL);
+
+
+--
+-- Data for Name: mfa_amr_claims; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."mfa_amr_claims" ("session_id", "created_at", "updated_at", "authentication_method", "id") VALUES
+	('48947c0f-e061-4bd9-bc6f-d1de85138e4b', '2026-01-06 17:11:45.828076+00', '2026-01-06 17:11:45.828076+00', 'oauth', '4f3f96de-cade-41ff-8a1e-28ee09f42422'),
+	('c49933ac-5019-443d-9170-2b67ddeb4d30', '2026-01-06 19:30:41.913402+00', '2026-01-06 19:30:41.913402+00', 'oauth', '59cb6005-55f1-40da-b011-91df10859e9d'),
+	('13db6bd6-5195-4872-8e34-be3dfd91d73d', '2026-01-06 20:39:31.994196+00', '2026-01-06 20:39:31.994196+00', 'oauth', 'f0a23e31-c652-4d73-9406-5d6854b84ab3');
+
+
+--
+-- Data for Name: mfa_factors; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: mfa_challenges; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_authorizations; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_client_states; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: oauth_consents; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: one_time_tokens; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: refresh_tokens; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+INSERT INTO "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked", "created_at", "updated_at", "parent", "session_id") VALUES
+	('00000000-0000-0000-0000-000000000000', 52, 'e4dw7h4hi554', 'fdbd9409-b85d-4631-ae83-75f0b6a30ad0', false, '2026-01-06 20:39:31.992629+00', '2026-01-06 20:39:31.992629+00', NULL, '13db6bd6-5195-4872-8e34-be3dfd91d73d'),
+	('00000000-0000-0000-0000-000000000000', 47, 'ze7b4peytwei', '9ab2152e-3344-4a7f-a582-9a74445d17ed', false, '2026-01-06 17:11:45.813265+00', '2026-01-06 17:11:45.813265+00', NULL, '48947c0f-e061-4bd9-bc6f-d1de85138e4b'),
+	('00000000-0000-0000-0000-000000000000', 48, '2jrcijqbwlhx', '9ab2152e-3344-4a7f-a582-9a74445d17ed', true, '2026-01-06 19:30:41.898336+00', '2026-01-06 20:33:05.50009+00', NULL, 'c49933ac-5019-443d-9170-2b67ddeb4d30'),
+	('00000000-0000-0000-0000-000000000000', 50, 'g5t5f73xrl26', '9ab2152e-3344-4a7f-a582-9a74445d17ed', false, '2026-01-06 20:33:05.512748+00', '2026-01-06 20:33:05.512748+00', '2jrcijqbwlhx', 'c49933ac-5019-443d-9170-2b67ddeb4d30');
+
+
+--
+-- Data for Name: sso_providers; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: saml_providers; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: saml_relay_states; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: sso_domains; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+--
+
+
+
+--
+-- Data for Name: app_config; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO "public"."app_config" ("key", "value") VALUES
+	('API_SECRET', 'd4b8e9f0-1c2a-4b3d-8e5f-9a0c1b2d3e4f');
+
+
+--
+-- Data for Name: mentors; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO "public"."mentors" ("id", "name_en", "location_en", "description_en", "name_ko", "location_ko", "description_ko", "picture_url", "tags", "display_order", "is_active", "created_at", "updated_at", "position_en", "position_ko", "linkedin_url", "calendly_url", "company_en", "company_ko", "email", "languages", "session_time_minutes", "session_price_usd", "password", "role", "reset_token", "reset_token_expires_at") VALUES
+	('28327a28-414b-4065-a9fe-75870f46c635', 'Hojae Lee', 'Korea', '• I am currently a Technical Enablement Manager at Datadog and a former AWS Solutions Architect, with a total of 4 years in the industry.
+• My mentoring is specifically designed for fresh graduates and early-career professionals (0–3 years of experience) in Korea who aspire to join global tech companies.
+•To make our session as productive as possible, please send me a detailed email outlining your current situation and goals beforehand.', '이호재', '한국', '• 총 경력 4년차의 전직 AWS SA, 현직 Datadog Technical Enablement Manager 입니다.
+• 제 멘토링은 국내에서 외국계 테크 기업을 목표로 하는 신입/Early Career(최대 2-3년차) 분들에게 적합합니다.
+• 이메일로 본인의 상황을 자세히 적어서 보내주시면 멘토링에 도움이 됩니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.5612986794414987.jpeg', '["이력서", "인터뷰", "resume", "interview"]', 0, true, '2025-12-25 21:25:31.359373+00', '2025-12-26 07:03:04.020299+00', 'Technical Enablement Manager 3', 'Technical Enablement Manager 3', 'https://linkedin.com/in/leehojae', 'Send to Email', 'Datadog', 'Datadog', 'hoje0711@naver.com', '{Korean}', 45, 15.00, NULL, 'mentor', NULL, NULL),
+	('5d162c96-ef5e-4d91-85b1-302a64ee9e3d', 'Dale Seo', 'Canada', 'I am an 18-year developer who is learning to write blogs and YouTube.', '달레', '캐나다', '블로그 쓰며 유튜브도 배우고 있는 18년 차 새싹 개발자입니다.
+
+- 월 방문자 10만 명의 개인 기술 블로그([https://www.daleseo.com](https://www.daleseo.com/))에 다양한 주제의 소프트웨어 개발 글을 올리고 있고, 글로 전달하기 어려운 내용은 유튜브 달레의 코드(https://www.youtube.com/@DaleSeo) 채널에 영상으로 공유하고 있습니다.
+- 알고리즘 입문자를 위한 웹사이트인 알고달레(https://www.algodale.com/)와 오픈소스 프로젝트 기반 소프트웨어 개발 스터디 그룹인 달레 스터디(https://www.dalestudy.com/)를 운영하고 있습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.2879675519043413.jpeg', '["개발자 커리어 코칭", "취준생/현직자 고민 상담", "개인 사이드 프로젝트", "해외 취업/이직 가이드", "모의 기술 면접"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:08:31.761587+00', 'Senior Software Engineer', 'Senior Software Engineer', 'https://www.linkedin.com/in/daleseo/', 'https://calendly.com/daleseo/unicef', 'Apollo GraphQL', 'Apollo GraphQL', 'dale.seo@gmail.com', '{Korean}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('eec631ca-216f-4454-b29f-df5060c696c4', 'Gee Bum Park ', 'Canada', '9-year BA. Planning to immigrate to Canada and transition to DS in March 2025. Vancouver-based community.', '박기범', '캐나다', '9년차 BA. 25년 3월 캐나다 이민 및 DS 이직 준비중. 밴쿠버 기반 커뮤니티 ', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6268787440208754.jpeg', '[]', 0, false, '2025-12-25 21:25:31.359373+00', '2026-01-03 22:17:09.783818+00', 'Business Analyst', 'Business Analyst', 'https://www.linkedin.com/in/gumbee/', 'https://calendly.com/gombit89/1-1?month=2025-12', '호텔신라', '호텔신라', 'gombit89@gmail.com', '{Korean}', 45, 15.00, NULL, 'mentor', NULL, NULL),
+	('77e29911-b1a7-4074-9bb9-7a24bc3fb84a', 'Jin Yun, CPA', 'USA', 'I am a US Certified Public Accountant (CPA) working in Silicon Valley. I conduct mentoring activities for those who dream of working in accounting and finance, including those considering returning to work after a career break.', '윤진', '미국', '실리콘밸리에서 활동하는 미국 공인 회계사입니다. 저는 경력 단절 후 복귀를 고민하는 분들을 포함해 회계 및 재무 분야를 꿈꾸는 분들을 위한 멘토링 활동을 진행하고 있습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.32707651326333387.webp', '["경력단절", "재무", "회계", "CPA"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:11:35.176118+00', 'Senior Revenue Accountant', 'Senior Revenue Accountant', 'https://www.linkedin.com/in/jin-y-76656227/', 'https://calendly.com/truegreen/new-meeting', 'BDO', 'BDO', 'truegreen@gmail.com', '{Korean}', 30, 20.00, NULL, 'mentor', NULL, NULL),
+	('fb5bbfe2-e6e6-4e48-8aab-5518ae65cd3e', 'Derek Kim', 'Canada', 'As a non-CS major who graduated from a bootcamp and transitioned to a developer career, I sought advice from many people and also received help during this process. Although I am still a 🌱 junior developer who has not been in the developer career for long, I can help mentor various people who want to start a developer career, those challenging overseas employment, etc. over the past 1-2 years.', '김현식', '캐나다', '비록 개발자로 커리어를 전향한지 얼마 되지 않은 아직 🌱 새싹 개발자이지만, 지난 1-2년간 개발자로 커리어를 시작하고자 하는 분들, 해외 취업을 도전하시는 분들 등 다양한 분들의 멘토링을 도와왔습니다. 아직 배울점이 많지만, 제가 겪어왔던 경험을 공유하며 함께 고민하고 성장할 수 있는 좋은 계기가 되었으면 좋겠습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.45353586837369375.jpeg', '["이력서 리뷰", "링크드인 리뷰", "취업 준비", "인터뷰 준비", "Algorithms & DSA 공부", "취준생 고민"]', 0, false, '2025-12-25 21:25:31.359373+00', '2026-01-04 22:22:23.875035+00', 'Software Engineer', 'Software Engineer', 'https://www.linkedin.com/in/derekhskim/', 'https://calendly.com/dk-derek/30min', 'Robinhood', 'Robinhood', 'dk@derek.kim', '{Korean}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('9ea4f911-fb5b-4f6c-8f59-de909137bff0', 'Taeho (TK) Kim', 'USA', 'Has experience from Samsung to 5th startup. Currently VP of Bay Area K-Group and operates a K-group Design.', '김태호', '미국', '삼성부터 5번째 스타트업까지 여러 경험 보유. 현재 Bay Area K-Group VP 와 디자인 그룹 운영.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6772318297576914.jpeg', '["Frontend", "UX", "UXE", "AI", "인터뷰", "Interview", "이력서", "Resume", "React"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-05 05:51:16.016336+00', 'UX Engineer', 'UX Engineer', 'https://www.linkedin.com/in/tkhfes/', 'https://calendly.com/tk-hfes/mentoring', 'Powder (YC W24)', 'Powder (YC W24)', 'tk.hfes@gmail.com', '{Korean}', 30, 10.00, NULL, 'mentor', NULL, NULL),
+	('ddad16ba-8415-488d-b2d0-5c324bb25276', 'Raeok Kim', 'USA', '16-year SWE. Has experience in both Korea and the US across various domains and company sizes. Likes reading legal documents.', '김래옥', '미국', '저는 약 16년 동안 소프트웨어 엔지니어(SWE)로 일을 했으며, 한국에서 약 10년, 미국에서 5년 이상 일을 했습니다. 현재 Venmo Identity 팀에서 Senior SWE로 일을 하고 있습니다. 직전에는 Thumbtack에서 Senior SWE로 일을 했습니다. Backend 를 담당 했으며, Coding 및 System design interview에 calibrated panel로 참여하였습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6249473797647369.jpeg', '["General Software Engineering", "Interview process", "Career Growth", "연봉 협상", "커뮤니케이션"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 07:54:44.441214+00', 'Senior Software Engineer', 'Senior Software Engineer', 'https://www.linkedin.com/in/raeok-kim/', 'https://calendly.com/raeok-kim/1h', 'Paypal', 'Paypal', 'raeok.ray.kim@gmail.com', '{Korean,English}', 60, 15.00, NULL, 'mentor', NULL, NULL),
+	('f96aa2f8-68f0-4b5d-8eed-e4db13fabf77', 'Dooyoung Jeon', 'Korea', 'I am Dooyoung Jeon, a 7-year Android developer. Through mentoring based on my experience, I want to help mentees grow and contribute positive value to the world.', '전두영', '한국', '7년차 안드로이드 개발자 전두영이에요.
+저의 경험을 바탕으로 한 멘토링을 통해 멘티분들의 성장을 돕고 세상에 좋은 가치를 기여하고자 해요.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.30424921269261385.jpeg', '[]', 0, true, '2025-12-25 21:25:31.359373+00', '2025-12-25 23:49:53.661227+00', 'Software Engineer', 'Software Engineer', 'https://www.linkedin.com/in/duitddu/', 'https://calendly.com/winan305/30min', 'Coupang', '쿠팡', 'winan305@gmail.com', '{Korean}', 60, 15.00, NULL, 'mentor', NULL, NULL),
+	('3ca64759-526d-4e5a-b3cb-3fb4e8eb900f', 'Manegkwan Seo', 'Korea', '11-year SWE. Accumulated experience at various Korean companies. Provides advice on career, resume, interviews, team building, etc.', '서맹관', '한국', '저는 11년 차 Software Engineer로 일을 하고 있으며, JS를 메인으로 FE, BE, Infra 등 여러 영역에서 개발을 해왔습니다.
+
+여기어때, 블랭크코퍼레이션, 이베이, 닥터나우, 두들린 등 스타트업부터 대기업까지 다양한 회사와 팀에서 일을 해왔습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.092850954735476.jpeg', '["커리어", "이력서", "인터뷰"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 12:24:02.961626+00', 'Software Engineer', 'Software Engineer', 'https://www.linkedin.com/in/maengkwan-seo/', 'https://calendly.com/hbnb7894/30min', '', '', 'hbnb7894@gmail.com', '{Korean}', 30, 10.00, NULL, 'mentor', NULL, NULL),
+	('3f4eb61b-f9e7-4c58-9eae-87361d57248c', 'Sukmin Koh', 'USA', '19-year developer. Provides online/offline mentoring based on IC/Manager experience at Google and startups.', '고석민', '미국', '19년 차 개발자로 구글과 스타트업에서의 IC/Manager 경력을 토대로 온라인/오프라인 멘토링을 제공합니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.4104726140308007.jpeg', '[]', 0, false, '2025-12-25 21:25:31.359373+00', '2025-12-25 23:50:00.667658+00', 'VP of Engineering', 'VP of Engineering', 'https://www.linkedin.com/in/sukmink/', 'https://calendly.com/dolphins-gpro/30min?month=2026-02', 'AI Startup', 'AI Startup', 'dolphins.gpro@gmail.com', '{Korean}', NULL, NULL, NULL, 'mentor', NULL, NULL),
+	('ad06b3fd-4414-4ff0-a929-c49637032ab2', 'Daniel Young Lee', 'USA', '10-year SWE. I enjoy sharing development stories. US employment, interview preparation, development team culture, developer career, etc. If you have plans to visit San Francisco, I would also welcome you to visit our company.', '이 다니엘', '미국', '10년차 SWE. 개발 이야기를 나누는 것을 좋아합니다. 미국 취업. 인터뷰 준비, 개발팀의 문화, 개발자 커리어 등. 혹시 샌프란시스코를 방문하실 일정이 있으시다면 회사 초대도 가능합니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.3387223383123681.jpeg', '[]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 22:52:01.841611+00', 'Software Engineer', 'Software Engineer', 'https://www.linkedin.com/in/danielylee/', 'Send to Email', 'Google', 'Google', 'ltae9110@gmail.com', '{Korean}', 60, 30.00, NULL, 'mentor', NULL, NULL),
+	('357165df-9890-4ed7-98c6-c71a34ca4e3e', 'Chungha Yun', 'USA', '19-year SWE. Very interested in engineer mentoring and growth. At the company, I have conducted mentoring for many Jr. engineers regarding onboarding, problem-solving, career, and promotion.', '윤청하', '미국', '전 19년 이상 소프트웨어 엔지니어(SWE)로 일을 했으며, 한국에서 10년, 미국에서 9년 이상 일을 했습니다. 현재는 구글에서 Staff SWE로 일을 하고 있고, 이전에는 LG전자, 작은 스타트업에서 일했습니다.
+
+업무적으로는 엔지니어 멘토링 및 성장에 관심이 많고 회사에서 많은 Jr. 엔지니어들의 온보딩, 문제해결, 커리어, 프로모션 관련 멘토링을 하였습니다.
+
+개인적으로는 성경, 믿음생활, 운동 (수영, 마라톤, 싸이클, 축구 등) 및 독서 (북클럽)에 관심이 많습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6449268655803208.jpeg', '["회사에서의 성장", "커뮤니케이션", "리더쉽", "성경(예수님)/믿음생활"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 06:51:13.355628+00', 'Staff Software Engineer', 'Staff Software Engineer', 'https://www.linkedin.com/in/chungha-38627276/', 'https://calendly.com/chungha/mentoring', 'Google', 'Google', 'chungha@gmail.com', '{Korean}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('0afd9bd6-a095-4375-a721-d4f60d1ee303', 'Uk Huh', 'USA', '16-year HW engineer. Has work experience at companies of various nationalities. Can provide career counseling in HW field and advice on dealing with workplace stress.', '허욱', '미국', '반도체 측정 장비를 전공하였고, 또 현재 그에 관한 일을 하고 있습니다. 하드웨어 엔지니어로서의 전공이나 진로를 밟아오신 분들이 현재 고민이 있는데 상의할 사람이 없다거나, 혹은 차후 진로에대하여 궁금한 점이 있다면, 제 과거나 현재 경험을 토대로 제가 아는 선에서 도와드리고 싶습니다. 
+
+대학원 과정 중에 지도 교수와의 관계 혹은 직장 내 인간 관계로 인해 우울증을 겪고 계신 분들도 도와드리고 싶습니다. 제가 해드릴 수 있는 부분은 다음과 같습니다. 어떤 과정을 밟아서 마음의 병을 치유할지, 어떤 전문가에게 도움을 요청해야할지 등에대해서 조언을 해드리고자 합니다.
+
+제 경험이 반도체 측정 장비에서도 특정 장비 그리고 대기업의 특정 사업부 산하 특정 부서에 국한 되어 있는고로, 어쩌면 상담해주시는 분의 고민에 꼭 부합하는 해결책을 제시하거나, 조언을 해드리기 힘들 가능성이 높습니다. 1+2=3이라는 답을 제게 듣고 싶어하신다면, 어쩌면 저는 적합한 사람이 아닐 가능성이 높습니다. 
+
+하지만, 저와의 대화를 통해서, 생각의 물꼬를 틔우는 것을 원하신다면, 제가 할 수 있는 것을 해보겠습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.8071170367389159.jpeg', '["HW 분야 커리어 상담", "직장/대학원 스트레스"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 06:55:54.94037+00', 'Failure Analysis Engineer', 'Failure Analysis Engineer', 'https://www.linkedin.com/in/ukhuh/', 'https://calendly.com/uk-1-huh/30min', 'Meta', 'Meta', 'uk.1.huh@gmail.com', '{Korean}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('649db9fb-a801-4fdf-b0ab-ec7c7d1b0c40', 'Jaedong Shin', 'USA', '19-year SWE. Founded the donation mentoring model and Study Club++. Interested in community and development.', '신재동', '미국', '19년 차 SWE. 기부 멘토링 모델과 Study Club++를 만듦. 커뮤니티와 개발에 관심 많음. ', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.4726313691281572.jpeg', '["이력서", "목 인터뷰", "resume", "mock interview", "community"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-06 23:45:59.917278+00', 'Senior Software Engineer', 'Senior Software Engineer', 'https://www.linkedin.com/in/jaedong-shin/', 'https://calendly.com/mulli2/1on1', 'Uber', 'Uber', 'mulli2@gmail.com', '{Korean,English}', 60, 30.00, NULL, 'admin', NULL, NULL),
+	('80f05a4c-22f1-4cf1-b60e-8528deb4cd67', 'Joohan (Austin) KIM', 'Korea', '15 years of experience in non-memory semiconductor design. Has expertise in resume review and career coaching.', '김주한', '한국', '비메모리 반도체 설계 분야 15년 경력. 이력서 리뷰 및 커리어 코칭에 전문성 보유.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.2651888912894832.jpeg', '[]', 0, false, '2025-12-25 21:25:31.359373+00', '2025-12-25 23:50:06.011201+00', 'Staff Engineer', 'Staff Engineer', 'https://www.linkedin.com/in/chacagea/', 'https://calendly.com/joohankim86/60min', 'Qualcomm', 'Qualcomm', 'chacagea@naver.com', '{Korean}', NULL, NULL, NULL, 'mentor', NULL, NULL),
+	('0b083f2b-7c56-4403-bbbe-9194bcc53cd1', 'Eunji Yi', 'South Korea', 'An IT mentor you can turn to when you do not have a senior colleague around to talk to comfortably. Someone you think of when something feels frustrating but you are not sure what exactly you do not know.', '이은지', '한국', '뭘 물어봐야 할지 모를 정도로 뭔가 답답한데, 주변에 마음 편히 이야기할 선배가 없을 때 무작정 찾아갈 수 있는 사람입니다.
+/ 30대에 전혀 다른 분야로 커리어를 전환한 성공 사례가 궁금할 때
+/ 비전공자인데 SW엔지니어로 커리어를 잡고 싶을 때
+/ 핀테크, 제조업, IT회사, 공공기관 등 다양한 도메인의 데이터 그 자체와 데이터직군에 대한 이해가 필요할 때', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.44248349647887286.JPG', '["비전공자", "이력서리뷰", "커리어상담", "다양한 도메인 경험", "인터뷰", "데이터엔지니어", "소프트웨어엔지니어", "전략기획"]', 0, true, '2025-12-28 02:58:22.482403+00', '2025-12-28 03:07:15.396643+00', 'Software Engineer | Data Engineer | Strategic Planning Specialist', '데이터엔지니어, 전략기획', 'https://www.linkedin.com/in/eunjiyi/', 'https://tinyurl.com/eunjiyi-donation-mentorship', 'LG Electronics', 'LG전자', 'eunji0yi@gmail.com', '{Korean,English}', 60, 30.00, NULL, 'mentor', NULL, NULL),
+	('7f9d6f23-cdf6-4ec7-a01d-56b413e3ae50', 'Sunghan OH', 'USA', 'Based on diverse field experience in recruitment, education, and organizational culture in tech company HR, I want to support your career growth and development and accompany you on that journey. Areas: resume review, mock interviews, career coaching, other Q&A.', '오성한', '미국', '테크 기업 HR 분야에서의 채용, 교육, 조직 문화 등 다양한 현장 경험에 기반을 두고,
+여러분의 커리어 성장과 발전을 지원하고 그 여정을 함께하고자 합니다. 분야: 이력서 리뷰, 모의 인터뷰, 커리어 코칭, 기타 질문 답변', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.12706243673675865.png', '["이력서 리뷰", "모의 인터뷰", "커리어 코칭", "HR"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:12:29.493531+00', 'CEO, HR', 'CEO, HR', 'http://linkedin.com/in/sunghan-oh-3426681b', 'https://calendly.com/jh-park-easemuse/30min', 'EASE MusE', 'EASE MusE', 'sh.oh@easemuse.com', '{Korean}', 60, 30.00, NULL, 'mentor', NULL, NULL),
+	('b7469baa-4762-43f3-86ea-ad23e88f38cf', 'Jeongwook (Jeremy Winchester) Park', 'Korea', 'I am a frontend developer and a development team leader. I have often shared thoughts about growth and transitions as a developer, including resume, interviews, and career transitions. Whenever you request mentoring from me, I want to do my best to help you sincerely.', '박정욱', '한국', '프론트엔드 개발자입니다. 그리고 개발팀 리더 입니다. 이력서, 면접, 커리어 전환 등 개발자로서 성장과 전환에 대한 고민을 자주 나눠왔습니다. 제게 멘토링을 요청해주실 때마다, 최선을 다해 진심으로 도움을 드리고 싶다는 마음을 가지고 있습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.1649996748812571.jpeg', '[]', 0, true, '2025-12-25 21:25:31.359373+00', '2025-12-25 23:50:11.515652+00', 'Frontend Engineer, Software Engineer, Lead Engineer', 'Frontend Engineer, Software Engineer, Lead Engineer', 'https://www.linkedin.com/in/jeremywinchster/', 'https://calendly.com/soundbrokaz/1on1', '위시켓', '위시켓', 'soundbrokaz@kakao.com', '{Korean}', 60, 20.00, NULL, 'mentor', NULL, NULL),
+	('419639fd-05c2-4724-83c5-ddb69ce75d24', 'Daniel Juyung Seo', 'USA', 'Currently serving as Global Team Lead (10 years) of Google YouTube Partner Engineering in Silicon Valley, with diverse global collaboration experience at Samsung Electronics (6 years) and startups. Mentors on topics such as leadership and organizational management, career counseling, organizational culture, evaluation and promotion, and team building.', '서주영', '미국', '현재 실리콘밸리에서 구글 유튜브 파트너 엔지니어링 글로벌팀장(10년)으로 근무중이며, 삼성전자(6년)와 스타트업 등 다양한 글로벌 협업 경험을 쌓아왔습니다. 리더십 및 조직 관리, 커리어 상담, 조직 문화, 평가 및 승진, 팀빌딩 등을 주제로 멘토링합니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6650958491329999.jpeg', '["Career", "Leadership", "Management", "Culture", "Team Building", "Coaching", "커리어 상담"]', 0, true, '2025-12-25 21:25:31.359373+00', '2025-12-30 23:02:17.514902+00', 'Senior Staff Partner Engineering Manager, Global Team Manager', 'Senior Staff Partner Engineering Manager, Global Team Manager', 'https://www.linkedin.com/in/seoz/', 'https://tidycal.com/seojuyung', 'Google', 'Google', 'seoz.mentoring@gmail.com', '{Korean,English}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('7f1745c9-4644-4d5b-affd-f95302df72a6', 'Hoo Lee', 'Korea', 'As a Notion expert, I can provide Notion-specific mentoring. **Notion** 1. Tutorial (beginner/intermediate/advanced) 2. Notion template creation 3. Notion DB management 4. Notion automation 5. Notion AI 6. Community consultation 7. Other Q&A https://www.daangn.com/kr/group/ugmwj4ctfkij/?utm_medium=copy_link', '리후', '한국', '노션(Notion) 전문가로서 노션 특화 멘토링 가능합니다.
+
+**노션** 
+1. 튜토리얼(초중고 과정)
+2. 노션템플릿 제작
+3. 노션 DB관리
+4. 노션 자동화 
+5. 노션 AI 
+6. 커뮤니티 상담 
+7. 기타 Q&A
+
+https://www.daangn.com/kr/group/ugmwj4ctfkij/?utm_medium=copy_link', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6386495747156548.webp', '["노션", "Notion"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:09:18.988314+00', '', '', '', 'https://graceful-run-abb.notion.site/Unicef-28d669ea6cf680cc89a6d0eb2991cb9b', '', '', 'dlgh9528@gmail.com', '{Korean}', 30, 10.00, NULL, 'mentor', NULL, NULL),
+	('3575fa27-a926-48c2-a51d-08a7cd338f52', 'Haeri (Grace) Kim', 'USA', '11-year SWE. Rapidly promoted at IBM and recently changed jobs. Can provide resume review and interview-related advice.', '김해리', '미국', '11년 차 SWE. IBM에서 빠르게 승진한 후 최근 이직. 레주메 리뷰 및 인터뷰 관련 조언 가능.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.2669777473869023.jpeg', '[]', 0, false, '2025-12-25 21:25:31.359373+00', '2025-12-25 23:50:11.515652+00', 'Senior Software Engineer', 'Senior Software Engineer', 'https://www.linkedin.com/in/haeri-kim-0625/', 'https://calendly.com/haeri-kim90/30min', 'Okta', 'Okta', 'haeri.kim90@gmail.com', '{Korean}', 45, 15.00, NULL, 'mentor', NULL, NULL),
+	('20d7fd55-a370-4ef7-90fe-196994403ebc', 'Joonsoo Lee', 'Netherlands', 'I am Joonsoo Lee, working as a Data Scientist in Uber''s EMEA Payments organization. Over the past 7 years, I have experienced data-related roles across various industries in Korea: e-commerce, securities, automotive, insurance, and startups. I have experience across all analytics areas, from ML modeling-focused data scientist, Product Analytics, data visualization, metric design, statistical analysis, to A/B test analysis. I have directly experienced career transitions from Korea → Europe, inter-domain job changes, and role transitions, accumulating various strategies and trial-and-error. I started mentoring thinking that these experiences could save time for someone.', '이준수', '네덜란드', 'Uber의 EMEA Payments조직에서 Data Scientist로 근무중인 이준수입니다.
+
+저는 지난 7년간 한국의 이커머스, 증권, 자동차, 보험, 스타트업 등 다양한 산업에서 데이터 관련 역할을 경험했습니다. ML 모델링 중심의 데이터 사이언티스트, Product Analytics, 데이터 시각화, 지표 설계, 통계 분석, A/B 테스트 분석까지 분석 전 영역을 두루 경험했습니다.
+
+한국 → 유럽으로의 커리어 전환, 도메인 간 이직, 역할 전환 등을 직접 겪어보며 다양한 전략과 시행착오를 쌓았습니다. 그 경험들이 누군가에게는 시간을 줄여줄 수 있다고 생각해 멘토링을 시작했습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.7321986087071747.jpeg', '["Data", "DataScience", "DataAnalyst", "데이터", "데이터분석", "데이터사이언스"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 00:03:59.49585+00', 'Data Scientist', 'Data Scientist', 'https://www.linkedin.com/in/joonsmoons/', 'https://calendly.com/joonsmoons/60min', 'Uber', 'Uber', 'joonsmoons@gmail.com', '{Korean}', 60, 20.00, NULL, 'mentor', NULL, NULL),
+	('cdbb77b2-4385-4dcf-9259-58fa4ab68332', 'Jae M. Kim', 'Korea', 'Started my academic and career journey in Korea, then moved to Canada for graduate studies with my 1-year-old child, experiencing immigration and employment. Later moved to the US and worked in both the US and Canada. Has research experience in database systems, commercial system development and operation, and has dealt with numerous customer issues and on-call situations where there was no clear technical solution. Came to Korea aiming for a 1-year career break, but recently joined an early-stage startup (Pre-seed) and is moving busily again.', '김재명', '한국', '한국에서 학업과 커리어를 시작했고, 이후 만 1세 아이와 함께 캐나다로 유학을 떠나 이민과 취업을 경험했습니다. 이후 미국으로 이주해 미국과 캐나다 양국에서 직장생활을 했습니다. 데이터베이스 시스템에 대한 연구, 상용 시스템 개발 및 운영 경험이 있으며, 기술적으로 명확한 해결책이 없던 고객 이슈나 온콜 상황도 다수 경험했습니다. 1년간 커리어 브레이크를 목표로 한국에 들어왔지만, 최근 초기 단계 스타트업(Pre-seed)에 참여하게 되면서 다시 바쁘게 움직이고 있습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.17570925064970566.jpg', '["Database", "System"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 06:35:55.286293+00', 'Software Engineer', 'Software Engineer', 'http://linkedin.com/in/jaemkim', 'https://calendly.com/hello_jaemkim/30min', 'ex-Amazon', 'ex-Amazon', 'hello.jaemkim@gmail.com', '{Korean,English}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('d55a68a0-59df-4c4c-8cd5-727055a3f651', 'Amy Y. Kim', 'USA', 'Senior motion designer and Creative director with over 10 years of experience. Provides consultation on US/Canada art school admissions, how to grow as a designer in the US, tips for finding a job, and job interview tips.', '김용희', '미국', '10년 이상 일해온 Senior motion designer이자 Creative director입니다. 미국/캐나다 미대 유학 입시 관련 상담, 미국에서 디자이너로 성장하는 방법, 좝을 잡는 팁, 좝 인터뷰 팁을 알려드립니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.32319183992089884.jpeg', '[]', 0, true, '2025-12-25 21:25:31.359373+00', '2025-12-25 23:50:17.091615+00', 'Senior motion designer, Creative director', 'Senior motion designer, Creative director', 'https://www.linkedin.com/in/finddream/', 'https://cal.com/with-amy', 'FedEx Dataworks', 'FedEx Dataworks', 'giantmotion@gmail.com', '{Korean}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('25d39569-1cdc-4088-b7d1-aa52938370cd', 'MangKyu', 'Korea', 'I am Cho Min-Kyu, operating a personal tech blog called "MangKyu Developer" under the nickname MangKyu. I currently work as a Software Engineer (SWE) at Toss Core at Viva Republica, and have past experience at Naver Cloud (with Works Mobile). I have also received a lot of help directly or indirectly from senior developers, and although lacking, I joined "donation mentoring" to give back to society in some way.', '조민규', '한국', 'MangKyu라는 닉네임으로 ‘망나니개발자’라는 개인 기술 블로그를 운영중인 조민규입니다. 저는 현재 비바리파블리카의 토스 코어에서 소프트웨어 엔지니어(SWE)로 근무중이며, 과거 네이버 클라우드(with 웍스 모바일)에서 일한 경험이 있습니다. 저 역시도 직/간접적으로 많은 도움을 선배 개발자분들께 받아왔는데, 부족하지만 이러한 부분을 사회에 조금이나마 환원하고자 ‘기부 멘토링’에 참여하게 되었습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.44958072747318123.webp', '[]', 0, false, '2025-12-25 21:25:31.359373+00', '2026-01-01 04:18:19.186052+00', 'Software Engineer', 'Software Engineer', 'http://www.linkedin.com/in/mangkyu', 'https://calendly.com/mangkyu/60min', '토스 코어', '토스 코어', 'whalsrb1226@naver.com', '{Korean}', 60, 20.00, NULL, 'mentor', NULL, NULL),
+	('1498adbc-a2e0-4fda-b3e0-a1003c35c740', 'Journey Min', 'Korea', 'I am a 19-year developer who has experienced various environments from small and medium SI companies to freelancing, startups, and entrepreneurship. I also grew by receiving help from many senior developers when I was a junior. Now I want to give back what I received to junior developers. I believe mentoring is not just knowledge transfer, but a process of thinking together and finding direction.', 'Journey Min', '한국', '저는 19년 차 개발자로, 중소기업 SI를 시작으로 프리랜서, 스타트업, 그리고 창업까지 다양한 환경을 경험했습니다. 저도 신입 시절, 많은 선배 개발자분들께 도움을 받으며 성장했습니다. 이제는 제가 받은 것들을 후배 개발자분들께 돌려드리고 싶습니다. 멘토링은 단순한 지식 전달이 아니라, 함께 고민하고 방향을 찾아가는 과정이라고 생각합니다.
+
+저는 **19년 차 개발자**로, 중소기업 SI를 시작으로 프리랜서, 스타트업, 그리고 창업까지 다양한 환경을 경험했습니다.
+
+- **SI 회사에서의 첫 출발**
+    - 개발자로 커리어를 시작했을 때, 한정된 자원과 빡빡한 일정 속에서 문제를 해결하며 기본기를 쌓았습니다.
+    - 이 시절에 배운 것은 “빠른 적응력”과 “현실적인 문제 해결력”이었습니다.
+- **프리랜서 및 스타트업 경험**
+    - 프리랜서로 다양한 프로젝트를 경험하며 **도메인에 구애받지 않는 유연한 개발 역량**을 키웠습니다.
+    - 스타트업에서는 **팀 리더**로서 팀을 빌딩하고, 여러 개발자들과 함께 성장하는 문화를 만드는 데 집중했습니다.
+    - 기술뿐만 아니라 사람을 이해하고 함께 성장하는 경험을 많이 했습니다.
+- **창업과 리더십**
+    - 직접 창업을 하면서 개발만이 아니라 **비즈니스와 제품 관점**에서도 깊은 고민을 했습니다.
+    - “좋은 개발자”가 단순히 코드를 잘 짜는 사람이 아니라, **문제를 정의하고 해결하는 사람**이라는 사실을 몸소 깨달았습니다.
+- **멘토 경험**
+    - 최근에는 모기업 교육 프로그램에서 멘토로 활동하며, 초급 개발자분들이 겪는 어려움을 가까이에서 보았습니다.
+    - 이 과정에서 제가 가진 경험이 다른 분들에게 **현실적인 방향성과 자신감을 줄 수 있겠다**는 확신을 얻었습니다.
+    - 2025년에는 약 80명 넘는 신입 및 초급개발자 멘토링 진행하였고 좋은 피드백을 받았습니다.
+    
+    ### 📌 멘토링 후기 (일부 발췌)
+    
+    💬 *“방향을 못 잡고 있었는데 현실적인 조언으로 길을 찾을 수 있었습니다.”*
+    
+    💬 *“신입 개발자로서 막막했는데, 취업 시장 동향부터 이력서 피드백까지 정말 유익했습니다.”*
+    
+    💬 *“단순한 수정이 아니라, 어떻게 하면 더 매력적인 이력서를 만들 수 있을지 방향을 잡아주셨습니다.”*', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.5771952866998972.jpeg', '[]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:16:20.619303+00', 'Software Engineer, Product Owner', 'Software Engineer, Product Owner', 'https://www.linkedin.com/in/journey-min-837271170/', 'https://calendly.com/mintwin79/30min', 'Freelancer', '프리렌서', 'mintwin@naver.com', '{Korean}', 60, 20.00, NULL, 'mentor', NULL, NULL),
+	('c9918dcf-5ab1-477d-a73b-cd9bf85e90a7', 'Jin Young Kim', 'USA', 'Jinyoung (Jin) Kim is a data scientist, data enthusiast and data evangelist. He is currently a Director of Naver Search US and the Head of Data & Analytics.', '김진영', '미국', '네이버에서 AB Test 및 품질지표를 만들고 있고요, 사이드로 AI를 활용한 개인의 지식관리/성장을 돕는 플랫폼을 만들고 있습니다.
+https://www.aiforbetter.me/', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6128634288120226.jpg', '["Data Science", "AI4PKM"]', 0, true, '2026-01-03 08:42:06.169777+00', '2026-01-04 07:13:19.41177+00', 'Data Science', 'Data Science', 'https://www.linkedin.com/in/jin-young-kim-29463a19/', 'https://calendly.com/myleo-jerry', 'Naver', '네이버', 'lifidea@gmail.com', '{Korean,English}', 45, 30.00, NULL, 'mentor', NULL, NULL),
+	('8a045912-0801-4616-a942-d2075b2658cc', 'Eugene Joo', 'USA', 'Experienced from large company employee to startup executive to CEO. While running a business, I reviewed resumes of about 400-500 PM/designer/engineers, interviewed half of them, and created the interview process for the company''s production organization. As a Software Maestro 1st generation, I have been mentoring for over 3 years, helping many juniors grow, and recently I have been coaching those learning Vibe Coding and supporting new challenges. I like to share my experiences honestly and help people think for themselves. The time with me will be a time for you to find your own answers in your business, career, skill set, and personal journey.', '주은광', '미국', '대기업 직원부터 스타트업 임원, 그리고 대표를 경험했습니다. 사업을 하며 약 4-500 명 분의 PM/디자이너/엔지니어 레주메를 리뷰했고, 그 중 절반을 인터뷰 했고, 회사 프로덕션 조직의 인터뷰 프로세스를 만들었습니다. 소프트웨어 마에스트로 1기 출신으로 3년 넘게 멘토링을 진행하며 많은 후배들의 성장을 도왔고, 최근에는 Vibe Coding을 배우는 분들을 코칭하며 새로운 도전을 지원하고 있습니다.
+
+저는 저의 경험을 솔직하게 나누고, 스스로 생각하도록 돕는 것을 좋아합니다. 저와 함께하는 시간은 당신의 사업, 커리어, 스킬셋, 개인적인 여정에서 스스로 답을 찾는 시간이 될 것입니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.7792751701044657.jpeg', '["Career", "blockchain", "tech", "이력서", "인터뷰", "interview", "채용", "코파운더", "AI", "agent", "HR", "기술이민", "비자", "코칭"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 02:32:19.204938+00', 'CEO', 'CEO', 'https://www.linkedin.com/in/ekjoo/', 'https://calendly.com/eunj', 'WASD3R ', 'WASD3R ', 'jooddang@gmail.com', '{Korean,English}', 40, 45.00, NULL, 'mentor', NULL, NULL),
+	('a900696d-d14c-4f52-9330-3bb199dc6595', 'Taesuh Park', 'USA', 'Started my career as an AI researcher after graduating from graduate school in Korea, and for over 20 years, I have been building and growing Corporate R&D organizations at large companies and startups in Korea and the US. Worked at Samsung Electronics for 10 years (small team leader), SK Telecom for 2.5 years (module leader), and crossed over to Silicon Valley, US, where I am in my 10th year. Working professional tech immigration: Experience sharing and consultation from the perspective of a domestic graduate who did not take the US study course. Career management and organizational management: Can mentor on career management and organizational management (especially applied research teams) at Korean/US companies.', 'Taesuh Park', '미국', '한국에서 대학원 졸업후 AI분야 연구원으로 커리어 시작해서 20년넘게 한국과 미국 대기업/스타트업에서 Corporate R&D 조직을 만들고 키워왔습니다. 삼성전자에서 10년(소파트장), SK텔레콤에서 2년반(모듈장) 일했고 미국 실리콘밸리로 건너와 현재 10년차입니다.
+
+직장인 기술이민: 미국유학 코스 밟지 않은 국내파 입장에서 경험담 공유 및 상담, 커리어 관리 및 조직 관리: 한국/미국 회사에서의 커리어 관리 및 조직관리(특히 applied research팀) 멘토링 가능합니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.5349415169378943.jpeg', '["Data Science", "기술이민", "커리어 관리", "조직 관리"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 07:16:35.86904+00', 'Director Data Science', 'Director Data Science', 'https://www.linkedin.com/in/taesuhpark/', 'https://calendly.com/taesuh-ieee/30min', 'Ericsson Inc.', 'Ericsson Inc.', 'taesuh@ieee.org', '{Korean}', 60, 50.00, NULL, 'mentor', NULL, NULL),
+	('448f3681-3110-440a-be27-a87fe370b385', 'Sam Park', 'Germany', 'Currently working as a Senior Software Engineer at Tesla Berlin office. Previously worked at Zalando, Kakao, and John Deere for 12 years, gaining experience with various products and development stacks. With work experience across three continents (US, Korea, Europe), I want to conduct mentoring to help Korean people in Korea or abroad with what I have learned.', '박상욱', '독일', '현재 Tesla 베를린 지사에서 Senior Software Engineer로 근무하고 있습니다.
+그전에는 Zalando와 Kakao, John Deere 에서 12년동안 일하면서 여러 프로덕트와
+개발 스택 경험을 쌓았습니다. 미국, 한국, 유럽 3대륙에서 근무 경험을 쌓으며
+배운점들을 한국 또는 해외에 계신 한국분들께 도움이 되는 마음으로 멘토링을 진행하고자 합니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.03671268884267309.jpeg', '[]', 0, true, '2025-12-25 21:25:31.359373+00', '2025-12-26 11:23:04.621498+00', 'Senior Software Engineer', 'Senior Software Engineer', 'www.linkedin.com/in/swp100', 'https://calendly.com/swp100/1-on-1', 'Tesla', 'Tesla', 'swp100@gmail.com', '{Korean}', 60, 30.00, NULL, 'mentor', NULL, NULL),
+	('dccb2b14-f6f4-4754-a383-1256370e0713', 'Young Oh', 'Singapore', '4-year professional. Graduated with bachelor''s and master''s degrees in the US, worked at Deloitte Chicago, and recently moved to KPMG Singapore. Mainly worked on Tax Advisory and Audit. Separately, I operate the North American community PKNIC, conducting various seminars, networking events, and workshops.', '오영욱', '싱가폴', '4년차 직장인 입니다. 미국에서 학부, 석사 졸업 후 Deloitte Chicago에서 근무하다 최근 KPMG Singapore로 이직했습니다. Tax Advisory 와 Audit 등의 업무를 주로 했습니다. 
+별개로 북미 커뮤니티 PKNIC을 운영하고 있습니다. 다양한 seminar, networking event, workshop 등을 진행하고 있습니다. ', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.9979309842917281.jpeg', '["이력서 리뷰", "커리어 코칭", "커뮤니티 상담"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 06:54:22.49409+00', 'Audit', 'Audit', 'https://www.linkedin.com/in/youngoukoh/', '[https://calendly.com/ohyoungouk/30min](https://calendly.com/ohyoungouk/30min)', 'KPMG Singapore', 'KPMG Singapore', 'ohyoungouk@gmail.com', '{Korean}', 60, 30.00, NULL, 'mentor', NULL, NULL),
+	('2644f938-fb6e-4f7f-b3fe-eadc7025c5d1', 'Ayoung (Wayne) Won', 'Korea', '5-year SWE. Mainly works on frontend development. Junior resume review and feedback, non-CS career transition advice, other junior developer concerns consultation.', '원아영', '한국', '5년차 SWE. 주로 프론트엔드 개발을 많이 하고 있어요. 주니어 이력서 첨삭 및 리뷰, 비전공자 커리어 전환 조언, 기타 주니어 개발자 고민 상담', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.8687574731275347.jpeg', '["이력서 리뷰", "비전공자 커리어 전환 조언", "주니어 개발자 고민 상담"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 07:04:33.798832+00', 'Software Engineer, Frontend Engineer', 'Software Engineer, Frontend Engineer', 'www.linkedin.com/in/way-in-wayne', 'https://calendly.com/wayinwayne/mentoring', 'smaxh', 'smaxh', 'wayinwayne@gmail.com', '{Korean}', 30, 10.00, NULL, 'mentor', NULL, NULL),
+	('6d5298ec-0e4e-496f-ac14-1c4ad8cd6b57', 'Sohy Lee', 'USA', 'I am Sohy Lee, a 6-year software engineer working in the US. With a heart to help mentees grow and create positive value in the world together.', '이소형', '미국', '미국에서 6년차 소프트웨어 엔지니어로 일하고 있는 이소형입니다. 멘티분들의 성장을 돕고, 함께 세상에 긍정적인 가치를 만들어가고 싶은 마음에 기부 멘토링에 참여하게 되었어요! 커리어 설계, 목표 설정, 이력서 피드백, 인터뷰 준비, 미국의 직장 문화, 채용 과정, 커뮤니케이션 스타일 등등 멘토링 가능합니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.9363003235422177.jpeg', '["커리어 설계", "목표 설정", "이력서", "인터뷰 준비", "미국의 직장 문화", "채용 과정", "커뮤니케이션 스타일"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:06:05.413876+00', 'Software Engineer', 'Software Engineer', 'https://www.linkedin.com/in/sohyeonglee/', 'https://calendly.com/contact-writingso/30min', 'CarGurus', 'CarGurus', 'contact.writingso@gmail.com', '{Korean}', 30, 10.00, NULL, 'mentor', NULL, NULL),
+	('2dc93c3e-d2b8-4365-9435-06663e3287b2', 'Hunkee Cho', 'USA', 'I am a Product Engineer with 12 years of experience in semiconductor manufacturing and equipment. Following my professional start in Korea and subsequent graduate studies in the U.S., I have built a robust career within the American tech industry. With a background in Mechanical Engineering, I have held key roles at LG Electronics, Calient Technologies, and Applied Materials. I am available to provide expert guidance on U.S. graduate admissions, career development, resume optimization, and interview preparation.', '조헌기', '미국', '반도체 제조 및 장비 분야에서 12년의 경력을 보유한 프로덕트 엔지니어입니다. 한국에서의 실무 경험과 더불어 미국 석사 유학 이후 현지에서 지속적으로 커리어를 확장해 왔습니다. 기계공학을 전공하였으며 LG전자, Calient Technologies, 그리고 Applied Materials를 거치며 전문성을 쌓았습니다. 이를 바탕으로 미국 유학 및 취업 전략, 이력서 작성, 그리고 인터뷰 준비에 실질적인 도움을 드릴 수 있습니다', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.40446074579244573.jpeg', '["interview", "resume", "목 인터뷰", "인터뷰", "이력서", "반도체", "Semiconductor", "HW", "커리어 상담"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 02:00:38.374876+00', 'Staff Product Engineer', 'Staff Product Engineer', 'https://www.linkedin.com/in/hunkeecho/', 'https://calendly.com/jplinfinity/30min', 'Lam Research', 'Lam Research', 'jplinfinity@gmail.com', '{Korean,English}', 30, 15.00, NULL, 'mentor', NULL, NULL),
+	('0fae3b5e-28d6-4738-8a63-f5f2e99c1968', 'Youn Soo "Deborah" Lee J.D.', 'USA', 'I am attorney Youn Soo Lee, specializing in commercial law (corporate law, labor law, contract law, investment law, etc.) and immigration law related to US expansion in Silicon Valley. I have advised global companies on US expansion and also serve as a startup mentor at Silicon Valley Plug and Play, Asan Foundation Maru Connect, KAIST, KOTRA Silicon Valley, KIC, Korea Software Association, etc.', '이연수', '미국', '실리콘밸리에서 상법(회사법, 노동법, 계약법, 투자법 등)과 ·이민법 등 미국 진출 관련 법률을 전문으로 하는 이연수 변호사입니다.  글로벌 기업의 미국 진출을 자문해 왔고 실리콘밸리 Plug and Play, 아산재단 마루커넥트, KAIST, KOTRA 실리콘밸리, KIC, 한국 소프트웨어 협회 등에서 스타트업 멘토로도 활동하고 있습니다.', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.6669036705824279.webp', '["이민법", "미국 진출"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-03 23:03:00.739776+00', 'Lawyer', 'Lawyer', 'https://www.linkedin.com/in/dlysl/', 'https://calendly.com/deborahlee-dlbridgelaw/30min', 'DLG', 'DLG', 'deborah.lee@dlg.lawyer', '{Korean,English}', 60, 30.00, NULL, 'mentor', NULL, NULL),
+	('fa71e6c3-b157-48e7-a337-f06ebc937e42', 'Jun Kang', 'Korea', 'While developing for over 8 years, I have focused a lot of time on individual development skills and the growth of the development team I belong to. Although still lacking, since last year, I have been conducting various development lectures and knowledge sharing activities to achieve new growth through knowledge sharing and mentoring. I hope that through this mentoring, I can share experiences with developers and data experts in various fields and be of some help.', '강준혁', '한국', '8년 이상 개발을 진행하면서 많은 시간을 개인의 개발 실력, 속한 개발팀의 성장에 집중해 왔습니다. 아직 많이 부족하지만, 작년부터는 지식 공유와 멘토링을 통해 새로운 성장을 이루고자 다양한 개발 강의와 지식 공유 활동을 진행하고 있습니다. 이번 멘토링을 통해 다양한 분야의 개발자 및 데이터 전문가들과 경험을 나누고, 조금이나마 도움이 되기를 희망합니다. ', 'https://iehcoikvflnhwtehfrhw.supabase.co/storage/v1/object/public/mentor-pictures/0.3752373696054361.jpeg', '["개발자 포트폴리오", "이력서 작성", "GenAI", "LLM 파이프라인", "DevOps", "MLOps", "초기 스타트 업의 개발 조직", "개발 문화 형성", "데이터베이스 성능/비용 최적화"]', 0, true, '2025-12-25 21:25:31.359373+00', '2026-01-04 06:28:55.59917+00', 'CTO', 'CTO', '[https://www.linkedin.com/in/junh-kang/](https://www.linkedin.com/in/junh-kang/)', 'https://calendly.com/jun-kang-sankun/30min?month=2025-02', 'Sankun', 'Sankun', 'jun.kang@sankun.com', '{Korean}', 30, 10.00, NULL, 'mentor', NULL, NULL);
+
+
+--
+-- Data for Name: reviews; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO "public"."reviews" ("id", "created_at", "review") VALUES
+	(1, '2026-01-03 22:14:08.021463+00', '결론부터 말씀드리면 이력서 코칭 후 바로 2 개의 이력서가 서류전형을 통과했습니다! 두둥!
+
+저는 이력서 코칭을 받고자 커피챗을 신청했습니다. 이력서 코칭을 받기 전에는 거의 300개 가까이 되는 이력서를 무작위로 보냈고, 하나는 걸리겠지? 했지만.. 모두 서류통과도 하지 못했습니다.
+
+제 이력서의 전체적인 방향 자체가 잘못 되어있었고 리쿠르터의 눈에 띄지 않는 이력서라는 것을 알게 되었습니다.
+
+피드백 후 이력서 내용의 전체적인 방향성이 잡혔고 나의 경력을 어떤식으로 사용해야 리쿠르터들의 흥미를 끌수있을까 란 질문을
+스스로에게 할수 있게 되었습니다.
+
+물론 아직 갈 길은 멀지만 이 피드백을 바탕으로 힘든 구직을 헤쳐나갈 수 있을 것 같습니다. 혹시나 고민하시는 분들은 꼭 신청해보세요!
+
+너무 유익한 시간이었고 덕분에 유니세프에 기부도 하게 된 아주 기분좋은 시간이었습니다. 저처럼 구직중인분들 같이 힘내요! ㅎㅎ'),
+	(2, '2026-01-03 22:15:24.980887+00', '소감:  두번의 커피챗 세션을 통해서,
+1. 어떻게하면 behavioral interview를 좀 더 인터뷰어의 입장에서 진행이 가능한지와
+2. 온보딩/포지셔닝/오퍼 랩업을 진행하였습니다.
+
+첫번째  behavioral interview 커피챗에서 배운건, 단순히 스킬적인 요소 뿐만이 아니라 인터뷰어 입장을 배웠다는 겁니다. 지금 많은 인터뷰어들이 단순히 STAR 전략에 맞게 어필할텐데, 재동님께서 조언해준것은 과연 나는 어떤 ''가치''를 가진 지원자인가에 대한 물음과, 방향성을 제시해 주셔서 다시한번 저의 장점과 회사가 원하는 점을 생각해볼 수 있었습니다. 
+
+두번째 온보딩, 포지셔닝, 오퍼관련된 세세한 질문들이 있어 질답 세션을 진행하였고 이 키워드들은 결국 오퍼를 받고 온보딩하고 한 팀에 자리잡기까지 걸리는 과정들이지만 제가 생각해왔던 것들과 가치와 속성이 매우 달랐습니다. 이 또한 직장을 구하는 개인이 아닌 회사의 가치와 관점에서 다시 생각해보게 해준 세션이어서 많은 배움이 있었습니다.');
+
+
+--
+-- Data for Name: buckets; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+INSERT INTO "storage"."buckets" ("id", "name", "owner", "created_at", "updated_at", "public", "avif_autodetection", "file_size_limit", "allowed_mime_types", "owner_id", "type") VALUES
+	('mentor-pictures', 'mentor-pictures', NULL, '2025-09-28 21:34:55.704392+00', '2025-09-28 21:34:55.704392+00', true, false, 5242880, '{image/jpeg,image/png,image/gif,image/webp}', NULL, 'STANDARD'),
+	('profile-photos', 'profile-photos', NULL, '2025-09-29 05:36:48.372408+00', '2025-09-29 05:36:48.372408+00', true, false, NULL, NULL, NULL, 'STANDARD');
+
+
+--
+-- Data for Name: buckets_analytics; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: buckets_vectors; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: objects; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+INSERT INTO "storage"."objects" ("id", "bucket_id", "name", "owner", "created_at", "updated_at", "last_accessed_at", "metadata", "version", "owner_id", "user_metadata", "level") VALUES
+	('a9d1e639-0493-4fb7-8a54-cc311d2c17c1', 'mentor-pictures', '1759128511507_fijn493gg.jpeg', NULL, '2025-09-29 06:48:31.690186+00', '2025-09-29 06:48:31.690186+00', '2025-09-29 06:48:31.690186+00', '{"eTag": "\"499665153ada7001f55dd830052225ae\"", "size": 7182, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:48:32.000Z", "contentLength": 7182, "httpStatusCode": 200}', '30911404-c626-47f3-85ad-fc271d43effd', NULL, '{}', 1),
+	('004b4739-77a9-4f27-b087-502c3dc1a0f0', 'mentor-pictures', '204c040e-4059-4664-a679-9bf567ceea84-1759096457299.jpeg', NULL, '2025-09-28 21:54:17.904083+00', '2025-09-28 21:54:19.007814+00', '2025-09-28 21:54:17.904083+00', '{"eTag": "\"7a01b57f90daade2d2efe88e0842994a\"", "size": 84503, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-28T21:54:18.000Z", "contentLength": 84503, "httpStatusCode": 200}', 'f20207ff-2428-4afa-bc45-ded0cd4c0d65', NULL, '{}', 1),
+	('1a8f8e55-b8aa-40ad-b380-c76d86da52a3', 'mentor-pictures', '17467b09-ce68-4215-b1e1-320c81f2b717-1759112258043.jpeg', NULL, '2025-09-29 02:17:40.526786+00', '2025-09-29 02:17:40.526786+00', '2025-09-29 02:17:40.526786+00', '{"eTag": "\"5e314e804c1bb7c233c75d77493baae8\"", "size": 44621, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:17:41.000Z", "contentLength": 44621, "httpStatusCode": 200}', '8448a106-c4c9-4007-bad0-03eb7a6014e6', NULL, '{}', 1),
+	('abadc0a4-34df-4256-9cb2-511a934efb3d', 'mentor-pictures', '1759128537803_2d1v307e1.png', NULL, '2025-09-29 06:48:57.981991+00', '2025-09-29 06:48:57.981991+00', '2025-09-29 06:48:57.981991+00', '{"eTag": "\"738a4406cbe23b326add4bf2c66f8e4a\"", "size": 35607, "mimetype": "image/png", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:48:58.000Z", "contentLength": 35607, "httpStatusCode": 200}', '06a18015-8ab9-41e7-959e-b30ff72b9805', NULL, '{}', 1),
+	('87cc6da7-8a98-415f-b973-89f4d8ae4fdc', 'mentor-pictures', '4419594a-65c5-4e26-9775-effe65af4ebf-1759112302926.webp', NULL, '2025-09-29 02:18:25.308106+00', '2025-09-29 02:18:25.308106+00', '2025-09-29 02:18:25.308106+00', '{"eTag": "\"d2d16c41d25e235aebf76205ad9dad70\"", "size": 21934, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:18:26.000Z", "contentLength": 21934, "httpStatusCode": 200}', '2d2b1274-780c-429e-a086-16f68fc80739', NULL, '{}', 1),
+	('52a47d08-d62b-4587-a1eb-5a99e3b7dfc1', 'mentor-pictures', '72cca8fb-5686-435f-8e2c-2135990f52eb-1759112464400.jpeg', NULL, '2025-09-29 02:21:07.047834+00', '2025-09-29 02:21:07.047834+00', '2025-09-29 02:21:07.047834+00', '{"eTag": "\"3622d097eb901aafd2200d10812c1780\"", "size": 32177, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:21:07.000Z", "contentLength": 32177, "httpStatusCode": 200}', 'bc7fc98e-2a22-487d-8b77-5fb87fdf45d1', NULL, '{}', 1),
+	('254e32a3-7652-4539-9bcd-d8bfd98fe7aa', 'mentor-pictures', '86fa0e8b-594c-494a-8665-997eca024565-1759112495005.jpeg', NULL, '2025-09-29 02:21:37.363417+00', '2025-09-29 02:21:37.363417+00', '2025-09-29 02:21:37.363417+00', '{"eTag": "\"e8e04f4b715717d778e504f7cae09170\"", "size": 81607, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:21:38.000Z", "contentLength": 81607, "httpStatusCode": 200}', '5d0abf7e-400c-4ca2-9f94-e1459fb9981e', NULL, '{}', 1),
+	('ea0f0d07-be5e-419d-a9ba-d1953c67cd8f', 'mentor-pictures', '80dd1f4b-7772-4678-b6ed-f0508cb866c2-1759112572611.jpeg', NULL, '2025-09-29 02:22:55.363201+00', '2025-09-29 02:22:55.363201+00', '2025-09-29 02:22:55.363201+00', '{"eTag": "\"2fb68a451ba2787484c48fa0c89dbb9d\"", "size": 143744, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:22:56.000Z", "contentLength": 143744, "httpStatusCode": 200}', 'cde02623-9f73-496f-9368-904aa1c0b0ba', NULL, '{}', 1),
+	('db047a76-39c5-488e-b10d-12baa735d0e4', 'mentor-pictures', '7f57c1a6-6851-4b64-a662-d7d19d4c0a22-1759112579155.jpeg', NULL, '2025-09-29 02:23:01.685674+00', '2025-09-29 02:23:01.685674+00', '2025-09-29 02:23:01.685674+00', '{"eTag": "\"9d4f12433968f8e173e7af3cc8e5140c\"", "size": 54516, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:23:02.000Z", "contentLength": 54516, "httpStatusCode": 200}', 'd97aa812-46e3-4bc4-9c4d-6df0d21c6370', NULL, '{}', 1),
+	('388aadf2-8cdb-4ad2-99c3-db9387b3e470', 'mentor-pictures', '3c2ca230-1f76-407c-b0a5-1af113ab2e12-1759112599291.jpg', NULL, '2025-09-29 02:23:22.040403+00', '2025-09-29 02:23:22.040403+00', '2025-09-29 02:23:22.040403+00', '{"eTag": "\"40e1d98bebeef5b9633569880914aa7b\"", "size": 1152628, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:23:22.000Z", "contentLength": 1152628, "httpStatusCode": 200}', '8d57b090-5d25-4109-b80a-4192e2251ac0', NULL, '{}', 1),
+	('d94fe331-6b6b-4e36-9964-8ce873552a1b', 'mentor-pictures', 'f021736c-62c7-4caa-8bdb-08e4c3cc30e3-1759112667178.jpeg', NULL, '2025-09-29 02:24:29.589832+00', '2025-09-29 02:24:29.589832+00', '2025-09-29 02:24:29.589832+00', '{"eTag": "\"fed5e39211f4688db17adcc57ce7c49a\"", "size": 52017, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:24:30.000Z", "contentLength": 52017, "httpStatusCode": 200}', 'c7dfbfee-56eb-422a-9295-ebfe769eca8f', NULL, '{}', 1),
+	('3028cf09-9727-43c9-a3e8-e7360ce5a725', 'mentor-pictures', 'c118cd65-b716-41db-9ec2-e6b0f386e811-1759112673532.jpeg', NULL, '2025-09-29 02:24:35.906929+00', '2025-09-29 02:24:35.906929+00', '2025-09-29 02:24:35.906929+00', '{"eTag": "\"368ce8343d08271ba385f97382625256\"", "size": 79930, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:24:36.000Z", "contentLength": 79930, "httpStatusCode": 200}', '8f349939-47d8-4d00-846d-5e31e2655cfb', NULL, '{}', 1),
+	('40654c03-9106-4c9f-9141-d9a32e68f5a8', 'mentor-pictures', 'b18922f0-d87d-4a70-b815-8b6fa20ca03d-1759114063024.jpeg', NULL, '2025-09-29 02:47:43.769898+00', '2025-09-29 02:47:43.769898+00', '2025-09-29 02:47:43.769898+00', '{"eTag": "\"72e3d2bdcc78ad85fa8068737d0ba73f\"", "size": 33889, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:47:44.000Z", "contentLength": 33889, "httpStatusCode": 200}', '348b97ad-f33b-469d-ac71-b9a52b680d22', NULL, '{}', 1),
+	('aa5c20b5-5c75-46ec-a272-f254cd2ee453', 'mentor-pictures', '28d703e8-8003-42e3-b7dc-ae210303ca78-1759114070436.jpeg', NULL, '2025-09-29 02:47:50.717165+00', '2025-09-29 02:47:50.717165+00', '2025-09-29 02:47:50.717165+00', '{"eTag": "\"580d92df26ce2c15c3d76d3e433d2cf9\"", "size": 55900, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:47:51.000Z", "contentLength": 55900, "httpStatusCode": 200}', 'ebcc5642-ee60-494d-ae3c-0d97f75100a7', NULL, '{}', 1),
+	('7d9a0647-d03a-450e-bdf6-74619e64bc6e', 'mentor-pictures', '193f6737-2264-43f5-927e-517258e94992-1759114077137.jpeg', NULL, '2025-09-29 02:47:57.349789+00', '2025-09-29 02:47:57.349789+00', '2025-09-29 02:47:57.349789+00', '{"eTag": "\"ca51713044c956b3ae249f63c2deb070\"", "size": 124387, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:47:58.000Z", "contentLength": 124387, "httpStatusCode": 200}', 'c3c9fc80-65f3-4a96-bace-c5ecd7ac2ce1', NULL, '{}', 1),
+	('21a0db19-9aa1-4101-b569-47a4c8f51dcd', 'mentor-pictures', '93d7e490-961f-4cd2-ba28-897649150e03-1759114156849.jpeg', NULL, '2025-09-29 02:49:17.153786+00', '2025-09-29 02:49:17.153786+00', '2025-09-29 02:49:17.153786+00', '{"eTag": "\"6df70a983081fb8da466a0b726abddb1\"", "size": 8424, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:49:18.000Z", "contentLength": 8424, "httpStatusCode": 200}', '7680b81e-4a19-4a4a-9121-1aec8c0bd38a', NULL, '{}', 1),
+	('03523a3a-c0bd-4e82-90e8-dc4e0c08a891', 'mentor-pictures', '93d7e490-961f-4cd2-ba28-897649150e03-1759114157128.jpeg', NULL, '2025-09-29 02:49:17.358826+00', '2025-09-29 02:49:17.358826+00', '2025-09-29 02:49:17.358826+00', '{"eTag": "\"6df70a983081fb8da466a0b726abddb1\"", "size": 8424, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:49:18.000Z", "contentLength": 8424, "httpStatusCode": 200}', '62e7725b-d69e-4f1b-80c9-a62e2a1ed4f0', NULL, '{}', 1),
+	('2caab944-575f-4ebd-9597-bae82c6a3cbf', 'mentor-pictures', '1759128525819_p84h48p03.png', NULL, '2025-09-29 06:48:46.387408+00', '2025-09-29 06:48:46.387408+00', '2025-09-29 06:48:46.387408+00', '{"eTag": "\"ff9d13a0cb4920ba554bc624fbf1e0dc\"", "size": 1452838, "mimetype": "image/png", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:48:47.000Z", "contentLength": 1452838, "httpStatusCode": 200}', '584bff26-47af-4021-bf6e-86154b7001a8', NULL, '{}', 1),
+	('e5c71dd1-8491-4596-a44c-bba3b08ece57', 'mentor-pictures', '423b4cea-fef5-43dd-a159-ad5cf85e4997-1759114190036.png', NULL, '2025-09-29 02:49:50.859829+00', '2025-09-29 02:49:50.859829+00', '2025-09-29 02:49:50.859829+00', '{"eTag": "\"ff9d13a0cb4920ba554bc624fbf1e0dc\"", "size": 1452838, "mimetype": "image/png", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:49:51.000Z", "contentLength": 1452838, "httpStatusCode": 200}', 'f212ad5f-f7d8-4bc4-8f28-270c0edccb74', NULL, '{}', 1),
+	('2c8b7241-bb6f-4b28-9fdf-1bb308448fc2', 'mentor-pictures', '187fdc61-8952-4cc3-a4a6-d6056bb11e61-1759114291843.png', NULL, '2025-09-29 02:51:32.503654+00', '2025-09-29 02:51:32.503654+00', '2025-09-29 02:51:32.503654+00', '{"eTag": "\"738a4406cbe23b326add4bf2c66f8e4a\"", "size": 35607, "mimetype": "image/png", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:51:33.000Z", "contentLength": 35607, "httpStatusCode": 200}', '78b9cc62-0d44-4b1f-987c-1344bf74a982', NULL, '{}', 1),
+	('49800cca-9550-4afe-8595-adb96475517e', 'mentor-pictures', '1759128551019_n7xlb8v61.webp', NULL, '2025-09-29 06:49:11.220838+00', '2025-09-29 06:49:11.220838+00', '2025-09-29 06:49:11.220838+00', '{"eTag": "\"c822b229bb9822b241df0beb09b6e9cc\"", "size": 91082, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:49:12.000Z", "contentLength": 91082, "httpStatusCode": 200}', '81f45dfe-15b1-45f8-ad45-0cae13986d2e', NULL, '{}', 1),
+	('0a5f835e-edd2-4ae6-9d59-d9488d435669', 'mentor-pictures', '60b3c2b3-128b-4e88-980e-7101484efaf6-1759114339315.webp', NULL, '2025-09-29 02:52:19.650183+00', '2025-09-29 02:52:19.650183+00', '2025-09-29 02:52:19.650183+00', '{"eTag": "\"c822b229bb9822b241df0beb09b6e9cc\"", "size": 91082, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:52:20.000Z", "contentLength": 91082, "httpStatusCode": 200}', 'fb3ecd03-3076-4f15-b4d4-15e0933b9aed', NULL, '{}', 1),
+	('1dea34df-0d66-46bd-a084-34e96ee15815', 'mentor-pictures', '1759128585048_66u7umpfz.jpeg', NULL, '2025-09-29 06:49:45.245569+00', '2025-09-29 06:49:45.245569+00', '2025-09-29 06:49:45.245569+00', '{"eTag": "\"a91419e3914d0ecb3f93c07f6dce85af\"", "size": 40954, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:49:46.000Z", "contentLength": 40954, "httpStatusCode": 200}', '47e9459b-e1c8-4ee3-be9a-1921f2953df0', NULL, '{}', 1),
+	('b4a80a91-f914-4c6b-b32b-cf3183a38ee5', 'mentor-pictures', '0.2669777473869023.jpeg', NULL, '2025-12-25 22:27:28.972646+00', '2025-12-25 22:27:28.972646+00', '2025-12-25 22:27:28.972646+00', '{"eTag": "\"e8e04f4b715717d778e504f7cae09170\"", "size": 81607, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:27:29.000Z", "contentLength": 81607, "httpStatusCode": 200}', '30bb0f33-f80a-4217-969d-3ceef717cd34', NULL, '{}', 1),
+	('207b7cb3-f959-452a-a67e-499db462b5f8', 'mentor-pictures', '0.45353586837369375.jpeg', NULL, '2025-12-25 22:29:59.137286+00', '2025-12-25 22:29:59.137286+00', '2025-12-25 22:29:59.137286+00', '{"eTag": "\"2fb68a451ba2787484c48fa0c89dbb9d\"", "size": 143744, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:30:00.000Z", "contentLength": 143744, "httpStatusCode": 200}', 'aa5caf37-eb1c-460f-a8f6-a8ca4199662c', NULL, '{}', 1),
+	('472bd41b-1cd7-4d28-a0b2-0bb4d4c26665', 'mentor-pictures', '0.4726313691281572.jpeg', NULL, '2025-12-25 22:32:34.993342+00', '2025-12-25 22:32:34.993342+00', '2025-12-25 22:32:34.993342+00', '{"eTag": "\"7a01b57f90daade2d2efe88e0842994a\"", "size": 84503, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:32:35.000Z", "contentLength": 84503, "httpStatusCode": 200}', 'ea7ceb0d-f68a-49d1-9d81-6e25b4716a7f', NULL, '{}', 1),
+	('8b6e3481-1ba3-4823-9b93-5fd3990eb24c', 'mentor-pictures', '0.6449268655803208.jpeg', NULL, '2025-12-25 22:33:41.071257+00', '2025-12-25 22:33:41.071257+00', '2025-12-25 22:33:41.071257+00', '{"eTag": "\"ca51713044c956b3ae249f63c2deb070\"", "size": 124387, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:33:42.000Z", "contentLength": 124387, "httpStatusCode": 200}', '25a6ab6d-610b-497d-80b4-3c310519adea', NULL, '{}', 1),
+	('8a52fffb-4f0d-45e4-94bb-8ef655ea08f0', 'mentor-pictures', '0.9979309842917281.jpeg', NULL, '2025-12-25 22:57:34.972235+00', '2025-12-25 22:57:34.972235+00', '2025-12-25 22:57:34.972235+00', '{"eTag": "\"284813d7e2e4b2e8955652f4e6656cb6\"", "size": 46868, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:57:35.000Z", "contentLength": 46868, "httpStatusCode": 200}', '66e9a560-b9a2-44e3-892d-854bedf08bbe', NULL, '{}', 1),
+	('248ce067-a36e-4e76-9813-ddf2e5a94c9a', 'mentor-pictures', 'f4d75619-5f2e-410f-a90a-550ac7a9bc0a-1759114169548.jpeg', NULL, '2025-09-29 02:49:29.710205+00', '2025-09-29 02:49:29.710205+00', '2025-09-29 02:49:29.710205+00', '{"eTag": "\"6d47b2049b4745a3ef18fc39fc2a7da6\"", "size": 25999, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:49:30.000Z", "contentLength": 25999, "httpStatusCode": 200}', '59686b25-3477-4d3c-a601-bfdc55b6c9d0', NULL, '{}', 1),
+	('7c0c6bbb-2c35-403b-b87e-25740c8aa32f', 'mentor-pictures', 'public/mentor_57hrr.jpg', NULL, '2025-12-25 19:02:22.69534+00', '2025-12-25 19:02:22.69534+00', '2025-12-25 19:02:22.69534+00', '{"eTag": "\"86ac282d775e9f351dc4711d645b6832\"", "size": 179346, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T19:02:23.000Z", "contentLength": 179346, "httpStatusCode": 200}', '3b5ad2a0-1a37-400a-8170-4f16874f1d72', NULL, '{}', 2),
+	('ed41d6d2-fb26-4901-84a2-103f3fe58452', 'mentor-pictures', '27e86595-b71b-4b2c-b40e-6f5a74ef9da0-1759114302501.jpeg', NULL, '2025-09-29 02:51:42.87519+00', '2025-09-29 02:51:42.87519+00', '2025-09-29 02:51:42.87519+00', '{"eTag": "\"499665153ada7001f55dd830052225ae\"", "size": 7182, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:51:43.000Z", "contentLength": 7182, "httpStatusCode": 200}', 'bbb4e6c9-8314-4efb-a9be-cbffadccff55', NULL, '{}', 1),
+	('2d730d41-0a93-41ad-8715-4f80992b81f5', 'mentor-pictures', 'e72c0ade-0ea3-443d-8928-39ca0d30ec62-1759114312089.jpeg', NULL, '2025-09-29 02:51:52.371952+00', '2025-09-29 02:51:52.371952+00', '2025-09-29 02:51:52.371952+00', '{"eTag": "\"6c3cacf949febca639e3b59cdb301073\"", "size": 11575, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T02:51:53.000Z", "contentLength": 11575, "httpStatusCode": 200}', '904a2449-cbba-40f9-9f48-6b7b711a4da4', NULL, '{}', 1),
+	('8132edbf-eb58-4607-887c-35f159a6eeaf', 'mentor-pictures', 'public/mentor_q17zaw.jpg', NULL, '2025-12-25 19:02:23.208974+00', '2025-12-25 19:02:23.208974+00', '2025-12-25 19:02:23.208974+00', '{"eTag": "\"3b24b78a33e01ae61452645240cb91a3\"", "size": 261593, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T19:02:24.000Z", "contentLength": 261593, "httpStatusCode": 200}', '612a5b7a-3631-40be-809e-9263ae1836a6', NULL, '{}', 2),
+	('45b8f756-00dc-4812-bb44-5c5c9361edab', 'profile-photos', 'mentors/0.1404950825271133.jpeg', NULL, '2025-09-29 05:38:15.16204+00', '2025-09-29 05:38:15.16204+00', '2025-09-29 05:38:15.16204+00', '{"eTag": "\"7a01b57f90daade2d2efe88e0842994a\"", "size": 84503, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T05:38:16.000Z", "contentLength": 84503, "httpStatusCode": 200}', 'fb2d1153-de35-4615-a60d-afc864f3aef1', NULL, '{}', 2),
+	('42927f8f-45e0-49d8-8c4b-1ed2939e4809', 'mentor-pictures', 'public/mentor_cchwmp.jpg', NULL, '2025-12-25 19:02:23.591013+00', '2025-12-25 19:02:23.591013+00', '2025-12-25 19:02:23.591013+00', '{"eTag": "\"9aadf3ee8fa68cef1b6984d2799392fb\"", "size": 68960, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T19:02:24.000Z", "contentLength": 68960, "httpStatusCode": 200}', '330be5bf-6944-4250-aa20-dcf5a8d34b18', NULL, '{}', 2),
+	('c9055c86-8fd0-4862-9a70-b8fec8ae6ea9', 'profile-photos', 'mentors/1759125232250_gkjvjjp0p.jpeg', NULL, '2025-09-29 05:53:52.523332+00', '2025-09-29 05:53:52.523332+00', '2025-09-29 05:53:52.523332+00', '{"eTag": "\"5e314e804c1bb7c233c75d77493baae8\"", "size": 44621, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T05:53:53.000Z", "contentLength": 44621, "httpStatusCode": 200}', 'fa227392-d4a4-4ee2-be17-a7687c15e2b8', NULL, '{}', 2),
+	('39b8b47a-49c2-4e9a-9be4-30b6b0ff5642', 'profile-photos', 'mentors/1759125472057_kz55sbfmi.jpeg', NULL, '2025-09-29 05:57:52.321662+00', '2025-09-29 05:57:52.321662+00', '2025-09-29 05:57:52.321662+00', '{"eTag": "\"5e314e804c1bb7c233c75d77493baae8\"", "size": 44621, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T05:57:53.000Z", "contentLength": 44621, "httpStatusCode": 200}', '44d98939-7344-4bfa-a1c3-39d9d1002810', NULL, '{}', 2),
+	('e91b77a6-f592-4a68-82d1-a8857368123c', 'mentor-pictures', 'public/mentor_ur7xeb.jpg', NULL, '2025-12-25 19:02:23.858017+00', '2025-12-25 19:02:23.858017+00', '2025-12-25 19:02:23.858017+00', '{"eTag": "\"8f06e2b74f4cca2e6b17674365d538d3\"", "size": 34517, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T19:02:24.000Z", "contentLength": 34517, "httpStatusCode": 200}', 'c890aa6a-d523-44c6-8e2d-e767190330b6', NULL, '{}', 2),
+	('2d0c119c-661b-40ec-bbc0-27090d10d46f', 'mentor-pictures', '1759125686150_fzmyngtjv.jpeg', NULL, '2025-09-29 06:01:26.438361+00', '2025-09-29 06:01:26.438361+00', '2025-09-29 06:01:26.438361+00', '{"eTag": "\"5e314e804c1bb7c233c75d77493baae8\"", "size": 44621, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:01:27.000Z", "contentLength": 44621, "httpStatusCode": 200}', '0f8b2713-484c-479d-92cf-6b2d69763af2', NULL, '{}', 1),
+	('49a89828-8420-4093-98bc-f381b75d41b5', 'mentor-pictures', '1759126026586_vo4kmyt7a.jpeg', NULL, '2025-09-29 06:07:06.854899+00', '2025-09-29 06:07:06.854899+00', '2025-09-29 06:07:06.854899+00', '{"eTag": "\"5e314e804c1bb7c233c75d77493baae8\"", "size": 44621, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:07:07.000Z", "contentLength": 44621, "httpStatusCode": 200}', '91f212ab-4a53-4e97-98a9-eb6c5f19a27e', NULL, '{}', 1),
+	('5b5de831-bb8e-4953-8c6b-79413eff6419', 'mentor-pictures', '1759126516800_3l5lgdh0z.jpg', NULL, '2025-09-29 06:15:17.344667+00', '2025-09-29 06:15:17.344667+00', '2025-09-29 06:15:17.344667+00', '{"eTag": "\"110dbcaf7b73f2d646b07137b9e3af54\"", "size": 304904, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:15:18.000Z", "contentLength": 304904, "httpStatusCode": 200}', '695b7b5c-8929-4c36-a161-000ae5f1c610', NULL, '{}', 1),
+	('9e2bde36-3121-43e5-810f-33bebd56eed9', 'mentor-pictures', '1759126576628_vogzmv8lk.jpg', NULL, '2025-09-29 06:16:16.991373+00', '2025-09-29 06:16:16.991373+00', '2025-09-29 06:16:16.991373+00', '{"eTag": "\"110dbcaf7b73f2d646b07137b9e3af54\"", "size": 304904, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:16:17.000Z", "contentLength": 304904, "httpStatusCode": 200}', '73902895-a956-4bc3-b013-e1376517cf27', NULL, '{}', 1),
+	('e2c3a51d-1801-4e4b-ac35-b3cf85ee7393', 'mentor-pictures', '1759126631602_ijd3su9v0.jpg', NULL, '2025-09-29 06:17:12.047522+00', '2025-09-29 06:17:12.047522+00', '2025-09-29 06:17:12.047522+00', '{"eTag": "\"110dbcaf7b73f2d646b07137b9e3af54\"", "size": 304904, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:17:12.000Z", "contentLength": 304904, "httpStatusCode": 200}', '63a48c08-b9d4-4c2b-98b0-9409422d85f8', NULL, '{}', 1),
+	('da713ce9-5438-43db-a2a9-01f7470f7352', 'mentor-pictures', '1759128062695_inmmaebug.jpg', NULL, '2025-09-29 06:41:03.196134+00', '2025-09-29 06:41:03.196134+00', '2025-09-29 06:41:03.196134+00', '{"eTag": "\"110dbcaf7b73f2d646b07137b9e3af54\"", "size": 304904, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:41:04.000Z", "contentLength": 304904, "httpStatusCode": 200}', 'd84d0052-b95b-49fa-bc75-3384e2b36278', NULL, '{}', 1),
+	('e2637d61-10fe-4597-a7c9-c7d77d1bb84f', 'mentor-pictures', 'public/mentor_ihbvlb.jpg', NULL, '2025-12-25 19:02:24.22359+00', '2025-12-25 19:02:24.22359+00', '2025-12-25 19:02:24.22359+00', '{"eTag": "\"368ce8343d08271ba385f97382625256\"", "size": 79930, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T19:02:25.000Z", "contentLength": 79930, "httpStatusCode": 200}', 'bd472328-e4e4-4711-b5df-8ba1e89c021f', NULL, '{}', 2),
+	('2ec2fa5c-d4f0-4aaf-9383-5ebbbde081e9', 'mentor-pictures', '1759128107741_xnt9ws5ip.jpeg', NULL, '2025-09-29 06:41:48.184554+00', '2025-09-29 06:41:48.184554+00', '2025-09-29 06:41:48.184554+00', '{"eTag": "\"5e314e804c1bb7c233c75d77493baae8\"", "size": 44621, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:41:49.000Z", "contentLength": 44621, "httpStatusCode": 200}', '9a03280e-072f-4797-9839-57dff7e6a953', NULL, '{}', 1),
+	('f3af19e9-b33d-4745-8e46-5a82f38212bc', 'mentor-pictures', '1759128122503_p08pvohkk.webp', NULL, '2025-09-29 06:42:02.817482+00', '2025-09-29 06:42:02.817482+00', '2025-09-29 06:42:02.817482+00', '{"eTag": "\"d2d16c41d25e235aebf76205ad9dad70\"", "size": 21934, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:42:03.000Z", "contentLength": 21934, "httpStatusCode": 200}', '7832dd45-331e-4676-bdc8-e53b448c6426', NULL, '{}', 1),
+	('6bbc1fa9-8b5e-4bcc-acc1-b78bfd1c1d3b', 'mentor-pictures', '0.6669036705824279.webp', NULL, '2025-12-25 22:37:15.922781+00', '2025-12-25 22:37:15.922781+00', '2025-12-25 22:37:15.922781+00', '{"eTag": "\"dab6107d5446ac1f703eb7865a0ac9da\"", "size": 21030, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:37:16.000Z", "contentLength": 21030, "httpStatusCode": 200}', 'd776d601-8af3-4a3d-8330-22d46ee33c45', NULL, '{}', 1),
+	('cead25f8-4a71-47c0-8fe2-6fcd8a665332', 'mentor-pictures', '1759128132055_sl9y1f3hh.jpeg', NULL, '2025-09-29 06:42:12.257076+00', '2025-09-29 06:42:12.257076+00', '2025-09-29 06:42:12.257076+00', '{"eTag": "\"c02ff73e3577112f3ea54e58c8050d1c\"", "size": 14351, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:42:13.000Z", "contentLength": 14351, "httpStatusCode": 200}', '82e954fd-ff02-4778-a6e1-b607cb1eb052', NULL, '{}', 1),
+	('da8e6c10-fa12-49d2-8629-a6bfb146c953', 'mentor-pictures', '1759128141336_ew9r3ih88.jpeg', NULL, '2025-09-29 06:42:21.783103+00', '2025-09-29 06:42:21.783103+00', '2025-09-29 06:42:21.783103+00', '{"eTag": "\"20ff9e96179b2cb8b4e589a8abcf80fb\"", "size": 108394, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:42:22.000Z", "contentLength": 108394, "httpStatusCode": 200}', 'ff652194-8ef2-494e-9d34-d50ebeacf5f7', NULL, '{}', 1),
+	('816e2e1d-ef9c-4c47-a6b6-caf58832315a', 'mentor-pictures', '0.03671268884267309.jpeg', NULL, '2025-12-25 22:54:49.525317+00', '2025-12-25 22:54:49.525317+00', '2025-12-25 22:54:49.525317+00', '{"eTag": "\"86ac282d775e9f351dc4711d645b6832\"", "size": 179346, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:54:50.000Z", "contentLength": 179346, "httpStatusCode": 200}', '5b89b65b-7b2e-4ecc-900c-e0022dadc010', NULL, '{}', 1),
+	('10ef008f-959f-496b-bf72-337040c8ceb1', 'mentor-pictures', '1759128154582_ra2fzsbqg.jpeg', NULL, '2025-09-29 06:42:34.784358+00', '2025-09-29 06:42:34.784358+00', '2025-09-29 06:42:34.784358+00', '{"eTag": "\"3622d097eb901aafd2200d10812c1780\"", "size": 32177, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:42:35.000Z", "contentLength": 32177, "httpStatusCode": 200}', '58a78724-9df6-4397-94a9-977bd7b8a863', NULL, '{}', 1),
+	('0fc75182-8d69-4f74-8bd0-0726f6c8f4f6', 'mentor-pictures', '1759128199995_lw1dc63cf.jpeg', NULL, '2025-09-29 06:43:20.375519+00', '2025-09-29 06:43:20.375519+00', '2025-09-29 06:43:20.375519+00', '{"eTag": "\"494dc848260a02723ffe3c10d57fa4b2\"", "size": 120863, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:43:21.000Z", "contentLength": 120863, "httpStatusCode": 200}', 'ce05f01f-0e7d-4eff-81db-08c3dd7ed260', NULL, '{}', 1),
+	('4ba47fb3-fbea-42c0-aeff-2b895b113163', 'mentor-pictures', '1759128259240_tvh0k5pq3.jpeg', NULL, '2025-09-29 06:44:19.69971+00', '2025-09-29 06:44:19.69971+00', '2025-09-29 06:44:19.69971+00', '{"eTag": "\"e8e04f4b715717d778e504f7cae09170\"", "size": 81607, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:44:20.000Z", "contentLength": 81607, "httpStatusCode": 200}', 'c4430b68-933c-4fef-8232-a9f41e431a98', NULL, '{}', 1),
+	('3794723e-ec86-474d-874f-cdbaecb5ba39', 'mentor-pictures', '1759128276891_49fljhu1d.jpeg', NULL, '2025-09-29 06:44:37.299029+00', '2025-09-29 06:44:37.299029+00', '2025-09-29 06:44:37.299029+00', '{"eTag": "\"2fb68a451ba2787484c48fa0c89dbb9d\"", "size": 143744, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:44:38.000Z", "contentLength": 143744, "httpStatusCode": 200}', '4b800aa4-c0b2-4163-a397-e28d05990f57', NULL, '{}', 1),
+	('53f6c816-df41-4a08-a596-909e8e484a8f', 'mentor-pictures', '1759128289919_z5k4563vk.jpeg', NULL, '2025-09-29 06:44:50.185162+00', '2025-09-29 06:44:50.185162+00', '2025-09-29 06:44:50.185162+00', '{"eTag": "\"7a01b57f90daade2d2efe88e0842994a\"", "size": 84503, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:44:51.000Z", "contentLength": 84503, "httpStatusCode": 200}', '2b52a02f-a362-4291-8e54-16221f941fab', NULL, '{}', 1),
+	('ef0605b8-9116-41a3-8bee-c89751fb5233', 'mentor-pictures', '1759128301433_1oii1f723.jpeg', NULL, '2025-09-29 06:45:01.837523+00', '2025-09-29 06:45:01.837523+00', '2025-09-29 06:45:01.837523+00', '{"eTag": "\"9d4f12433968f8e173e7af3cc8e5140c\"", "size": 54516, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:45:02.000Z", "contentLength": 54516, "httpStatusCode": 200}', '8d8c92b8-61c9-47fd-a009-7d8acc981e89', NULL, '{}', 1),
+	('a133cd31-252e-455a-8ec8-95b2103e278d', 'mentor-pictures', '1759128316206_hmm1jjgo5.jpeg', NULL, '2025-09-29 06:45:16.461638+00', '2025-09-29 06:45:16.461638+00', '2025-09-29 06:45:16.461638+00', '{"eTag": "\"fed5e39211f4688db17adcc57ce7c49a\"", "size": 52017, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:45:17.000Z", "contentLength": 52017, "httpStatusCode": 200}', '0990279c-f76b-481e-a360-7389936d9735', NULL, '{}', 1),
+	('178292a1-b2bd-45b1-9dbc-fd394114a276', 'mentor-pictures', '1759128340767_4c1decz11.jpg', NULL, '2025-09-29 06:45:41.294841+00', '2025-09-29 06:45:41.294841+00', '2025-09-29 06:45:41.294841+00', '{"eTag": "\"40e1d98bebeef5b9633569880914aa7b\"", "size": 1152628, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:45:42.000Z", "contentLength": 1152628, "httpStatusCode": 200}', 'bfd049c8-cbe7-4b9b-ab3f-155d53dcd9ba', NULL, '{}', 1),
+	('087a884b-9cd0-4435-8a2c-b9e36886cefc', 'mentor-pictures', '0.2879675519043413.jpeg', NULL, '2025-12-25 21:42:14.478691+00', '2025-12-25 21:42:14.478691+00', '2025-12-25 21:42:14.478691+00', '{"eTag": "\"9d4f12433968f8e173e7af3cc8e5140c\"", "size": 54516, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T21:42:15.000Z", "contentLength": 54516, "httpStatusCode": 200}', 'bf7e8d1a-fef6-4b94-a639-7fc78de43960', NULL, '{}', 1),
+	('20f52e62-b5aa-48ba-9b49-b7d522f9ae4e', 'mentor-pictures', '1759128365246_9kbkczd6e.jpeg', NULL, '2025-09-29 06:46:05.537351+00', '2025-09-29 06:46:05.537351+00', '2025-09-29 06:46:05.537351+00', '{"eTag": "\"ca51713044c956b3ae249f63c2deb070\"", "size": 124387, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:46:06.000Z", "contentLength": 124387, "httpStatusCode": 200}', '265a7f22-e043-46e5-95ea-99f694b3e289', NULL, '{}', 1),
+	('16a921d2-91ee-439a-8dfe-ae3f024baa07', 'mentor-pictures', '1759128374848_m5kddsu90.jpeg', NULL, '2025-09-29 06:46:15.03439+00', '2025-09-29 06:46:15.03439+00', '2025-09-29 06:46:15.03439+00', '{"eTag": "\"6df70a983081fb8da466a0b726abddb1\"", "size": 8424, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:46:15.000Z", "contentLength": 8424, "httpStatusCode": 200}', 'ab966624-371f-4c84-880e-9108d45b4cbb', NULL, '{}', 1),
+	('f1144d8e-8e59-4aca-a9be-271756a8d796', 'mentor-pictures', '0.5349415169378943.jpeg', NULL, '2025-12-25 22:01:11.382191+00', '2025-12-25 22:01:11.382191+00', '2025-12-25 22:01:11.382191+00', '{"eTag": "\"8f06e2b74f4cca2e6b17674365d538d3\"", "size": 34517, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:01:12.000Z", "contentLength": 34517, "httpStatusCode": 200}', '83467881-d50e-43a3-ac7e-394a4904b529', NULL, '{}', 1),
+	('a3f2e248-aa90-4f2e-9eb4-9cc8f41828bf', 'mentor-pictures', '1759128485958_qkc6zn81y.jpeg', NULL, '2025-09-29 06:48:06.13001+00', '2025-09-29 06:48:06.13001+00', '2025-09-29 06:48:06.13001+00', '{"eTag": "\"6d47b2049b4745a3ef18fc39fc2a7da6\"", "size": 25999, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:48:07.000Z", "contentLength": 25999, "httpStatusCode": 200}', '7c9f9eae-465a-4f01-97fe-293659ec7a4e', NULL, '{}', 1),
+	('1b139fea-472c-4837-8344-ce139ca6c0ed', 'mentor-pictures', '0.4104726140308007.jpeg', NULL, '2025-12-25 22:04:29.832029+00', '2025-12-25 22:04:29.832029+00', '2025-12-25 22:04:29.832029+00', '{"eTag": "\"c02ff73e3577112f3ea54e58c8050d1c\"", "size": 14351, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:04:30.000Z", "contentLength": 14351, "httpStatusCode": 200}', 'c0e4b511-52d2-45e8-9e8b-81c08fcb798b', NULL, '{}', 1),
+	('292a6da9-454e-43af-85ab-367489a17bab', 'mentor-pictures', '0.3752373696054361.jpeg', NULL, '2025-12-25 22:07:24.180276+00', '2025-12-25 22:07:24.180276+00', '2025-12-25 22:07:24.180276+00', '{"eTag": "\"a7aa955a516dad4c49368fcb61ba880b\"", "size": 80187, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:07:25.000Z", "contentLength": 80187, "httpStatusCode": 200}', '259fe174-75c0-41cc-ae69-4bf6f7e3d7d8', NULL, '{}', 1),
+	('c3c73733-9f7c-47dc-ad49-7455ef8f5926', 'mentor-pictures', '0.6249473797647369.jpeg', NULL, '2025-12-25 22:10:01.519598+00', '2025-12-25 22:10:01.519598+00', '2025-12-25 22:10:01.519598+00', '{"eTag": "\"20ff9e96179b2cb8b4e589a8abcf80fb\"", "size": 108394, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:10:02.000Z", "contentLength": 108394, "httpStatusCode": 200}', '9a39a57c-e177-4c97-b8ad-5b3dfeff3f70', NULL, '{}', 1),
+	('bb7f2395-ef91-43ee-9a80-8170a1615045', 'mentor-pictures', '0.32319183992089884.jpeg', NULL, '2025-12-25 22:19:15.816119+00', '2025-12-25 22:19:15.816119+00', '2025-12-25 22:19:15.816119+00', '{"eTag": "\"2b887433d7ec225c0b716b60a6882a80\"", "size": 205090, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:19:16.000Z", "contentLength": 205090, "httpStatusCode": 200}', '54e4bed3-de98-4600-823a-341d5308a422', NULL, '{}', 1),
+	('bcfeda81-df98-428d-8595-61286072158e', 'mentor-pictures', '0.7146500329200636.jpeg', NULL, '2025-12-25 22:21:31.292045+00', '2025-12-25 22:21:31.292045+00', '2025-12-25 22:21:31.292045+00', '{"eTag": "\"3622d097eb901aafd2200d10812c1780\"", "size": 32177, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:21:32.000Z", "contentLength": 32177, "httpStatusCode": 200}', 'ef5ed743-87a5-4058-aed4-2e280e76849e', NULL, '{}', 1),
+	('b8ef14e1-ca14-49e8-a158-997c258802a9', 'mentor-pictures', '0.2651888912894832.jpeg', NULL, '2025-12-25 22:23:40.66265+00', '2025-12-25 22:23:40.66265+00', '2025-12-25 22:23:40.66265+00', '{"eTag": "\"3fbb34b9249f53f646219d40dbe17c2c\"", "size": 17897, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:23:41.000Z", "contentLength": 17897, "httpStatusCode": 200}', '0935330c-07ed-40aa-9ac0-c713adbf3a05', NULL, '{}', 1),
+	('92b13bcc-b472-436d-8281-8018e29bc6e3', 'mentor-pictures', '0.6772318297576914.jpeg', NULL, '2025-12-25 22:26:15.242076+00', '2025-12-25 22:26:15.242076+00', '2025-12-25 22:26:15.242076+00', '{"eTag": "\"a91419e3914d0ecb3f93c07f6dce85af\"", "size": 40954, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:26:16.000Z", "contentLength": 40954, "httpStatusCode": 200}', 'b4e5ee42-2944-4acd-8f6d-c130ec5cd9b5', NULL, '{}', 1),
+	('82a33327-76f1-41b1-941b-95bef83e4eab', 'mentor-pictures', '1759128326495_y598xyfel.jpeg', NULL, '2025-09-29 06:45:27.739845+00', '2025-09-29 06:45:27.739845+00', '2025-09-29 06:45:27.739845+00', '{"eTag": "\"368ce8343d08271ba385f97382625256\"", "size": 79930, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:45:28.000Z", "contentLength": 79930, "httpStatusCode": 200}', '54ec1072-f72c-419c-abe4-ba153a47a4a2', NULL, '{}', 1),
+	('137681e4-5d5e-4e61-b40c-74f7d45b8633', 'mentor-pictures', '1759128355023_2lzi6iwq0.jpeg', NULL, '2025-09-29 06:45:55.266908+00', '2025-09-29 06:45:55.266908+00', '2025-09-29 06:45:55.266908+00', '{"eTag": "\"72e3d2bdcc78ad85fa8068737d0ba73f\"", "size": 33889, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:45:56.000Z", "contentLength": 33889, "httpStatusCode": 200}', 'af5f30c1-81f9-4979-a650-3b1824b06a40', NULL, '{}', 1),
+	('eb1b29de-e1e9-4e23-9873-37d7742c6967', 'mentor-pictures', '0.6268787440208754.jpeg', NULL, '2025-12-25 21:52:00.301161+00', '2025-12-25 21:52:00.301161+00', '2025-12-25 21:52:00.301161+00', '{"eTag": "\"155cbcf4a2bc767dddb63061a26d41c4\"", "size": 99272, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T21:52:01.000Z", "contentLength": 99272, "httpStatusCode": 200}', '2f702e73-ee0d-4254-b246-b5c4808d147e', NULL, '{}', 1),
+	('36fa1a1f-f42f-4acb-ad70-4508f5fedcea', 'mentor-pictures', '1759128400845_r092sdwsf.png', NULL, '2025-09-29 06:46:41.401175+00', '2025-09-29 06:46:41.401175+00', '2025-09-29 06:46:41.401175+00', '{"eTag": "\"ff9d13a0cb4920ba554bc624fbf1e0dc\"", "size": 1452838, "mimetype": "image/png", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:46:42.000Z", "contentLength": 1452838, "httpStatusCode": 200}', 'b61f7163-f7d0-4ba0-b347-8d2c7b69d045', NULL, '{}', 1),
+	('f0eea497-3486-4499-b781-9ed12ca81d3f', 'mentor-pictures', '1759128471544_2zdh0bcu8.jpeg', NULL, '2025-09-29 06:47:51.80756+00', '2025-09-29 06:47:51.80756+00', '2025-09-29 06:47:51.80756+00', '{"eTag": "\"580d92df26ce2c15c3d76d3e433d2cf9\"", "size": 55900, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:47:52.000Z", "contentLength": 55900, "httpStatusCode": 200}', 'eee32e13-1cc1-4683-95a3-ba1bffb756d1', NULL, '{}', 1),
+	('a7d42ce8-3b83-4065-bbfb-c1de012e9c78', 'mentor-pictures', '0.5771952866998972.jpeg', NULL, '2025-12-25 21:59:30.01217+00', '2025-12-25 21:59:30.01217+00', '2025-12-25 21:59:30.01217+00', '{"eTag": "\"366993ead3d958a1d03427f3305756c4\"", "size": 56660, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T21:59:30.000Z", "contentLength": 56660, "httpStatusCode": 200}', 'ff02c628-0229-4509-b8f3-5eb24d3a4d2b', NULL, '{}', 1),
+	('7f9408fa-c2cc-4000-abfe-3effed6cdb96', 'mentor-pictures', '1759128500569_pa7935nln.jpeg', NULL, '2025-09-29 06:48:20.747525+00', '2025-09-29 06:48:20.747525+00', '2025-09-29 06:48:20.747525+00', '{"eTag": "\"6c3cacf949febca639e3b59cdb301073\"", "size": 11575, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-09-29T06:48:21.000Z", "contentLength": 11575, "httpStatusCode": 200}', '946c70ea-a2d0-4362-aa50-b85f5d53c807', NULL, '{}', 1),
+	('99956b12-ce42-4439-a8c3-526d8fb56146', 'mentor-pictures', '0.44958072747318123.webp', NULL, '2025-12-25 22:43:15.336765+00', '2025-12-25 22:43:15.336765+00', '2025-12-25 22:43:15.336765+00', '{"eTag": "\"739f46e5f3f42ddd3420d1caeac35155\"", "size": 5784, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:43:16.000Z", "contentLength": 5784, "httpStatusCode": 200}', 'f37bede3-d46c-44a3-aacd-313136bcd806', NULL, '{}', 1),
+	('6f8af7fb-e324-453d-b335-4982bd7f0402', 'mentor-pictures', '0.12706243673675865.png', NULL, '2025-12-25 22:46:34.643197+00', '2025-12-25 22:46:34.643197+00', '2025-12-25 22:46:34.643197+00', '{"eTag": "\"e599e588aba1e8a752fce89308dba60e\"", "size": 1053646, "mimetype": "image/png", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:46:35.000Z", "contentLength": 1053646, "httpStatusCode": 200}', '8d4daf51-ddca-4bb6-a1df-fd267fb363b7', NULL, '{}', 1),
+	('66b81673-e355-406c-9e30-f8fcf1f8591e', 'mentor-pictures', '0.6650958491329999.jpeg', NULL, '2025-12-25 22:59:20.946308+00', '2025-12-25 22:59:20.946308+00', '2025-12-25 22:59:20.946308+00', '{"eTag": "\"54776205d5911ecdde315cdfd1b9f64d\"", "size": 88355, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T22:59:21.000Z", "contentLength": 88355, "httpStatusCode": 200}', 'f3c32128-7b4f-4a48-b702-f30f1e4f07b0', NULL, '{}', 1),
+	('438bef32-2bc4-41a6-a57d-dcfea514cbfe', 'mentor-pictures', '0.092850954735476.jpeg', NULL, '2025-12-25 23:00:24.980315+00', '2025-12-25 23:00:24.980315+00', '2025-12-25 23:00:24.980315+00', '{"eTag": "\"368ce8343d08271ba385f97382625256\"", "size": 79930, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:00:25.000Z", "contentLength": 79930, "httpStatusCode": 200}', 'cd7b99e4-d1ac-4759-b428-77e05710fb92', NULL, '{}', 1),
+	('ca485b48-69d5-47f7-abe2-f41b6970c5c4', 'mentor-pictures', '0.1649996748812571.jpeg', NULL, '2025-12-25 23:03:37.971795+00', '2025-12-25 23:03:37.971795+00', '2025-12-25 23:03:37.971795+00', '{"eTag": "\"fed5e39211f4688db17adcc57ce7c49a\"", "size": 52017, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:03:38.000Z", "contentLength": 52017, "httpStatusCode": 200}', '30e7b634-733d-4900-a41b-63eb3623afb6', NULL, '{}', 1),
+	('dda9c241-c85a-4149-911c-4b22d2e82e86', 'mentor-pictures', '0.8687574731275347.jpeg', NULL, '2025-12-25 23:08:12.980974+00', '2025-12-25 23:08:12.980974+00', '2025-12-25 23:08:12.980974+00', '{"eTag": "\"580d92df26ce2c15c3d76d3e433d2cf9\"", "size": 55900, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:08:13.000Z", "contentLength": 55900, "httpStatusCode": 200}', '32fc2ddf-6535-4f9e-91f3-c087bba33f8b', NULL, '{}', 1),
+	('3299694d-44d9-4f42-99e1-1fb31de1c6db', 'mentor-pictures', '0.32707651326333387.webp', NULL, '2025-12-25 23:10:09.659061+00', '2025-12-25 23:10:09.659061+00', '2025-12-25 23:10:09.659061+00', '{"eTag": "\"b880e5e95c15cb7bc223a1fd8b3c5440\"", "size": 14252, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:10:10.000Z", "contentLength": 14252, "httpStatusCode": 200}', '8bef0d62-a7f0-4f28-ac59-3e98008a6504', NULL, '{}', 1),
+	('cae53f46-88c4-493f-ae00-7a76a93906b3', 'mentor-pictures', '0.9363003235422177.jpeg', NULL, '2025-12-25 23:18:47.018493+00', '2025-12-25 23:18:47.018493+00', '2025-12-25 23:18:47.018493+00', '{"eTag": "\"4308b810d86ba9721e56662c77826f4f\"", "size": 113378, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:18:47.000Z", "contentLength": 113378, "httpStatusCode": 200}', '1346f979-253f-478f-9445-7a3d318b119e', NULL, '{}', 1),
+	('fcab8270-6235-4094-bc18-eb4a85975e04', 'mentor-pictures', '0.3387223383123681.jpeg', NULL, '2025-12-25 23:25:46.976+00', '2025-12-25 23:25:46.976+00', '2025-12-25 23:25:46.976+00', '{"eTag": "\"c31eaa3cad5ce091e1470b8f92137846\"", "size": 176158, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:25:47.000Z", "contentLength": 176158, "httpStatusCode": 200}', '5fe6295f-5508-4276-bed7-f3f53c4870e4', NULL, '{}', 1),
+	('5b72f632-0712-4948-86bd-1f34e3ad66fe', 'mentor-pictures', '0.9631189478264666.webp', NULL, '2025-12-25 23:26:58.460346+00', '2025-12-25 23:26:58.460346+00', '2025-12-25 23:26:58.460346+00', '{"eTag": "\"2487a22a4eb5374f1a859d0ae0bd9ce2\"", "size": 60290, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:26:59.000Z", "contentLength": 60290, "httpStatusCode": 200}', '9028a661-6ba4-4375-8dd3-8303db238b5f', NULL, '{}', 1),
+	('dc17df97-8eae-4a3b-9eb0-8e484847e19f', 'mentor-pictures', '0.7321986087071747.jpeg', NULL, '2025-12-25 23:29:27.119857+00', '2025-12-25 23:29:27.119857+00', '2025-12-25 23:29:27.119857+00', '{"eTag": "\"9aadf3ee8fa68cef1b6984d2799392fb\"", "size": 68960, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:29:28.000Z", "contentLength": 68960, "httpStatusCode": 200}', 'df50facb-5ae8-4c35-aacd-b3baacf372ab', NULL, '{}', 1),
+	('5497b7ef-83a9-43a6-a893-845b5c1de9b0', 'mentor-pictures', '0.6386495747156548.webp', NULL, '2025-12-25 23:33:41.635523+00', '2025-12-25 23:33:41.635523+00', '2025-12-25 23:33:41.635523+00', '{"eTag": "\"b5c17a3ad19d187efbccf6e2ce52641c\"", "size": 32668, "mimetype": "image/webp", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:33:42.000Z", "contentLength": 32668, "httpStatusCode": 200}', '00c34d26-ff7f-47be-a302-687e6fff7c60', NULL, '{}', 1),
+	('c4af46ad-406f-4931-ae1c-fe390ef5a28c', 'mentor-pictures', '0.5612986794414987.jpeg', NULL, '2025-12-25 23:35:32.766232+00', '2025-12-25 23:35:32.766232+00', '2025-12-25 23:35:32.766232+00', '{"eTag": "\"53ec372cef30c8f557989aaccc703be8\"", "size": 83444, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:35:33.000Z", "contentLength": 83444, "httpStatusCode": 200}', '7f93ce0d-5e78-41ad-b65f-ae5afc753988', NULL, '{}', 1),
+	('9d18df5a-3684-48b1-9174-7536858f4043', 'mentor-pictures', '0.30424921269261385.jpeg', NULL, '2025-12-25 23:40:09.113348+00', '2025-12-25 23:40:09.113348+00', '2025-12-25 23:40:09.113348+00', '{"eTag": "\"a4d7b4dd0968d8de37f03a5e7f40694e\"", "size": 157654, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:40:10.000Z", "contentLength": 157654, "httpStatusCode": 200}', '730c9505-a9ca-40dd-a0d0-c7d8ba22dc57', NULL, '{}', 1),
+	('471d4e07-8584-42b4-8b30-d7b995623dc0', 'mentor-pictures', '0.40446074579244573.jpeg', NULL, '2025-12-25 23:41:56.625379+00', '2025-12-25 23:41:56.625379+00', '2025-12-25 23:41:56.625379+00', '{"eTag": "\"b2f524288919c1eab8cb70e2166d5646\"", "size": 58164, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:41:57.000Z", "contentLength": 58164, "httpStatusCode": 200}', '7dd6ba54-5bb0-4db0-b22f-7de78ad2d8c1', NULL, '{}', 1),
+	('2b02cb59-3705-4ddc-a7c8-8bdcc4f28e83', 'mentor-pictures', '0.7792751701044657.jpeg', NULL, '2025-12-25 23:44:53.462144+00', '2025-12-25 23:44:53.462144+00', '2025-12-25 23:44:53.462144+00', '{"eTag": "\"542a5465e5872059d6deafa5b915efd2\"", "size": 36876, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:44:54.000Z", "contentLength": 36876, "httpStatusCode": 200}', '914ce5e0-7d92-4e66-8052-1a7c61cde94d', NULL, '{}', 1),
+	('1b1f9c92-2036-4ac7-b32f-42f798398ec4', 'mentor-pictures', '0.8071170367389159.jpeg', NULL, '2025-12-25 23:47:01.018728+00', '2025-12-25 23:47:01.018728+00', '2025-12-25 23:47:01.018728+00', '{"eTag": "\"eca37539ba5940c6f96ae106c9c780b6\"", "size": 23496, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-25T23:47:01.000Z", "contentLength": 23496, "httpStatusCode": 200}', '6c19cd9f-52df-4084-ae65-e57e2ff3c5ca', NULL, '{}', 1),
+	('d97d1c4f-b552-4e0b-a4b2-7ba455484864', 'mentor-pictures', '0.44248349647887286.JPG', NULL, '2025-12-28 02:58:17.070039+00', '2025-12-28 02:58:17.070039+00', '2025-12-28 02:58:17.070039+00', '{"eTag": "\"42e3ad75dd9fe1de38ce66c6abf89faf\"", "size": 1336644, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-28T02:58:17.000Z", "contentLength": 1336644, "httpStatusCode": 200}', '4dd5d54d-28a5-4f42-9b09-4c81ad49a78d', NULL, '{}', 1),
+	('f77d02fa-e588-424f-a976-163337273820', 'mentor-pictures', '0.8792969332421409.jpeg', NULL, '2025-12-28 19:45:38.02301+00', '2025-12-28 19:45:38.02301+00', '2025-12-28 19:45:38.02301+00', '{"eTag": "\"366993ead3d958a1d03427f3305756c4\"", "size": 56660, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2025-12-28T19:45:38.000Z", "contentLength": 56660, "httpStatusCode": 200}', '4c4b2d97-0821-4b96-96b1-473a45bd05e8', NULL, '{}', 1),
+	('b126a9a2-3fc1-4948-b5ec-6ffa1dde70ad', 'mentor-pictures', '0.6128634288120226.jpg', NULL, '2026-01-03 08:42:01.640233+00', '2026-01-03 08:42:01.640233+00', '2026-01-03 08:42:01.640233+00', '{"eTag": "\"f365ee9cb2a508794211b4dbc6b9ec8d\"", "size": 62194, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2026-01-03T08:42:02.000Z", "contentLength": 62194, "httpStatusCode": 200}', '7ab4bed3-76cd-40d0-9529-def20e5eabb4', NULL, '{}', 1),
+	('918f56cf-8a16-4682-8e30-f0ae106af6f9', 'mentor-pictures', '0.6845846636348093.jpg', NULL, '2026-01-04 01:45:50.051491+00', '2026-01-04 01:45:50.051491+00', '2026-01-04 01:45:50.051491+00', '{"eTag": "\"d963063a18aa95cef7dc9df8e67e9637\"", "size": 2944943, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2026-01-04T01:45:50.000Z", "contentLength": 2944943, "httpStatusCode": 200}', '7fef5bc6-f147-4f29-881a-017502c711c6', NULL, '{}', 1),
+	('34f32517-196b-4b4e-b6f7-093c3a6eb8c6', 'mentor-pictures', '0.17570925064970566.jpg', NULL, '2026-01-04 01:46:39.25725+00', '2026-01-04 01:46:39.25725+00', '2026-01-04 01:46:39.25725+00', '{"eTag": "\"11c3038153e1c9b0de46131390115744\"", "size": 112659, "mimetype": "image/jpeg", "cacheControl": "max-age=3600", "lastModified": "2026-01-04T01:46:40.000Z", "contentLength": 112659, "httpStatusCode": 200}', '0a1d162f-4c47-4531-b29d-cbc2c243a377', NULL, '{}', 1);
+
+
+--
+-- Data for Name: prefixes; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+INSERT INTO "storage"."prefixes" ("bucket_id", "name", "created_at", "updated_at") VALUES
+	('profile-photos', 'mentors', '2025-09-29 05:38:15.16204+00', '2025-09-29 05:38:15.16204+00'),
+	('mentor-pictures', 'public', '2025-12-25 19:02:22.69534+00', '2025-12-25 19:02:22.69534+00');
+
+
+--
+-- Data for Name: s3_multipart_uploads; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: s3_multipart_uploads_parts; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Data for Name: vector_indexes; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
+--
+
+
+
+--
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin
+--
+
+SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 52, true);
+
+
+--
+-- Name: reviews_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"public"."reviews_id_seq"', 2, true);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+-- \unrestrict hvq2ZeXZ9OzMdLPxxB15EdOsDilIoYlroakdfbyMegimbSViLzLv8qhNwFSbUbR
+
+RESET ALL;

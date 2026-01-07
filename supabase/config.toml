@@ -326,7 +326,7 @@ enabled = false
 # domain = "example.clerk.accounts.dev"
 
 # Allow dynamic client registration
-allow_dynamic_registration = false
+# allow_dynamic_registration = false
 
 [edge_runtime]
 enabled = true
