@@ -112,7 +112,7 @@ describe('POST /api/send-email', () => {
         
         expect(response.status).toBe(200);
         expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({
-            to: ['mulli2@gmail.com'],
+            to: ['admin@donation-mentoring.org'],
         }));
     });
 });
