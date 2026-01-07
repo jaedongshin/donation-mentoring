@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     // Only attempt to send if API key is present, otherwise log it
     if (process.env.RESEND_API_KEY) {
         const { data, error } = await resend.emails.send({
-            from: 'onboarding@resend.dev',
+            from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
             to: adminEmails,
             subject: emailSubject,
             text: emailContent,

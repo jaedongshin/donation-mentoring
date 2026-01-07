@@ -66,7 +66,7 @@ export async function POST(request: Request) {
            <p>This link expires in 1 hour.</p>`;
 
       await resend.emails.send({
-        from: 'Donation Mentoring <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
         to: email,
         subject: subject,
         html: htmlContent,
