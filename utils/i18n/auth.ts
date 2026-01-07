@@ -8,8 +8,6 @@ export const auth = {
 
     mentor: "Mentor",
     forMentorsAndAdmins: "For mentors and admins only",
-    lookingToBook: "Looking to book a session?",
-    browseMentorsNoLogin: "→ Browse mentors (no login needed)",
     dashboard: "Profile",
     // Signup
     signUp: "Mentor Sign Up",
@@ -70,8 +68,6 @@ export const auth = {
 
     mentor: "멘토",
     forMentorsAndAdmins: "멘토와 관리자 전용입니다",
-    lookingToBook: "세션을 예약하시겠어요?",
-    browseMentorsNoLogin: "→ 멘토 둘러보기 (로그인 불필요)",
     dashboard: "프로필",
     // Signup
     signUp: "멘토 신청",

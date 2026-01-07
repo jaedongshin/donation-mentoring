@@ -101,7 +101,7 @@ describe('Migration validation', () => {
     process.cwd(),
     'supabase',
     'migrations',
-    '20250101000001_add_user_features.sql'
+    '20260106000006_remove_super_admin.sql'
   );
   let migrationContent: string;
 

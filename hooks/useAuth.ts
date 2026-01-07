@@ -34,6 +34,7 @@ export interface AuthUser {
   role: UserRole;
   mentorId: string | null;
   policyAcceptedAt: string | null;
+  isActive: boolean;
 }
 
 interface UseAuthReturn {
@@ -82,7 +83,12 @@ export function useAuth(): UseAuthReturn {
         });
 
       if (error) {
-        console.error('Login error:', error);
+        console.error('Login error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw new Error('Invalid login credentials');
       }
 
@@ -99,6 +105,7 @@ export function useAuth(): UseAuthReturn {
         role: (mentor.role as UserRole) || 'mentor',
         mentorId: mentor.id,
         policyAcceptedAt: null,
+        isActive: !!mentor.is_active,
       };
 
       setUser(authUser);
@@ -120,6 +127,11 @@ export function useAuth(): UseAuthReturn {
   // Stubs for Supabase Auth functions that are temporarily disabled or need refactoring
   const signUpWithEmail = useCallback(async (email: string, password: string) => {
     const normalizedEmail = email.replace(/\s+/g, '').toLowerCase();
+    
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      throw new Error('Please enter a valid email address');
+    }
+
     try {
       const { data: mentor, error } = await supabase
         .rpc('signup_mentor', { 
@@ -128,12 +140,20 @@ export function useAuth(): UseAuthReturn {
         });
 
       if (error) {
-        console.error('Signup error:', error);
-        throw new Error(error.message);
+        console.error('Signup error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error
+        });
+        throw new Error(error.message || 'Signup failed: Unknown error');
       }
 
+      console.log('Signup successful, mentor data:', mentor);
+
       if (!mentor) {
-        throw new Error('Signup failed: No data returned');
+        throw new Error('Signup failed: No data returned from server');
       }
 
       // Automatically log in after successful signup
@@ -167,7 +187,7 @@ export function useAuth(): UseAuthReturn {
   const isAuthenticated = !!user;
   const isMentor = user?.role === 'mentor';
   const isAdmin = user?.role === 'admin';
-  const isApproved = true; // Mentors are implicitly approved in this simplified flow
+  const isApproved = user?.isActive || false;
   const needsMentorLink = false; // Since we log in as mentor, we are linked
 
   return {

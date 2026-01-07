@@ -39,7 +39,8 @@ BEGIN
     RETURN json_build_object(
         'id', v_mentor.id,
         'email', v_mentor.email,
-        'role', v_mentor.role
+        'role', v_mentor.role,
+        'is_active', v_mentor.is_active
     );
 END;
 $$;

@@ -304,18 +304,6 @@ function AuthContent() {
                   {isSubmitting ? t.loading : mode === 'login' ? t.logIn : t.createAccount}
                 </button>
               </form>
-
-              <div className={`border-t ${dm.border} my-6`} />
-
-              <p className={`text-sm ${dm.textMuted} text-center`}>
-                {t.lookingToBook}
-              </p>
-              <Link
-                href="/"
-                className="block text-center text-sm font-medium text-sky-500 hover:text-sky-400 mt-2 transition-colors"
-              >
-                {t.browseMentorsNoLogin}
-              </Link>
             </>
           )}
         </div>

@@ -6,7 +6,7 @@ import { translations, Language } from '@/utils/i18n';
 import { Calendar, CalendarDays, BarChart3, Clock } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { ProfileFormData } from '@/app/components/ProfileForm';
-import { BentoNav, BentoCardId, ProfileSection, ProfileFooter, PlaceholderSection, Toast, PendingStatusBanner } from '@/app/components/dashboard';
+import { BentoNav, BentoCardId, ProfileSection, ProfileFooter, PlaceholderSection, Toast } from '@/app/components/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabase';
 
@@ -58,10 +58,9 @@ function mentorToFormData(mentor: Record<string, unknown>): ProfileFormData {
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, isLoading, isAuthenticated, logout, needsMentorLink, linkMentorProfile } = useAuth();
+    const { user, isLoading, isAuthenticated, logout, needsMentorLink, linkMentorProfile, isApproved } = useAuth();
 
-    // Approved = mentor/admin (not 'user' role)
-    const isUserRole = user?.role === 'user';
+    const isPending = !isApproved;
 
     const [lang, setLang] = useState<Language>('ko');
     const [selectedCard, setSelectedCard] = useState<BentoCardId>('profile');
@@ -90,10 +89,9 @@ export default function DashboardPage() {
 
     // UI state derived from data
     const showLinkingUI = mentorId === null && !linkSubmitSuccess;
-    const showWaitingApproval = isUserRole && mentorId !== null;
 
     // Profile state for components
-    const profileState = showLinkingUI ? 'linking' : showWaitingApproval ? 'waiting' : 'editing';
+    const profileState = showLinkingUI ? 'linking' : 'editing';
 
     const t = translations[lang];
 
@@ -233,6 +231,7 @@ export default function DashboardPage() {
                 isNewMentor ? profileForm : undefined
             );
             setLinkSubmitSuccess(true);
+            
             setToast({ type: 'success', message: t.linkSubmitSuccess });
 
             if (!isNewMentor && selectedMentorPreview) {
@@ -402,9 +401,6 @@ export default function DashboardPage() {
                 <h1 className={`flex-shrink-0 text-2xl font-bold ${dm.text} mb-6`}>
                     {t.dashboardTitle}
                 </h1>
-
-                {/* Pending Status Banner */}
-                {isUserRole && <PendingStatusBanner darkMode={darkMode} lang={lang} />}
 
                 {/* Bento Navigation */}
                 <BentoNav

@@ -145,12 +145,6 @@ export default function TopNav({
                     >
                       {t.mentorManagement}
                     </Link>
-                    <Link
-                      href="/permissions"
-                      className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
-                    >
-                      {t.manageUsers}
-                    </Link>
                   </>
                 )}
               </nav>

@@ -30,7 +30,8 @@ BEGIN
             'name_en', v_mentor.name_en,
             'name_ko', v_mentor.name_ko,
             'picture_url', v_mentor.picture_url,
-            'role', v_mentor.role
+            'role', v_mentor.role,
+            'is_active', v_mentor.is_active
         );
     ELSE
         RETURN NULL;

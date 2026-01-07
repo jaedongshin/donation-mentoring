@@ -3,5 +3,4 @@ export { default as ProfileSection } from './ProfileSection';
 export { default as ProfileFooter } from './ProfileFooter';
 export { default as PlaceholderSection } from './PlaceholderSection';
 export { default as Toast } from './Toast';
-export { default as PendingStatusBanner } from './PendingStatusBanner';
 
