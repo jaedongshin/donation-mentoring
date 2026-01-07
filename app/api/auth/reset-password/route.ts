@@ -13,37 +13,20 @@ export async function POST(request: Request) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Find user with valid token
-    const { data: mentors, error: findError } = await supabase
-      .from('mentors')
-      .select('id')
-      .eq('reset_token', token)
-      .gt('reset_token_expires_at', new Date().toISOString());
+    // Call secure RPC function
+    const { data: success, error: rpcError } = await supabase
+      .rpc('reset_mentor_password', {
+        p_token: token,
+        p_new_password: password
+      });
 
-    if (findError) {
-      console.error('Error finding mentor by token:', findError);
+    if (rpcError) {
+      console.error('Error resetting password:', rpcError);
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
-    if (!mentors || mentors.length === 0) {
+    if (!success) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 });
-    }
-
-    const mentorId = mentors[0].id;
-
-    // Update password and clear token
-    const { error: updateError } = await supabase
-      .from('mentors')
-      .update({
-        password: password,
-        reset_token: null,
-        reset_token_expires_at: null
-      })
-      .eq('id', mentorId);
-
-    if (updateError) {
-      console.error('Error updating password:', updateError);
-      return NextResponse.json({ error: 'Failed to update password' }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Password updated successfully' });

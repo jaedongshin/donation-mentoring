@@ -569,4 +569,10 @@ SELECT pg_catalog.setval('"public"."reviews_id_seq"', 2, true);
 
 -- \unrestrict hvq2ZeXZ9OzMdLPxxB15EdOsDilIoYlroakdfbyMegimbSViLzLv8qhNwFSbUbR
 
+
+-- Update password for test user (admin)
+UPDATE "public"."mentors"
+SET "password" = extensions.crypt('password123', extensions.gen_salt('bf'))
+WHERE "email" = 'mulli2@gmail.com';
+
 RESET ALL;

@@ -74,14 +74,12 @@ export function useAuth(): UseAuthReturn {
 
   const loginWithEmail = useCallback(async (email: string, password: string) => {
     try {
-      // Query the mentors table directly
-      // Note: This assumes the password column exists and stores plain text (based on migration)
+      // Use the secure RPC function to verify credentials
       const { data: mentor, error } = await supabase
-        .from('mentors')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password)
-        .single();
+        .rpc('login_mentor', { 
+          p_email: email, 
+          p_password: password 
+        });
 
       if (error) {
         console.error('Login error:', error);
@@ -89,7 +87,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       if (!mentor) {
-        throw new Error('User not found');
+        throw new Error('Invalid email or password');
       }
 
       // Map mentor to AuthUser
@@ -120,18 +118,18 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   // Stubs for Supabase Auth functions that are temporarily disabled or need refactoring
-  const signUpWithEmail = useCallback(async (email: string, password: string) => {
+  const signUpWithEmail = useCallback(async (_email: string, _password: string) => {
     console.warn('SignUp is not currently supported with this auth method.');
     // TODO: Implement mentor creation with password
     throw new Error('SignUp not implemented');
   }, []);
 
-  const resetPassword = useCallback(async (email: string) => {
+  const resetPassword = useCallback(async (_email: string) => {
     console.warn('Reset password is not currently supported.');
     // TODO: Implement password reset logic for custom auth
   }, []);
 
-  const updatePassword = useCallback(async (newPassword: string) => {
+  const updatePassword = useCallback(async (_newPassword: string) => {
     console.warn('Update password is not currently supported.');
     // TODO: Implement password update logic for custom auth
   }, []);
