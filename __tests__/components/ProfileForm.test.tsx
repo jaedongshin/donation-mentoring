@@ -248,5 +248,27 @@ describe('ProfileForm', () => {
       expect(mockOnSubmit).toHaveBeenCalled();
     });
   });
+
+  describe('email normalization', () => {
+    it('should normalize email by removing spaces and lowercasing', () => {
+      render(
+        <ProfileForm
+          formData={defaultFormData}
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          darkMode={false}
+          lang="en"
+        />
+      );
+
+      const emailInput = screen.getByPlaceholderText(/your@email.com/i);
+      fireEvent.change(emailInput, { target: { value: ' Jade.Jaedong @Gmail.com ' } });
+
+      expect(mockOnChange).toHaveBeenCalledWith({
+        ...defaultFormData,
+        email: 'jade.jaedong@gmail.com',
+      });
+    });
+  });
 });
 

@@ -214,25 +214,15 @@ export default function TopNav({
               {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-            {/* Guest: Login & Signup links */}
+            {/* Guest: Mentor Link */}
             {variant === 'guest' && (!hideLoginLink || !hideSignupLink) && (
               <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2">
-                {!hideLoginLink && (
-                  <Link
-                    href="/login"
-                    className={`px-2.5 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
-                  >
-                    {t.logIn}
-                  </Link>
-                )}
-                {!hideSignupLink && (
-                  <Link
-                    href="/signup"
-                    className="px-3 py-1.5 text-sm font-medium bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors whitespace-nowrap shadow-sm hover:shadow"
-                  >
-                    {t.signUp}
-                  </Link>
-                )}
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 text-sm font-medium bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors whitespace-nowrap shadow-sm hover:shadow"
+                >
+                  {t.mentor}
+                </Link>
               </div>
             )}
 

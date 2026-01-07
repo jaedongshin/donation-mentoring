@@ -78,8 +78,12 @@ export default function ProfileForm({
     }
   };
 
+  const handleEmailChange = (value: string) => {
+    onChange({ ...formData, email: value.replace(/\s+/g, '').toLowerCase() });
+  };
+
   const handleTagsChange = (value: string) => {
-    const tags = value.split(',').map(tag => tag.trim()).filter(Boolean);
+    const tags = value.split(',').map(tag => tag.trim());
     onChange({ ...formData, tags });
   };
 
@@ -252,7 +256,7 @@ export default function ProfileForm({
             type="email"
             className={getInputClass(darkMode)}
             value={formData.email}
-            onChange={e => updateField('email', e.target.value)}
+            onChange={e => handleEmailChange(e.target.value)}
             placeholder="your@email.com"
           />
         </div>

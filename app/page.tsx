@@ -144,6 +144,13 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto relative">
+          {/* Hero Content & CTA */}
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold ${dm.text} mb-4 tracking-tight`}>
+              {t.title}
+            </h1>
+          </div>
+
           {/* How it Works - Bento Card */}
           <div className={`${dm.bgCardAlt} rounded-2xl p-3 sm:p-4 md:p-6 shadow-sm border ${dm.border} transition-all`}>
             {/* About Section - Bento Cards - Always visible */}

@@ -72,11 +72,12 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   const loginWithEmail = useCallback(async (email: string, password: string) => {
+    const normalizedEmail = email.replace(/\s+/g, '').toLowerCase();
     try {
       // Use the secure RPC function to verify credentials
       const { data: mentor, error } = await supabase
         .rpc('login_mentor', { 
-          p_email: email, 
+          p_email: normalizedEmail, 
           p_password: password 
         });
 
@@ -118,10 +119,11 @@ export function useAuth(): UseAuthReturn {
 
   // Stubs for Supabase Auth functions that are temporarily disabled or need refactoring
   const signUpWithEmail = useCallback(async (email: string, password: string) => {
+    const normalizedEmail = email.replace(/\s+/g, '').toLowerCase();
     try {
       const { data: mentor, error } = await supabase
         .rpc('signup_mentor', { 
-          p_email: email, 
+          p_email: normalizedEmail, 
           p_password: password 
         });
 
@@ -134,11 +136,14 @@ export function useAuth(): UseAuthReturn {
         throw new Error('Signup failed: No data returned');
       }
 
+      // Automatically log in after successful signup
+      await loginWithEmail(normalizedEmail, password);
+
     } catch (error) {
       console.error('Signup failed:', error);
       throw error;
     }
-  }, []);
+  }, [loginWithEmail]);
 
   const resetPassword = useCallback(async (_email: string) => {
     console.warn('Reset password is not currently supported.');

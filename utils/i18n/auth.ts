@@ -6,6 +6,7 @@ export const auth = {
     logout: "Logout",
     loginSubtitle: "Sign in to manage your mentor profile",
 
+    mentor: "Mentor",
     forMentorsAndAdmins: "For mentors and admins only",
     lookingToBook: "Looking to book a session?",
     browseMentorsNoLogin: "→ Browse mentors (no login needed)",
@@ -67,6 +68,7 @@ export const auth = {
     logout: "로그아웃",
     loginSubtitle: "멘토 프로필을 관리하려면 로그인하세요",
 
+    mentor: "멘토",
     forMentorsAndAdmins: "멘토와 관리자 전용입니다",
     lookingToBook: "세션을 예약하시겠어요?",
     browseMentorsNoLogin: "→ 멘토 둘러보기 (로그인 불필요)",
