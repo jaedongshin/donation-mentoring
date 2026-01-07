@@ -166,6 +166,12 @@ function AuthContent() {
               >
                 {isAuthenticated ? (lang === 'ko' ? '프로필로 이동' : 'Go to Profile') : t.backToLogin}
               </button>
+
+              <div className="mt-8">
+                <p className={`text-sm ${dm.textMuted}`}>
+                  {t.adminContact}
+                </p>
+              </div>
             </div>
           ) : (
             <>
@@ -304,6 +310,12 @@ function AuthContent() {
                   {isSubmitting ? t.loading : mode === 'login' ? t.logIn : t.createAccount}
                 </button>
               </form>
+
+              <div className="mt-8 text-center">
+                <p className={`text-sm ${dm.textMuted}`}>
+                  {t.adminContact}
+                </p>
+              </div>
             </>
           )}
         </div>

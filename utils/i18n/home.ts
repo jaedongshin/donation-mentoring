@@ -70,6 +70,7 @@ export const home = {
     applicationSuccess: "Application submitted successfully! Please wait for admin approval.",
     todaysMentor: "Today's Mentor",
     todaysMentorDesc: "Meet our featured mentor for today",
+    adminContact: "Questions? Contact us at admin@dontation-mentoring.org",
   },
   ko: {
     title: "기부 멘토링",
@@ -141,5 +142,6 @@ export const home = {
     applicationSuccess: "신청서가 성공적으로 제출되었습니다! 관리자의 승인을 기다려주세요.",
     todaysMentor: "오늘의 멘토",
     todaysMentorDesc: "오늘의 추천 멘토를 만나보세요",
+    adminContact: "궁금한 점이 있으신가요? admin@dontation-mentoring.org 로 문의주세요",
   },
 };

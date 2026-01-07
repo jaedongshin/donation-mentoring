@@ -500,6 +500,9 @@ export default function Home() {
           <p className={`text-sm ${dm.textMuted}`}>
             © 2024 Donation Mentoring. All rights reserved.
           </p>
+          <p className={`text-sm ${dm.textSubtle} mt-2`}>
+            {t.adminContact}
+          </p>
         </div>
       </footer>
     </div>

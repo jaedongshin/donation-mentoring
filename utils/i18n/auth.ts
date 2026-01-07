@@ -59,6 +59,7 @@ export const auth = {
     roleUser: "User",
     roleMentor: "Mentor",
     roleAdmin: "Admin",
+    adminContact: "Questions? Contact us at admin@dontation-mentoring.org",
   },
   ko: {
     login: "기부 멘토 로그인",
@@ -119,5 +120,6 @@ export const auth = {
     roleUser: "사용자",
     roleMentor: "멘토",
     roleAdmin: "관리자",
+    adminContact: "궁금한 점이 있으신가요? admin@dontation-mentoring.org 로 문의주세요",
   },
 };
