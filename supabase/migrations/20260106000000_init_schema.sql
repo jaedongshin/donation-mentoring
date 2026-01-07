@@ -56,17 +56,10 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     AS $$
 DECLARE
     user_role TEXT := 'user';
-    existing_super_admin BOOLEAN;
 BEGIN
-    -- Auto-promote only mulli2@gmail.com as super_admin
-    SELECT EXISTS(SELECT 1 FROM public.profiles WHERE role = 'super_admin') INTO existing_super_admin;
-    
+    -- Auto-promote only mulli2@gmail.com as admin
     IF NEW.email = 'mulli2@gmail.com' THEN
-        IF existing_super_admin THEN
-            user_role := 'user';
-        ELSE
-            user_role := 'super_admin';
-        END IF;
+        user_role := 'admin';
     END IF;
 
     -- Create profile with mentor_id = NULL
@@ -100,55 +93,6 @@ $$;
 
 
 ALTER FUNCTION "public"."handle_profiles_updated_at"() OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."has_super_admin"("exclude_id" "uuid" DEFAULT NULL::"uuid") RETURNS boolean
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE role = 'super_admin'
-        AND (exclude_id IS NULL OR id != exclude_id)
-    );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."has_super_admin"("exclude_id" "uuid") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."is_admin_or_super_admin"() RETURNS boolean
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
-  );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."is_admin_or_super_admin"() OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."is_super_admin"() RETURNS boolean
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'super_admin'
-  );
-END;
-$$;
-
-
-ALTER FUNCTION "public"."is_super_admin"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_admin_password"("p_id" "uuid", "p_hash" "text", "p_secret" "text") RETURNS "void"
@@ -209,33 +153,23 @@ CREATE OR REPLACE FUNCTION "public"."validate_role_change"("target_user_id" "uui
     AS $$
 DECLARE
     current_user_role TEXT;
-    target_user_role TEXT;
 BEGIN
     -- Get current user's role
     SELECT role INTO current_user_role
     FROM public.profiles
     WHERE id = current_user_id;
 
-    -- Get target user's current role
-    SELECT role INTO target_user_role
-    FROM public.profiles
-    WHERE id = target_user_id;
-
-    -- Only super_admin can change roles
-    IF current_user_role != 'super_admin' THEN
-        RAISE EXCEPTION 'Only super_admin can change user roles';
+    -- Only admin can change roles
+    IF current_user_role != 'admin' THEN
+        RAISE EXCEPTION 'Only admins can change user roles';
     END IF;
 
-    -- If changing to super_admin, check if one already exists
-    IF new_role = 'super_admin' THEN
-        IF public.has_super_admin(target_user_id) THEN
-            RAISE EXCEPTION 'Only one super_admin is allowed. Transfer super_admin role from existing super_admin first.';
+    -- Prevent changing own role (at least one admin must exist)
+    IF target_user_id = current_user_id AND new_role != 'admin' THEN
+        -- Check if this is the last admin
+        IF (SELECT COUNT(*) FROM public.profiles WHERE role = 'admin') <= 1 THEN
+            RAISE EXCEPTION 'Cannot remove the last admin role. Promote another user to admin first.';
         END IF;
-    END IF;
-
-    -- Prevent changing own role (super_admin must transfer to another user first)
-    IF target_user_id = current_user_id AND new_role != 'super_admin' THEN
-        RAISE EXCEPTION 'Super_admin cannot change their own role. Transfer super_admin to another user first.';
     END IF;
 
     RETURN TRUE;
@@ -260,38 +194,23 @@ BEGIN
     -- Skip validation if no authenticated user (e.g., during seed/migration)
     IF auth.uid() IS NULL THEN
         RETURN NEW;
-    END IF;
+  END IF;
 
     -- Get current user's role (the one making the change)
     SELECT role INTO current_user_role
     FROM public.profiles
     WHERE id = auth.uid();
 
-    -- Admin can only change user ↔ mentor
-    IF current_user_role = 'admin' THEN
-        -- Admin can change user → mentor or mentor → user
-        IF NOT ((OLD.role = 'user' AND NEW.role = 'mentor') OR 
-                (OLD.role = 'mentor' AND NEW.role = 'user')) THEN
-            RAISE EXCEPTION 'Admin can only change user ↔ mentor roles';
+    -- Only admin can change roles
+    IF current_user_role != 'admin' THEN
+        RAISE EXCEPTION 'Only admins can change user roles';
+    END IF;
+
+    -- Prevent admin from removing their own admin role if they are the last admin
+    IF NEW.id = auth.uid() AND NEW.role != 'admin' THEN
+        IF (SELECT COUNT(*) FROM public.profiles WHERE role = 'admin') <= 1 THEN
+            RAISE EXCEPTION 'Cannot remove your own admin role as the last admin. Promote another user to admin first.';
         END IF;
-        RETURN NEW;
-    END IF;
-
-    -- Only super_admin can change other roles (user, mentor, admin)
-    IF current_user_role != 'super_admin' THEN
-        RAISE EXCEPTION 'Only super_admin can change user roles';
-    END IF;
-
-    -- Super_admin cannot change to super_admin via regular role change (must use transfer)
-    IF NEW.role = 'super_admin' THEN
-        IF public.has_super_admin(NEW.id) THEN
-            RAISE EXCEPTION 'Only one super_admin is allowed. Transfer super_admin role from existing super_admin first.';
-        END IF;
-    END IF;
-
-    -- Prevent super_admin from changing their own role (except via transfer)
-    IF NEW.id = auth.uid() AND NEW.role != 'super_admin' THEN
-        RAISE EXCEPTION 'Super_admin cannot change their own role. Transfer super_admin to another user first.';
     END IF;
 
     RETURN NEW;
@@ -606,24 +525,6 @@ GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."handle_profiles_updated_at"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_profiles_updated_at"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_profiles_updated_at"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."has_super_admin"("exclude_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."has_super_admin"("exclude_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."has_super_admin"("exclude_id" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."is_admin_or_super_admin"() TO "anon";
-GRANT ALL ON FUNCTION "public"."is_admin_or_super_admin"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."is_admin_or_super_admin"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."is_super_admin"() TO "anon";
-GRANT ALL ON FUNCTION "public"."is_super_admin"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."is_super_admin"() TO "service_role";
 
 
 

@@ -9,7 +9,7 @@ export const auth = {
     forMentorsAndAdmins: "For mentors and admins only",
     lookingToBook: "Looking to book a session?",
     browseMentorsNoLogin: "→ Browse mentors (no login needed)",
-    dashboard: "Dashboard",
+    dashboard: "Profile",
     // Signup
     signUp: "Mentor Sign Up",
     signUpSubtitle: "Get started with your Donation Mentor account",
@@ -60,7 +60,6 @@ export const auth = {
     roleUser: "User",
     roleMentor: "Mentor",
     roleAdmin: "Admin",
-    roleSuperAdmin: "Super Admin",
   },
   ko: {
     login: "기부 멘토 로그인",
@@ -71,7 +70,7 @@ export const auth = {
     forMentorsAndAdmins: "멘토와 관리자 전용입니다",
     lookingToBook: "세션을 예약하시겠어요?",
     browseMentorsNoLogin: "→ 멘토 둘러보기 (로그인 불필요)",
-    dashboard: "대시보드",
+    dashboard: "프로필",
     // Signup
     signUp: "멘토 신청",
     signUpSubtitle: "기부 멘토 계정을 생성하세요",
@@ -122,6 +121,5 @@ export const auth = {
     roleUser: "사용자",
     roleMentor: "멘토",
     roleAdmin: "관리자",
-    roleSuperAdmin: "최고 관리자",
   },
 };

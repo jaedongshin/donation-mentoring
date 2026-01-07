@@ -60,9 +60,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       if (isAdmin) {
-        router.push('/mentors');
+        router.push('/admin');
       } else {
-        router.push('/dashboard');
+        router.push('/profile');
       }
     }
   }, [isLoading, isAuthenticated, isAdmin, router]);

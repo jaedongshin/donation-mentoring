@@ -15,6 +15,7 @@ interface ProfileFooterProps {
     onLinkSubmit?: () => void;
     // Edit state
     onSave?: (e?: React.FormEvent) => void | Promise<void>;
+    onResetPassword?: () => void | Promise<void>;
 }
 
 export default function ProfileFooter({
@@ -26,6 +27,7 @@ export default function ProfileFooter({
     isSubmittingLink = false,
     onLinkSubmit,
     onSave,
+    onResetPassword,
 }: ProfileFooterProps) {
     const t = translations[lang];
     const dm = {
@@ -75,10 +77,16 @@ export default function ProfileFooter({
 
     // Editing state - save button
     return (
-        <div className={`flex-shrink-0 border-t ${dm.border} px-6 py-4`}>
+        <div className={`flex-shrink-0 border-t ${dm.border} px-6 py-4 flex gap-3`}>
+            <button
+                onClick={onResetPassword}
+                className={`flex-1 py-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-xl text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'} transition-colors cursor-pointer`}
+            >
+                {t.resetPassword}
+            </button>
             <button
                 onClick={onSave}
-                className="w-full py-3 bg-sky-600 hover:bg-sky-700 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
+                className="flex-[2] py-3 bg-sky-600 hover:bg-sky-700 rounded-xl text-sm font-semibold text-white transition-colors cursor-pointer"
             >
                 {t.save}
             </button>

@@ -97,7 +97,7 @@ export default function TopNav({
   };
 
   const isAuthenticated = variant !== 'guest' && user;
-  const canSearch = (variant === 'admin' || user?.role === 'super_admin') && showSearch;
+  const canSearch = variant === 'admin' && showSearch;
 
   return (
     <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm sticky top-0 z-40 transition-colors duration-300`}>
@@ -128,28 +128,30 @@ export default function TopNav({
               </nav>
             )}
 
-            {/* Authenticated: Nav links for admin/super_admin */}
-            {user && (user.role === 'admin' || user.role === 'super_admin') && (
+            {/* Authenticated: Nav links */}
+            {user && (
               <nav className="hidden md:flex items-center gap-1 mr-2">
                 <Link
-                  href="/dashboard"
+                  href="/profile"
                   className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
                 >
                   {t.dashboard}
                 </Link>
-                <Link
-                  href="/mentors"
-                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
-                >
-                  {t.mentorManagement}
-                </Link>
-                {(user.role === 'admin' || user.role === 'super_admin') && (
-                  <Link
-                    href="/permissions"
-                    className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
-                  >
-                    {t.manageUsers}
-                  </Link>
+                {user.role === 'admin' && (
+                  <>
+                    <Link
+                      href="/admin"
+                      className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
+                    >
+                      {t.mentorManagement}
+                    </Link>
+                    <Link
+                      href="/permissions"
+                      className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
+                    >
+                      {t.manageUsers}
+                    </Link>
+                  </>
                 )}
               </nav>
             )}
@@ -274,13 +276,11 @@ export default function TopNav({
                       {/* Only show role badge if user is authenticated and has a role (not 'user' role) */}
                       {user.role && user.role !== 'user' && (
                         <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full ${
-                          user.role === 'super_admin'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                            : user.role === 'admin'
+                          user.role === 'admin'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                         }`}>
-                          {user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'Mentor'}
+                          {user.role === 'admin' ? 'Admin' : 'Mentor'}
                         </span>
                       )}
                     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabase';
 
-export type UserRole = 'user' | 'mentor' | 'admin' | 'super_admin';
+export type UserRole = 'user' | 'mentor' | 'admin';
 
 export interface MentorProfileData {
   name_en: string;
@@ -49,7 +49,6 @@ interface UseAuthReturn {
   linkMentorProfile: (mentorId: string | null, isNewMentor: boolean, profileData?: MentorProfileData) => Promise<void>;
   isMentor: boolean;
   isAdmin: boolean;
-  isSuperAdmin: boolean;
   isApproved: boolean;
 }
 
@@ -118,10 +117,27 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   // Stubs for Supabase Auth functions that are temporarily disabled or need refactoring
-  const signUpWithEmail = useCallback(async (_email: string, _password: string) => {
-    console.warn('SignUp is not currently supported with this auth method.');
-    // TODO: Implement mentor creation with password
-    throw new Error('SignUp not implemented');
+  const signUpWithEmail = useCallback(async (email: string, password: string) => {
+    try {
+      const { data: mentor, error } = await supabase
+        .rpc('signup_mentor', { 
+          p_email: email, 
+          p_password: password 
+        });
+
+      if (error) {
+        console.error('Signup error:', error);
+        throw new Error(error.message);
+      }
+
+      if (!mentor) {
+        throw new Error('Signup failed: No data returned');
+      }
+
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
+    }
   }, []);
 
   const resetPassword = useCallback(async (_email: string) => {
@@ -145,8 +161,7 @@ export function useAuth(): UseAuthReturn {
 
   const isAuthenticated = !!user;
   const isMentor = user?.role === 'mentor';
-  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
-  const isSuperAdmin = user?.role === 'super_admin';
+  const isAdmin = user?.role === 'admin';
   const isApproved = true; // Mentors are implicitly approved in this simplified flow
   const needsMentorLink = false; // Since we log in as mentor, we are linked
 
@@ -163,7 +178,6 @@ export function useAuth(): UseAuthReturn {
     linkMentorProfile,
     isMentor,
     isAdmin,
-    isSuperAdmin,
     isApproved,
   };
 }

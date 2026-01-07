@@ -60,7 +60,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const { user, isLoading, isAuthenticated, logout, needsMentorLink, linkMentorProfile } = useAuth();
 
-    // Approved = mentor/admin/super_admin (not 'user' role)
+    // Approved = mentor/admin (not 'user' role)
     const isUserRole = user?.role === 'user';
 
     const [lang, setLang] = useState<Language>('ko');
@@ -119,19 +119,28 @@ export default function DashboardPage() {
         const fetchMentorData = async () => {
             if (!user) return;
 
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('mentor_id')
-                .eq('id', user.id)
-                .maybeSingle();
+            let currentMentorId = user.mentorId;
 
-            if (profile?.mentor_id) {
-                setMentorId(profile.mentor_id);
+            // If not directly set (e.g. legacy auth), try to find in profiles
+            if (!currentMentorId) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('mentor_id')
+                    .eq('id', user.id)
+                    .maybeSingle();
+                
+                if (profile?.mentor_id) {
+                    currentMentorId = profile.mentor_id;
+                }
+            }
+
+            if (currentMentorId) {
+                setMentorId(currentMentorId);
 
                 const { data: mentor } = await supabase
                     .from('mentors')
                     .select('*')
-                    .eq('id', profile.mentor_id)
+                    .eq('id', currentMentorId)
                     .single();
 
                 if (mentor) {
@@ -307,6 +316,31 @@ export default function DashboardPage() {
         }
     };
 
+    const handleResetPassword = async () => {
+        if (!user?.email) {
+            setToast({ type: 'error', message: 'User email not found' });
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: user.email, lang }),
+            });
+
+            if (response.ok) {
+                setToast({ type: 'success', message: t.resetPasswordEmailSent });
+            } else {
+                const data = await response.json();
+                setToast({ type: 'error', message: data.error || 'Failed to send reset email' });
+            }
+        } catch (error) {
+            console.error('Reset password error:', error);
+            setToast({ type: 'error', message: 'An error occurred' });
+        }
+    };
+
     const toggleDarkMode = () => {
         const newValue = !darkMode;
         setDarkMode(newValue);
@@ -450,6 +484,7 @@ export default function DashboardPage() {
                             isSubmittingLink={isSubmittingLink}
                             onLinkSubmit={handleLinkSubmit}
                             onSave={handleProfileSubmit}
+                            onResetPassword={handleResetPassword}
                         />
                     )}
                 </div>

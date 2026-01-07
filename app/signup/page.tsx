@@ -52,7 +52,7 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
+      router.push('/profile');
     }
   }, [isLoading, isAuthenticated, router]);
 

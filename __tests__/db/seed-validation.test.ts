@@ -79,11 +79,6 @@ describe('Seed SQL validation', () => {
     it('should include pending test user', () => {
       expect(seedContent).toContain("'pending1@test.com'");
     });
-
-    it('should note that super_admin is not seeded (only mulli2@gmail.com)', () => {
-      // Super admin is not seeded - only mulli2@gmail.com can be super_admin
-      expect(seedContent).toContain('Only mulli2@gmail.com can be super_admin');
-    });
   });
 
   describe('profiles table', () => {
@@ -120,11 +115,10 @@ describe('Migration validation', () => {
       expect(migrationContent).toMatch(/CHECK.*'user'/);
     });
 
-    it('should allow all four roles: user, mentor, admin, super_admin', () => {
+    it('should allow all three roles: user, mentor, admin', () => {
       expect(migrationContent).toContain("'user'");
       expect(migrationContent).toContain("'mentor'");
       expect(migrationContent).toContain("'admin'");
-      expect(migrationContent).toContain("'super_admin'");
     });
   });
 });

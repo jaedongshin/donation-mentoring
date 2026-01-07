@@ -1,7 +1,7 @@
 // Dashboard related translations
 export const dashboard = {
   en: {
-    dashboardTitle: "My Dashboard",
+    dashboardTitle: "My Profile",
     // Status
     statusPending: "Pending Approval",
     statusApproved: "Approved",
@@ -11,6 +11,8 @@ export const dashboard = {
     editProfile: "Edit Profile",
     setAvailability: "Set Availability",
     connectCalendar: "Connect Calendar",
+    resetPassword: "Reset Password",
+    resetPasswordEmailSent: "Reset password email has been sent.",
     // Bookings
     upcomingBookings: "Upcoming Bookings",
     noUpcomingBookings: "No upcoming bookings",
@@ -28,7 +30,7 @@ export const dashboard = {
     bookingsCardDesc: "View and manage your scheduled mentoring sessions",
   },
   ko: {
-    dashboardTitle: "내 대시보드",
+    dashboardTitle: "내 프로필",
     // Status
     statusPending: "승인 대기 중",
     statusApproved: "승인됨",
@@ -38,6 +40,8 @@ export const dashboard = {
     editProfile: "프로필 수정",
     setAvailability: "가능 시간 설정",
     connectCalendar: "캘린더 연결",
+    resetPassword: "비밀번호 재설정",
+    resetPasswordEmailSent: "비밀번호 재설정 이메일이 발송되었습니다.",
     // Bookings
     upcomingBookings: "예정된 세션",
     noUpcomingBookings: "예정된 세션이 없습니다",

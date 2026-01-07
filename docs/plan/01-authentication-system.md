@@ -9,32 +9,28 @@ Role-based authentication with **Google OAuth + Email/Password** for admins and 
 
 ---
 
-## User Roles (4-Tier Hierarchy)
+## User Roles (3-Tier Hierarchy)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    ROLE HIERARCHY                           │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  👑 Super Admin (Highest)                                   │
-│  │   • All Admin permissions +                              │
-│  │   • Assign/revoke admin roles                            │
-│  │   • Bootstrapped via env variable                        │
+│  🛡️ Admin (Highest)                                         │
+│  │   • All Mentor permissions +                             │
+│  │   • Approve/reject mentor applications                   │
+│  │   • Search and manage all mentors                        │
+│  │   • Assign/revoke roles for other users                  │
+│  │   • View all bookings                                    │
 │  │                                                          │
-│  ├── 🛡️ Admin                                               │
-│  │   │   • All Mentor permissions +                         │
-│  │   │   • Approve/reject mentor applications               │
-│  │   │   • Search and manage all mentors                    │
-│  │   │   • View all bookings                                │
-│  │   │                                                      │
-│  │   └── 👤 Mentor (Authenticated)                          │
-│  │       │   • Register via Google OAuth or Email           │
-│  │       │   • Wait for admin approval                      │
-│  │       │   • After approval: edit own profile only        │
-│  │       │   • Set availability, connect calendar           │
-│  │       │   • View own bookings                            │
-│  │       │   • NO search (can't see other mentors)          │
-│  │       │                                                  │
+│  └── 👤 Mentor (Authenticated)                              │
+│      │   • Register via Google OAuth or Email               │
+│      │   • Wait for admin approval                          │
+│      │   • After approval: edit own profile only            │
+│      │   • Set availability, connect calendar               │
+│      │   • View own bookings                                │
+│      │   • NO search (can't see other mentors)              │
+│      │                                                      │
 │  └───────┴── 🌐 Guest (Unauthenticated)                     │
 │                 • Browse mentors                            │
 │                 • Book sessions (email required)            │
@@ -46,7 +42,7 @@ Role-based authentication with **Google OAuth + Email/Password** for admins and 
 **Key Design Decisions:**
 - No "mentee accounts" in MVP - bookers manage via unique links in emails
 - Mentors must register and wait for approval (no direct adding by anyone)
-- Search functionality limited to Admin/Super Admin only
+- Search functionality limited to Admin only
 - Each role inherits all permissions from lower roles
 - **Policy acceptance required** for all users before using the platform
 
@@ -72,7 +68,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT,
     display_name TEXT,
     avatar_url TEXT,
-    role TEXT DEFAULT 'mentor' CHECK (role IN ('mentor', 'admin', 'super_admin')),
+    role TEXT DEFAULT 'mentor' CHECK (role IN ('mentor', 'admin')),
     is_approved BOOLEAN DEFAULT false,
     mentor_id UUID REFERENCES public.mentors(id) ON DELETE SET NULL,
     policy_accepted_at TIMESTAMPTZ,  -- NULL = not accepted
@@ -100,7 +96,7 @@ CREATE POLICY "Users can view own profile"
 
 CREATE POLICY "Admins can view all profiles"
   ON public.profiles FOR SELECT
-  USING (public.get_user_role(auth.uid()) IN ('admin', 'super_admin'));
+  USING (public.get_user_role(auth.uid()) = 'admin');
 
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
@@ -300,7 +296,6 @@ interface UseAuthReturn {
 
   // Role checks
   isAdmin: boolean;
-  isSuperAdmin: boolean;
   isApproved: boolean;
 
   // Auth methods

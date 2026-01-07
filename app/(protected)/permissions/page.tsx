@@ -19,7 +19,7 @@ interface ProfileUser {
 
 export default function UserManagementPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, isAuthenticated, isAdmin, isSuperAdmin, logout } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, isAdmin, logout } = useAuth();
 
   const [users, setUsers] = useState<ProfileUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,6 @@ export default function UserManagementPage() {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [dropdownDirection, setDropdownDirection] = useState<'up' | 'down'>('down');
   const dropdownButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const [transferSuperAdminTarget, setTransferSuperAdminTarget] = useState<ProfileUser | null>(null);
 
   const toggleDarkMode = () => {
     const newValue = !darkMode;
@@ -81,7 +80,7 @@ export default function UserManagementPage() {
   // Redirect if not authenticated or not admin
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
-      router.push('/mentors');
+      router.push('/admin');
     }
   }, [authLoading, isAuthenticated, isAdmin, router]);
 
@@ -122,8 +121,8 @@ export default function UserManagementPage() {
       // Parse error message for better user feedback
       let errorMessage = t.roleUpdateFailed;
       
-      if (error.message.includes('Only super_admin can change')) {
-        errorMessage = t.onlySuperAdminCanChangeRoles;
+      if (error.message.includes('Only admins can change')) {
+        errorMessage = t.onlyAdminCanChangeRoles;
       }
       
       alert(errorMessage);
@@ -136,60 +135,8 @@ export default function UserManagementPage() {
     setOpenDropdownId(null);
   };
 
-  const handleTransferSuperAdmin = async (targetUserId: string) => {
-    if (!user) return;
-
-    // Transfer: current super_admin becomes admin, target becomes super_admin
-    const { error: error1 } = await supabase
-      .from('profiles')
-      .update({ role: 'admin' })
-      .eq('id', user.id);
-
-    if (error1) {
-      console.error('Error transferring super_admin (step 1):', error1);
-      alert(t.transferSuperAdminFailed);
-      setTransferSuperAdminTarget(null);
-      return;
-    }
-
-    const { error: error2 } = await supabase
-      .from('profiles')
-      .update({ role: 'super_admin' })
-      .eq('id', targetUserId);
-
-    if (error2) {
-      console.error('Error transferring super_admin (step 2):', error2);
-      // Rollback: try to restore current user to super_admin
-      await supabase
-        .from('profiles')
-        .update({ role: 'super_admin' })
-        .eq('id', user.id);
-      alert(t.transferSuperAdminFailed);
-      setTransferSuperAdminTarget(null);
-      return;
-    }
-
-    // Update UI
-    setUsers(prev =>
-      prev.map(u => {
-        if (u.id === user.id) {
-          return { ...u, role: 'admin' };
-        } else if (u.id === targetUserId) {
-          return { ...u, role: 'super_admin' };
-        }
-        return u;
-      })
-    );
-
-    setTransferSuperAdminTarget(null);
-    // Redirect to login or refresh - user is no longer super_admin
-    alert(t.transferComplete);
-    window.location.reload();
-  };
-
   const handleApproveToMentor = async (userId: string, targetUser: ProfileUser) => {
     // Admin can only approve users to become mentors (change role from 'user' to 'mentor')
-    // Super_admin can also do this
     if (targetUser.role === 'mentor') {
       // Already a mentor, nothing to do
       return;
@@ -239,13 +186,6 @@ export default function UserManagementPage() {
   const getRoleBadge = (role: UserRole) => {
     const baseClasses = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium';
     switch (role) {
-      case 'super_admin':
-        return (
-          <span className={`${baseClasses} ${darkMode ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-100 text-purple-700'}`}>
-            <ShieldCheck size={12} />
-            {t.roleSuperAdmin}
-          </span>
-        );
       case 'admin':
         return (
           <span className={`${baseClasses} ${darkMode ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
@@ -321,23 +261,18 @@ export default function UserManagementPage() {
           <ul className={`divide-y ${dm.divider}`}>
             {users.map((u) => {
               const isCurrentUser = u.id === user?.id;
-              const isSuperAdminUser = u.role === 'super_admin';
               const isAdminUser = u.role === 'admin';
               const isMentorUser = u.role === 'mentor';
               
-              // Only super_admin can change roles, and cannot modify themselves or other super_admins
-              const canChangeRole = isSuperAdmin && !isCurrentUser && !isSuperAdminUser;
+              // Only admins can change roles, and cannot modify themselves
+              const canChangeRole = isAdmin && !isCurrentUser;
               
               const isUserRole = u.role === 'user';
               
               // Admin can approve users to become mentors (user → mentor)
               // Admin can unapprove mentors (mentor → user)
-              // Super_admin can do the same
-              const canApproveToMentor = !isCurrentUser && (isSuperAdmin || isAdmin) && isUserRole;
-              const canUnapproveFromMentor = !isCurrentUser && (isSuperAdmin || isAdmin) && isMentorUser;
-              
-              // Only super_admin can transfer super_admin role
-              const canTransferSuperAdmin = isSuperAdmin && !isCurrentUser && !isSuperAdminUser;
+              const canApproveToMentor = !isCurrentUser && isAdmin && isUserRole;
+              const canUnapproveFromMentor = !isCurrentUser && isAdmin && isMentorUser;
 
               return (
                 <li key={u.id} className={`${dm.rowHover} transition-colors`}>
@@ -398,21 +333,7 @@ export default function UserManagementPage() {
                         </button>
                       )}
 
-                      {/* Transfer Super Admin Button - Only visible to current super_admin for non-super_admin users */}
-                      {canTransferSuperAdmin && (
-                        <button
-                          onClick={() => setTransferSuperAdminTarget(u)}
-                          className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
-                            darkMode
-                              ? 'bg-purple-900/40 text-purple-300 hover:bg-purple-900/60 border border-purple-700/50'
-                              : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300'
-                          }`}
-                        >
-                          {t.transferSuperAdmin}
-                        </button>
-                      )}
-
-                      {/* Role Dropdown - Only super_admin can change roles, and cannot change themselves or other super_admins */}
+                      {/* Role Dropdown - Only admin can change roles, and cannot change themselves */}
                       {canChangeRole && (
                         <div className="relative" data-role-dropdown>
                           <button
@@ -495,13 +416,11 @@ export default function UserManagementPage() {
                         </div>
                       )}
 
-                      {!canChangeRole && !canApproveToMentor && !canUnapproveFromMentor && !canTransferSuperAdmin && (
+                      {!canChangeRole && !canApproveToMentor && !canUnapproveFromMentor && (
                         <span className={`text-xs ${dm.textSubtle}`}>
                           {isCurrentUser 
                             ? t.cannotModifySelf
-                            : isSuperAdminUser
-                            ? t.cannotModifySuperAdmin
-                            : isAdminUser && !isSuperAdmin
+                            : isAdminUser
                             ? t.cannotModifyAdmin
                             : t.cannotModify
                           }
@@ -515,58 +434,6 @@ export default function UserManagementPage() {
           </ul>
         </div>
       </main>
-
-      {/* Transfer Super Admin Confirmation Modal */}
-      {transferSuperAdminTarget && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className={`${dm.bgCard} border ${dm.border} rounded-xl shadow-2xl max-w-md w-full transition-colors duration-300`}>
-            <div className={`px-6 py-5 border-b ${dm.border}`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-full ${darkMode ? 'bg-red-900/30' : 'bg-red-100'} flex items-center justify-center flex-shrink-0`}>
-                  <AlertTriangle size={24} className="text-red-500" />
-                </div>
-                <div>
-                  <h3 className={`text-lg font-semibold ${dm.text}`}>
-                    {t.transferSuperAdminConfirm}
-                  </h3>
-                  <p className={`text-sm ${dm.textMuted} mt-1`}>
-                    {t.actionCannotBeUndone}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-4">
-              <p className={`text-sm ${dm.text} mb-4`}>
-                {lang === 'ko' 
-                  ? `"${transferSuperAdminTarget.display_name || transferSuperAdminTarget.email}"${t.transferConfirmQuestion}`
-                  : `${t.transferConfirmQuestion} "${transferSuperAdminTarget.display_name || transferSuperAdminTarget.email}"?`
-                }
-              </p>
-              <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3 mb-4`}>
-                <p className={`text-xs ${darkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
-                  {t.transferWarning}
-                </p>
-              </div>
-            </div>
-
-            <div className={`px-6 py-4 border-t ${dm.border} flex justify-end gap-3`}>
-              <button
-                onClick={() => setTransferSuperAdminTarget(null)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border ${dm.border} ${dm.textMuted} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
-              >
-                {t.cancel}
-              </button>
-              <button
-                onClick={() => handleTransferSuperAdmin(transferSuperAdminTarget.id)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
-              >
-                {t.transfer}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
