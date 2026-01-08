@@ -55,15 +55,39 @@ export function shuffleArray<T>(array: T[]): T[] {
 /**
  * Selects a daily mentor deterministically based on the current date.
  * Uses the date as a seed to ensure the same mentor is selected for the entire day.
+ * Mentors are sorted by ID first to ensure stable ordering.
+ * Uses UTC date to avoid timezone issues.
  */
 export function getDailyMentor(mentors: Mentor[]): Mentor | null {
   if (!mentors || mentors.length === 0) return null;
   
-  const today = new Date();
-  // Create a seed from YYYYMMDD
-  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  // Sort by ID to ensure stable ordering
+  const sortedMentors = [...mentors].sort((a, b) => a.id.localeCompare(b.id));
   
-  // Use the seed to pick a mentor
-  return mentors[seed % mentors.length];
+  // Use UTC date to ensure consistent selection across timezones
+  const today = new Date();
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth() + 1;
+  const day = today.getUTCDate();
+  
+  // Create a seed from YYYYMMDD (UTC)
+  const seed = year * 10000 + month * 100 + day;
+  
+  // Use the seed to pick a mentor from the sorted array
+  const selectedIndex = seed % sortedMentors.length;
+  const selectedMentor = sortedMentors[selectedIndex];
+  
+  // Debug logging (can be removed in production)
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.log('[getDailyMentor]', {
+      date: `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+      seed,
+      mentorCount: sortedMentors.length,
+      selectedIndex,
+      selectedMentor: selectedMentor.name_ko || selectedMentor.name_en,
+    });
+  }
+  
+  return selectedMentor;
 }
 
