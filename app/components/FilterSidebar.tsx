@@ -260,31 +260,30 @@ export default function FilterSidebar({
       <div>
         <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterSessionLength}</h4>
         <div className="space-y-2">
-          <label className="flex items-center cursor-pointer group">
-            <input
-              type="radio"
-              name="sessionLength"
-              checked={filters.sessionLength === null}
-              onChange={() => handleSessionLengthChange(null)}
-              className={`w-4 h-4 text-sky-600 border-gray-300 focus:ring-sky-500 ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`}
-            />
-            <span className={`ml-2 text-sm ${dm.textMuted} ${dm.hover}`}>
-              {t.filterAnyLength}
-            </span>
-          </label>
-          {SESSION_LENGTHS.map((length) => (
-            <label key={length} className="flex items-center cursor-pointer group">
-              <input
-                type="radio"
-                name="sessionLength"
-                checked={filters.sessionLength === length}
-                onChange={() => handleSessionLengthChange(length)}
-                className={`w-4 h-4 text-sky-600 border-gray-300 focus:ring-sky-500 ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`}
-              />
-              <span className={`ml-2 text-sm ${dm.textMuted} ${dm.hover}`}>
-                {length} {t.filterMin}
+          {[null, ...SESSION_LENGTHS].map((length) => (
+            <button
+              key={length ?? 'any'}
+              type="button"
+              onClick={() => handleSessionLengthChange(length)}
+              className={`flex items-center w-full text-left cursor-pointer group py-1`}
+            >
+              <span
+                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                  filters.sessionLength === length
+                    ? 'border-sky-600 bg-sky-600'
+                    : darkMode
+                    ? 'border-gray-500 bg-gray-700'
+                    : 'border-gray-400 bg-white'
+                }`}
+              >
+                {filters.sessionLength === length && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                )}
               </span>
-            </label>
+              <span className={`ml-2 text-sm ${dm.textMuted} ${dm.hover}`}>
+                {length === null ? t.filterAnyLength : `${length} ${t.filterMin}`}
+              </span>
+            </button>
           ))}
         </div>
       </div>
