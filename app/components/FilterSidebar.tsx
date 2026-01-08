@@ -265,7 +265,7 @@ export default function FilterSidebar({
               key={length ?? 'any'}
               type="button"
               onClick={() => handleSessionLengthChange(length)}
-              className={`flex items-center w-full text-left cursor-pointer group py-1`}
+              className={`flex items-center w-full text-left cursor-pointer group py-1 bg-transparent border-0 p-0 focus:outline-none focus:ring-0 active:bg-transparent`}
             >
               <span
                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
