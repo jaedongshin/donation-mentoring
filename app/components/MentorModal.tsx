@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, Briefcase, Building2, MapPin, Calendar, Mail, Linkedin } from 'lucide-react';
+import { X, Briefcase, Building2, MapPin, Calendar, Mail, Linkedin, Clock, DollarSign } from 'lucide-react';
 import { Mentor } from '@/types/mentor';
 import { Language, translations } from '@/utils/i18n';
 import { ensureProtocol, getMentorDisplay } from '@/utils/helpers';
@@ -124,6 +124,24 @@ export default function MentorModal({ mentor, lang, onClose, theme = defaultThem
                 <MapPin className="mr-2 opacity-60 w-5 h-5" />
                 <span>{display.location}</span>
               </div>
+
+              {/* Session info */}
+              {(mentor.session_time_minutes || mentor.session_price_usd) && (
+                <div className={`flex items-center gap-4 mt-1 text-lg font-medium ${theme.accentText}`}>
+                  {mentor.session_time_minutes && (
+                    <div className="flex items-center">
+                      <Clock size={20} className="mr-2" />
+                      <span>{mentor.session_time_minutes}min</span>
+                    </div>
+                  )}
+                  {mentor.session_price_usd && (
+                    <div className="flex items-center">
+                      <DollarSign size={20} className="mr-1" />
+                      <span>{mentor.session_price_usd} {t.unicefDonation}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

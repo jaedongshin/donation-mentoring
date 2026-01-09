@@ -344,7 +344,7 @@ export default function Home() {
                   <h3 className={`text-2xl font-bold ${dm.text} mb-1`}>
                     {getMentorDisplay(todaysMentor, lang).name}
                   </h3>
-                  <p className={`text-lg ${theme.accentText} font-medium`}>
+                  <p className={`text-lg ${dm.text} font-medium`}>
                     {getMentorDisplay(todaysMentor, lang).position}
                     {getMentorDisplay(todaysMentor, lang).company && ` @ ${getMentorDisplay(todaysMentor, lang).company}`}
                   </p>
