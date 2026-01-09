@@ -9,7 +9,7 @@ import MentorModal from '@/app/components/MentorModal';
 import { translations, Language } from '@/utils/i18n';
 import { scrollToElement, shuffleArray, getDailyMentor, getMentorDisplay } from '@/utils/helpers';
 import Image from 'next/image';
-import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Mail, Linkedin } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Mail, Linkedin, Clock, DollarSign } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
 
@@ -349,6 +349,27 @@ export default function Home() {
                     {getMentorDisplay(todaysMentor, lang).company && ` @ ${getMentorDisplay(todaysMentor, lang).company}`}
                   </p>
                 </div>
+
+                {/* Session info */}
+                {(todaysMentor.session_time_minutes || todaysMentor.session_price_usd) && (
+                  <div className={`flex items-center justify-center md:justify-start text-base font-medium ${theme.accentText} gap-2`}>
+                    {todaysMentor.session_time_minutes && (
+                      <div className="flex items-center">
+                        <Clock size={16} className="mr-1.5" />
+                        <span>{todaysMentor.session_time_minutes}min</span>
+                      </div>
+                    )}
+                    {todaysMentor.session_time_minutes && todaysMentor.session_price_usd && (
+                      <span className={`${dm.textMuted} opacity-40`}>·</span>
+                    )}
+                    {todaysMentor.session_price_usd && (
+                      <div className="flex items-center">
+                        <DollarSign size={16} className="mr-0.5" />
+                        <span>{todaysMentor.session_price_usd} {t.unicefDonation}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <p className={`${dm.textMuted} text-base leading-relaxed line-clamp-7 md:line-clamp-7`}>
                   {getMentorDisplay(todaysMentor, lang).description}
