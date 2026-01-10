@@ -45,6 +45,11 @@ export const metadata: Metadata = {
     title: "Donation Mentoring",
     description: siteConfig.shortDescription.en,
   },
+  verification: {
+    other: {
+      "naver-site-verification": "a32447aac3b2176e739b1665c5312ee664965333",
+    },
+  },
   alternates: {
     canonical: "/",
   },
