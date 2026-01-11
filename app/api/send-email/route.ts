@@ -19,16 +19,18 @@ export async function POST(request: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch admin emails
+    // Fetch admin emails from mentors table (role = 'admin')
     const { data: admins, error: adminError } = await supabase
-      .from('admins')
-      .select('email');
+      .from('mentors')
+      .select('email')
+      .eq('role', 'admin')
+      .eq('is_active', true);
 
     if (adminError) {
       console.error('Error fetching admins:', adminError);
     }
 
-    const adminEmails = admins?.map(admin => admin.email) || [];
+    const adminEmails = admins?.map(admin => admin.email).filter(Boolean) as string[] || [];
     
     if (adminEmails.length === 0) {
         console.warn('No admins found in database. Using fallback email.');

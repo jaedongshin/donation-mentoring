@@ -66,7 +66,7 @@ enabled = true
 #   - ./seed_prod_backup.sql  = Production data snapshot (real mentors, no test users)
 #
 # To use production data instead: sql_paths = ["./seed_prod_backup.sql"]
-sql_paths = ["./seed.sql"]
+sql_paths = ["./seed_prod_backup.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.

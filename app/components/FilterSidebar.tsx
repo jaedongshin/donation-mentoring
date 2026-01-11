@@ -130,18 +130,6 @@ export default function FilterSidebar({
 
   const sidebarContent = (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-end">
-        {hasActiveFilters && (
-          <button
-            onClick={clearAllFilters}
-            className="text-sm text-sky-600 hover:text-sky-800 font-medium"
-          >
-            {t.filterClearAll}
-          </button>
-        )}
-      </div>
-
       {/* Search Bar */}
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -259,16 +247,16 @@ export default function FilterSidebar({
       {/* Session Length Filter */}
       <div>
         <h4 className={`text-sm font-medium ${dm.textSubtle} mb-3`}>{t.filterSessionLength}</h4>
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
           {[null, ...SESSION_LENGTHS].map((length) => (
             <button
               key={length ?? 'any'}
               type="button"
               onClick={() => handleSessionLengthChange(length)}
-              className={`flex items-center w-full text-left cursor-pointer group py-1 bg-transparent border-0 p-0 focus:outline-none focus:ring-0 active:bg-transparent`}
+              className={`flex items-center text-left cursor-pointer group bg-transparent border-0 p-0 focus:outline-none focus:ring-0`}
             >
               <span
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
                   filters.sessionLength === length
                     ? 'border-sky-600 bg-sky-600'
                     : darkMode
@@ -280,7 +268,7 @@ export default function FilterSidebar({
                   <span className="w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </span>
-              <span className={`ml-2 text-sm ${dm.textMuted} ${dm.hover}`}>
+              <span className={`ml-1.5 text-xs ${dm.textMuted} ${dm.hover}`}>
                 {length === null ? t.filterAnyLength : `${length} ${t.filterMin}`}
               </span>
             </button>
@@ -328,6 +316,16 @@ export default function FilterSidebar({
           />
         </div>
       </div>
+
+      {/* Clear All */}
+      {hasActiveFilters && (
+        <button
+          onClick={clearAllFilters}
+          className="w-full text-sm text-sky-600 hover:text-sky-800 font-medium py-2"
+        >
+          {t.filterClearAll}
+        </button>
+      )}
     </div>
   );
 

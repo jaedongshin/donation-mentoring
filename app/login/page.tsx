@@ -70,9 +70,9 @@ function AuthContent() {
   useEffect(() => {
     if (!isLoading && isAuthenticated && !signupSuccess) {
       if (isAdmin) {
-        router.push('/admin');
+        router.push('/admin/mentors');
       } else {
-        router.push('/profile');
+        router.push('/admin/profile');
       }
     }
   }, [isLoading, isAuthenticated, isAdmin, router, signupSuccess]);
@@ -154,7 +154,7 @@ function AuthContent() {
               <button
                 onClick={() => {
                   if (isAuthenticated) {
-                    router.push('/profile');
+                    router.push('/admin/profile');
                   } else {
                     setSignupSuccess(false);
                     setMode('login');
