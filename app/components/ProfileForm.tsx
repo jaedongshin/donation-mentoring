@@ -83,7 +83,7 @@ export default function ProfileForm({
   };
 
   const handleTagsChange = (value: string) => {
-    const tags = value.split(',').map(tag => tag.trim());
+    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
     onChange({ ...formData, tags });
   };
 
