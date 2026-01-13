@@ -57,6 +57,7 @@ export default function EmailsPage() {
   // Modal state
   const [showPreview, setShowPreview] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showAllRecipients, setShowAllRecipients] = useState(false);
 
   const _t = translations[lang]; // Available for future use
 
@@ -133,7 +134,10 @@ export default function EmailsPage() {
   useEffect(() => {
     const fetchAllRecipients = async () => {
       try {
-        const res = await fetch('/api/email/recipients?filter=all&includeUnsubscribed=true');
+        const res = await fetch('/api/email/recipients?filter=all&includeUnsubscribed=true', {
+          credentials: 'omit',
+          cache: 'no-store',
+        });
         const data = await res.json();
         setAllRecipients(data.recipients || []);
       } catch (_error) {
@@ -149,7 +153,10 @@ export default function EmailsPage() {
       const fetchLogs = async () => {
         setLogsLoading(true);
         try {
-          const res = await fetch('/api/email/logs?limit=50');
+          const res = await fetch('/api/email/logs?limit=50', {
+            credentials: 'omit',
+            cache: 'no-store',
+          });
           const data = await res.json();
           setEmailLogs(data.logs || []);
         } catch (error) {
@@ -252,6 +259,7 @@ export default function EmailsPage() {
           setSubject('');
           setBody('');
           setShowConfirm(false);
+          setShowAllRecipients(false);
         }
       } else {
         alert(`Error: ${data.error}`);
@@ -610,7 +618,7 @@ export default function EmailsPage() {
                 <h3 className={`font-bold text-lg ${dm.text}`}>
                   {lang === 'ko' ? '발송 확인' : 'Confirm Send'}
                 </h3>
-                <button onClick={() => setShowConfirm(false)} className="p-1 hover:bg-gray-700 rounded">
+                <button onClick={() => { setShowConfirm(false); setShowAllRecipients(false); }} className="p-1 hover:bg-gray-700 rounded">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -618,13 +626,59 @@ export default function EmailsPage() {
                 <p className={dm.text}>
                   <strong>{subject}</strong>
                 </p>
-                <p className={dm.text}>
-                  {lang === 'ko' ? '수신자:' : 'Recipients:'}{' '}
-                  {recipientFilter === 'custom'
-                    ? `${customSelected.length} ${lang === 'ko' ? '명' : 'users'}`
-                    : `${subscribedRecipients.length} ${lang === 'ko' ? '명' : 'users'}`
-                  }
-                </p>
+                <div>
+                  <p className={`${dm.text} mb-2`}>
+                    {lang === 'ko' ? '수신자:' : 'Recipients:'}{' '}
+                    {recipientFilter === 'custom'
+                      ? `${customSelected.length} ${lang === 'ko' ? '명' : 'users'}`
+                      : `${subscribedRecipients.length} ${lang === 'ko' ? '명' : 'users'}`
+                    }
+                  </p>
+                  {(() => {
+                    const recipients = recipientFilter === 'custom'
+                      ? customSelected.map(opt => allRecipients.find(r => r.id === opt.value)!).filter(Boolean)
+                      : subscribedRecipients;
+                    const displayLimit = 5;
+                    const displayRecipients = showAllRecipients ? recipients : recipients.slice(0, displayLimit);
+                    const hasMore = recipients.length > displayLimit;
+
+                    return (
+                      <div className="space-y-1">
+                        <div className={`${showAllRecipients && hasMore ? 'max-h-48 overflow-y-auto' : ''} space-y-1`}>
+                          {displayRecipients.map(r => (
+                            <div key={r.id} className={`text-sm ${dm.textMuted} flex items-center gap-2`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 flex-shrink-0" />
+                              <span className="truncate">
+                                {(lang === 'ko' ? r.name_ko : r.name_en) || r.email}
+                                {(r.name_ko || r.name_en) && (
+                                  <span className="text-gray-500 ml-1">({r.email})</span>
+                                )}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        {hasMore && !showAllRecipients && (
+                          <button
+                            onClick={() => setShowAllRecipients(true)}
+                            className="text-sm text-sky-400 hover:text-sky-300 mt-2"
+                          >
+                            {lang === 'ko'
+                              ? `+${recipients.length - displayLimit}명 더 보기`
+                              : `See all ${recipients.length} recipients`}
+                          </button>
+                        )}
+                        {showAllRecipients && hasMore && (
+                          <button
+                            onClick={() => setShowAllRecipients(false)}
+                            className="text-sm text-sky-400 hover:text-sky-300 mt-2"
+                          >
+                            {lang === 'ko' ? '접기' : 'Show less'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
                 {recipientFilter !== 'custom' && unsubscribedRecipients.length > 0 && (
                   <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                     <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -636,7 +690,7 @@ export default function EmailsPage() {
               </div>
               <div className="flex justify-end gap-3 p-4 border-t border-gray-700">
                 <button
-                  onClick={() => setShowConfirm(false)}
+                  onClick={() => { setShowConfirm(false); setShowAllRecipients(false); }}
                   className={`px-4 py-2 rounded-lg ${dm.bgCard} border ${dm.border} ${dm.text}`}
                 >
                   {lang === 'ko' ? '취소' : 'Cancel'}
