@@ -25,6 +25,7 @@ const mockMentors: Mentor[] = [
     is_active: true,
     session_time_minutes: 60,
     session_price_usd: 50,
+    created_at: '2026-01-01T00:00:00Z',
   },
   {
     id: '2',
@@ -47,6 +48,7 @@ const mockMentors: Mentor[] = [
     is_active: true,
     session_time_minutes: 30,
     session_price_usd: 30,
+    created_at: '2026-01-02T00:00:00Z',
   },
 ];
 

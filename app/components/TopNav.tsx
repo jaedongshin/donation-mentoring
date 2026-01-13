@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Moon, Sun, User, LogOut, Search, X, ChevronDown } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Moon, Sun, User, LogOut, Search, X, ChevronDown, Mail } from 'lucide-react';
 import { Language, translations } from '@/utils/i18n';
 import { UserRole } from '@/hooks/useAuth';
 
@@ -65,8 +66,12 @@ export default function TopNav({
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   const t = translations[lang];
+
+  // Helper to check if a route is active
+  const isActiveRoute = (href: string) => pathname === href;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -103,9 +108,9 @@ export default function TopNav({
     <header className={`${dm.headerBg} backdrop-blur-sm shadow-sm sticky top-0 z-40 transition-colors duration-300`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
-          {/* Logo */}
+          {/* Logo - always consistent */}
           <Link href="/" className={`text-base sm:text-lg font-bold ${dm.text} whitespace-nowrap mr-2 sm:mr-4`}>
-            {variant === 'admin' ? t.adminTitle : t.title}
+            {t.title}
           </Link>
 
           {/* Right side controls */}
@@ -131,21 +136,40 @@ export default function TopNav({
             {/* Authenticated: Nav links */}
             {user && (
               <nav className="hidden md:flex items-center gap-1 mr-2">
+                {user.role === 'admin' && (
+                  <Link
+                    href="/admin/mentors"
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                      isActiveRoute('/admin/mentors')
+                        ? `${dm.text} ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`
+                        : `${dm.textMuted} ${dm.hoverBg}`
+                    }`}
+                  >
+                    {t.mentorManagement}
+                  </Link>
+                )}
                 <Link
-                  href="/profile"
-                  className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
+                  href="/admin/profile"
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                    isActiveRoute('/admin/profile')
+                      ? `${dm.text} ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`
+                      : `${dm.textMuted} ${dm.hoverBg}`
+                  }`}
                 >
                   {t.dashboard}
                 </Link>
                 {user.role === 'admin' && (
-                  <>
-                    <Link
-                      href="/admin"
-                      className={`px-3 py-1.5 text-sm font-medium ${dm.textMuted} hover:${dm.text} ${dm.hoverBg} rounded-lg transition-colors whitespace-nowrap`}
-                    >
-                      {t.mentorManagement}
-                    </Link>
-                  </>
+                  <Link
+                    href="/admin/emails"
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 ${
+                      isActiveRoute('/admin/emails')
+                        ? `${dm.text} ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`
+                        : `${dm.textMuted} ${dm.hoverBg}`
+                    }`}
+                  >
+                    <Mail size={14} />
+                    {lang === 'ko' ? '공지사항' : 'Announcements'}
+                  </Link>
                 )}
               </nav>
             )}

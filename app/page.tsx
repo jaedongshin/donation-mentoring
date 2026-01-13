@@ -127,7 +127,7 @@ export default function Home() {
       />
 
       {/* Hero Section - Bento Style with Parallax */}
-      <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} pt-4 pb-6 sm:pt-6 sm:pb-8 md:pt-8 md:pb-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300 overflow-hidden relative`}>
+      <section id="hero" className={`${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-800' : 'bg-gradient-to-b from-white via-gray-50 to-gray-100'} pt-4 pb-6 sm:pt-6 sm:pb-8 md:pt-8 md:pb-10 transition-colors duration-300 overflow-hidden relative`}>
         {/* Parallax Background Elements */}
         <div
           className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -143,7 +143,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="max-w-7xl mx-auto relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           {/* Hero Content & CTA */}
           <div className="text-center mb-8 sm:mb-12">
             <h1 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold ${dm.text} mb-4 tracking-tight`}>
@@ -517,7 +517,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className={`${dm.bg} border-t ${dm.border} py-6 transition-colors duration-300`}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className={`text-sm ${dm.textMuted}`}>
             © 2024 Donation Mentoring. All rights reserved.
           </p>
