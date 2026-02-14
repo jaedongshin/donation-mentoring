@@ -91,3 +91,10 @@ export function getDailyMentor(mentors: Mentor[]): Mentor | null {
   return selectedMentor;
 }
 
+/**
+ * Generates a random alphanumeric slug of a given length.
+ */
+export function generateRandomSlug(length = 8): string {
+  return Math.random().toString(36).substring(2, 2 + length);
+}
+

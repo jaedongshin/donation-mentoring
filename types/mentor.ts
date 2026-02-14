@@ -16,6 +16,7 @@ export interface Mentor {
   email: string | null;
   languages: string[] | null;
   tags: string[] | null;
+  slug: string;
   is_active: boolean;
   session_time_minutes: number | null;
   session_price_usd: number | null;

@@ -10,6 +10,7 @@ import { Trash2, Plus, X, Pencil, Search, Info } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import Modal from '@/app/components/Modal';
 import { useAuth } from '@/hooks/useAuth';
+import { generateRandomSlug } from '@/utils/helpers';
 
 // Input class generator (DRY)
 const getInputClass = (dark: boolean) => `block w-full rounded-lg ${dark ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border p-2.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40 transition-all text-sm`;
@@ -74,6 +75,7 @@ export default function AdminPage() {
     email: string;
     languages: string[];
     tags: string;
+    slug: string;
     is_active: boolean;
     session_time_minutes: string;
     session_price_usd: string;
@@ -94,6 +96,7 @@ export default function AdminPage() {
     email: '',
     languages: [],
     tags: '',
+    slug: '',
     is_active: true,
     session_time_minutes: '',
     session_price_usd: '',
@@ -164,21 +167,7 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const loadMentors = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('mentors')
-        .select('*')
-        .order('name_ko', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching mentors:', error);
-      } else {
-        setMentors(data || []);
-      }
-      setLoading(false);
-    };
-    loadMentors();
+    fetchMentors();
   }, []);
 
   const handleEdit = (mentor: Mentor) => {
@@ -200,6 +189,7 @@ export default function AdminPage() {
       email: mentor.email || '',
       languages: mentor.languages || [],
       tags: mentor.tags ? mentor.tags.join(', ') : '',
+      slug: mentor.slug || '',
       is_active: mentor.is_active,
       session_time_minutes: mentor.session_time_minutes?.toString() || '',
       session_price_usd: mentor.session_price_usd?.toString() || '',
@@ -281,6 +271,7 @@ export default function AdminPage() {
       email: formData.email,
       languages: formData.languages,
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+      slug: formData.slug || generateRandomSlug(),
       is_active: formData.is_active,
       session_time_minutes: formData.session_time_minutes ? parseInt(formData.session_time_minutes, 10) : null,
       session_price_usd: formData.session_price_usd ? parseFloat(formData.session_price_usd) : null,
@@ -305,7 +296,7 @@ export default function AdminPage() {
       name_en: '', name_ko: '', description_en: '', description_ko: '',
       location_en: '', location_ko: '', position_en: '', position_ko: '',
       company_en: '', company_ko: '', picture_url: '', linkedin_url: '',
-      calendly_url: '', email: '', languages: [], tags: '',
+      calendly_url: '', email: '', languages: [], tags: '', slug: generateRandomSlug(),
       is_active: true, session_time_minutes: '', session_price_usd: '',
     });
     setIsFormOpen(true);
@@ -543,6 +534,21 @@ export default function AdminPage() {
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm">🇺🇸</span>
                     <input type="text" className={`${getInputClass(darkMode)} pl-9`} value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} placeholder="English" />
                   </div>
+                </div>
+              </div>
+
+              {/* Slug */}
+              <div>
+                <label className={getLabelClass(darkMode)}>Sharable URL Slug</label>
+                <div className="relative">
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-xs ${dm.textSubtle}`}>donation-mentoring.org/</span>
+                  <input
+                    type="text"
+                    className={`${getInputClass(darkMode)} pl-[145px]`}
+                    value={formData.slug}
+                    onChange={e => setFormData({...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_')})}
+                    placeholder="my_short_url"
+                  />
                 </div>
               </div>
 

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Briefcase, Building2, MapPin, Calendar, Mail, Linkedin, Clock, DollarSign } from 'lucide-react';
+import { X, Briefcase, Building2, MapPin, Calendar, Mail, Linkedin, Clock, DollarSign, Share2, Check, QrCode } from 'lucide-react';
 import { Mentor } from '@/types/mentor';
 import { Language, translations } from '@/utils/i18n';
 import { ensureProtocol, getMentorDisplay } from '@/utils/helpers';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface ThemeConfig {
   primaryBg: string;
@@ -16,6 +17,7 @@ interface ThemeConfig {
   accentHover: string;
   accentText: string;
   accentLight: string;
+  accentBorder: string;
 }
 
 interface DarkModeConfig {
@@ -44,6 +46,7 @@ const defaultTheme: ThemeConfig = {
   accentHover: 'hover:bg-amber-600',
   accentText: 'text-amber-500',
   accentLight: 'bg-amber-50',
+  accentBorder: 'border-amber-200',
 };
 
 // Default dark mode (light mode)
@@ -57,6 +60,8 @@ const defaultDarkMode: DarkModeConfig = {
 
 export default function MentorModal({ mentor, lang, onClose, theme = defaultTheme, darkMode = defaultDarkMode }: MentorModalProps) {
   const [imageError, setImageError] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const display = getMentorDisplay(mentor, lang);
   const t = translations[lang];
   const dm = darkMode;
@@ -69,6 +74,15 @@ export default function MentorModal({ mentor, lang, onClose, theme = defaultThem
       document.body.style.overflow = originalStyle;
     };
   }, []);
+
+  const handleShare = () => {
+    // Fallback to ID if slug is missing (should not happen with recent DB updates)
+    const slug = mentor.slug || mentor.id; 
+    const url = `${window.location.origin}/${slug}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div
@@ -130,7 +144,57 @@ export default function MentorModal({ mentor, lang, onClose, theme = defaultThem
           <div className="p-6 sm:p-8">
             {/* Header Info */}
             <div className="mb-6">
-              <h2 className={`text-3xl font-extrabold ${dm.text} mb-4`}>{display.name}</h2>
+              <div className="flex justify-between items-start gap-4 mb-4">
+                <h2 className={`text-3xl font-extrabold ${dm.text}`}>{display.name}</h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowQR(!showQR)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      showQR
+                        ? 'bg-sky-600 text-white'
+                        : `${theme.primaryLight} ${theme.primaryText} hover:opacity-80`
+                    }`}
+                    title={t.showQRCode}
+                  >
+                    <QrCode size={16} />
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      copied
+                        ? 'bg-green-500 text-white'
+                        : `${theme.primaryLight} ${theme.primaryText} hover:opacity-80`
+                    }`}
+                  >
+                    {copied ? <Check size={16} /> : <Share2 size={16} />}
+                    <span>{copied ? t.linkCopied : t.shareProfile}</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* QR Code Overlay */}
+              {showQR && (
+                <div className={`mb-6 p-6 ${darkMode.bgCard} border-2 ${theme.accentBorder} rounded-xl flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-200`}>
+                  <div className="p-4 bg-white rounded-lg">
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/${mentor.slug || mentor.id}`}
+                      size={180}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  </div>
+                  <p className={`text-xs ${dm.textMuted} font-medium text-center`}>
+                    {window.location.origin}/{mentor.slug || mentor.id}
+                  </p>
+                  <button 
+                    onClick={() => setShowQR(false)}
+                    className={`text-xs ${theme.accentText} hover:underline`}
+                  >
+                    {t.qrCode} {lang === 'ko' ? '닫기' : 'Close'}
+                  </button>
+                </div>
+              )}
+
               {/* 2x2 Grid for info */}
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 ${dm.textMuted}`}>
                 <div className="flex items-center">

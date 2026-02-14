@@ -9,6 +9,7 @@ import { ProfileFormData } from '@/app/components/ProfileForm';
 import { BentoNav, BentoCardId, ProfileSection, ProfileFooter, PlaceholderSection, Toast } from '@/app/components/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabase';
+import { generateRandomSlug } from '@/utils/helpers';
 
 // Initial empty profile form
 const EMPTY_PROFILE: ProfileFormData = {
@@ -30,6 +31,7 @@ const EMPTY_PROFILE: ProfileFormData = {
     session_price_usd: null,
     tags: [],
     picture_url: '',
+    slug: generateRandomSlug(),
 };
 
 // Mentor data to ProfileFormData converter
@@ -53,6 +55,7 @@ function mentorToFormData(mentor: Record<string, unknown>): ProfileFormData {
         session_price_usd: mentor.session_price_usd as number | null,
         tags: Array.isArray(mentor.tags) ? (mentor.tags as string[]) : [],
         picture_url: (mentor.picture_url as string) || '',
+        slug: (mentor.slug as string) || '',
     };
 }
 
@@ -314,6 +317,7 @@ export default function DashboardPage() {
                 session_price_usd: profileForm.session_price_usd,
                 tags: profileForm.tags,
                 picture_url: profileForm.picture_url,
+                slug: profileForm.slug || generateRandomSlug(),
             })
             .eq('id', mentorId);
 
@@ -329,7 +333,7 @@ export default function DashboardPage() {
                 'name_en', 'name_ko', 'description_en', 'description_ko',
                 'position_en', 'position_ko', 'company_en', 'company_ko',
                 'location_en', 'location_ko', 'linkedin_url', 'calendly_url',
-                'email', 'languages', 'session_time_minutes', 'session_price_usd', 'tags'
+                'email', 'languages', 'session_time_minutes', 'session_price_usd', 'tags', 'slug'
             ];
 
             fields.forEach(field => {

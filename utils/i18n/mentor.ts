@@ -41,6 +41,11 @@ export const mentor = {
     saveError: "Error saving profile.",
     saveSuccess: "Profile saved!",
     cannotSave: "Cannot save profile.",
+    shareProfile: "Share Profile",
+    copyLink: "Copy Link",
+    linkCopied: "Link copied!",
+    showQRCode: "Show QR Code",
+    qrCode: "QR Code",
   },
   ko: {
     // Form fields
@@ -83,5 +88,10 @@ export const mentor = {
     saveError: "저장 중 오류가 발생했습니다.",
     saveSuccess: "프로필이 저장되었습니다!",
     cannotSave: "프로필을 저장할 수 없습니다.",
+    shareProfile: "프로필 공유",
+    copyLink: "링크 복사",
+    linkCopied: "링크가 복사되었습니다!",
+    showQRCode: "QR 코드 보기",
+    qrCode: "QR 코드",
   },
 };

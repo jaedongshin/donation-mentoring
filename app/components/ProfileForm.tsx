@@ -27,6 +27,7 @@ export interface ProfileFormData {
   session_price_usd: number | null;
   tags: string[];
   picture_url: string;
+  slug: string;
 }
 
 interface ProfileFormProps {
@@ -115,6 +116,21 @@ export default function ProfileForm({
               placeholder="English"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Slug */}
+      <div>
+        <label className={getLabelClass(darkMode)}>Sharable URL Slug</label>
+        <div className="relative">
+          <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-xs ${dm.textSubtle}`}>donation-mentoring.org/</span>
+          <input
+            type="text"
+            className={`${getInputClass(darkMode)} pl-[145px]`}
+            value={formData.slug}
+            onChange={e => updateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))}
+            placeholder="my_short_url"
+          />
         </div>
       </div>
 

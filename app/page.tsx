@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { supabase } from '@/utils/supabase';
 import { Mentor } from '@/types/mentor';
 import MentorCard from '@/app/components/MentorCard';
@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { Search, ChevronDown, ChevronUp, Filter, Users, Heart, Calendar, Video, Mail, Linkedin, Clock, DollarSign } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
 import { useMentorFilters, FilterState, DEFAULT_FILTERS } from '@/utils/useMentorFilters';
+import { useSearchParams } from 'next/navigation';
 
 // Charcoal & Dusty Blue theme - locked in
 const BASE_THEME = {
@@ -28,7 +29,7 @@ const BASE_THEME = {
   bullet: 'text-sky-600',
 };
 
-export default function Home() {
+function HomeContent() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -37,6 +38,8 @@ export default function Home() {
     const saved = localStorage.getItem('language');
     return (saved === 'en' || saved === 'ko') ? saved : 'ko';
   });
+
+  const searchParams = useSearchParams();
 
   const handleLangChange = (newLang: Language) => {
     setLang(newLang);
@@ -112,7 +115,19 @@ export default function Home() {
       setLoading(false);
     };
     loadMentors();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
+  // Separate effect for searchParams changes (if any)
+  useEffect(() => {
+    const mentorSlug = searchParams.get('mentor');
+    if (mentorSlug && mentors.length > 0) {
+      const mentor = mentors.find(m => m.slug === mentorSlug);
+      if (mentor && selectedMentor?.id !== mentor.id) {
+        setSelectedMentor(mentor);
+      }
+    }
+  }, [searchParams, mentors, selectedMentor]);
 
   const t = translations[lang];
 
@@ -536,6 +551,14 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
 
