@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
 import { Mentor } from '@/types/mentor';
@@ -151,7 +151,7 @@ export default function AdminPage() {
     rowHover: darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-sky-50',
   };
 
-  const fetchMentors = async () => {
+  const fetchMentors = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('mentors')
@@ -164,11 +164,12 @@ export default function AdminPage() {
       setMentors(data || []);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMentors();
-  }, []);
+  }, [fetchMentors]);
 
   const handleEdit = (mentor: Mentor) => {
     setEditingMentor(mentor);

@@ -49,3 +49,14 @@ Donation Mentoring is a platform to connect mentors and mentees for donation-bas
   - `tags`: jsonb
   - `is_active`: boolean
 - **Storage:** `mentor-pictures` (Public bucket)
+
+5. Check after all change
+Lint test
+```bash
+   npm run lint
+   ```
+
+Build test
+```bash
+   npm run build
+   ```

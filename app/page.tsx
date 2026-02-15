@@ -115,7 +115,6 @@ function HomeContent() {
       setLoading(false);
     };
     loadMentors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
   // Separate effect for searchParams changes (if any)
@@ -124,6 +123,7 @@ function HomeContent() {
     if (mentorSlug && mentors.length > 0) {
       const mentor = mentors.find(m => m.slug === mentorSlug);
       if (mentor && selectedMentor?.id !== mentor.id) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedMentor(mentor);
       }
     }
