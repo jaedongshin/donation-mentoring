@@ -117,17 +117,45 @@ function HomeContent() {
     loadMentors();
   }, []); // Only run on mount
 
+  const hasScrolledToMentor = useRef<string | null>(null);
+
   // Separate effect for searchParams changes (if any)
   useEffect(() => {
     const mentorSlug = searchParams.get('mentor');
     if (mentorSlug && mentors.length > 0) {
       const mentor = mentors.find(m => m.slug === mentorSlug);
-      if (mentor && selectedMentor?.id !== mentor.id) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedMentor(mentor);
+      if (mentor) {
+        // Use a small delay to avoid synchronous setState in effect (lint error)
+        const timer = setTimeout(() => {
+          if (selectedMentor?.id !== mentor.id) {
+            setSelectedMentor(mentor);
+          }
+
+          // If the mentor is not in the filtered list, clear filters to show them
+          const isFilteredOut = !filteredMentors.some(m => m.id === mentor.id);
+          if (isFilteredOut && !loading) {
+            setFilters(DEFAULT_FILTERS);
+            setSearch('');
+          }
+
+          // Scroll to the mentor card if we haven't for this slug yet
+          if (hasScrolledToMentor.current !== mentorSlug) {
+            hasScrolledToMentor.current = mentorSlug;
+            
+            // Small delay to ensure the modal is open and the grid is rendered
+            const scrollTimer = setTimeout(() => {
+              const element = document.getElementById(`mentor-${mentorSlug}`);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 500);
+            return () => clearTimeout(scrollTimer);
+          }
+        }, 0);
+        return () => clearTimeout(timer);
       }
     }
-  }, [searchParams, mentors, selectedMentor]);
+  }, [searchParams, mentors, selectedMentor, filteredMentors, loading]);
 
   const t = translations[lang];
 
@@ -490,14 +518,15 @@ function HomeContent() {
               ) : filteredMentors.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {filteredMentors.map((mentor) => (
-                    <MentorCard
-                      key={mentor.id}
-                      mentor={mentor}
-                      lang={lang}
-                      onClick={setSelectedMentor}
-                      theme={theme}
-                      darkMode={dm}
-                    />
+                    <div key={mentor.id} id={`mentor-${mentor.slug}`} className="scroll-mt-32">
+                      <MentorCard
+                        mentor={mentor}
+                        lang={lang}
+                        onClick={setSelectedMentor}
+                        theme={theme}
+                        darkMode={dm}
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (
