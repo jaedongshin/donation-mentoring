@@ -10,6 +10,7 @@ import { Trash2, Plus, X, Pencil, Search, Info, Link, Check } from 'lucide-react
 import TopNav from '@/app/components/TopNav';
 import Modal from '@/app/components/Modal';
 import { useAuth } from '@/hooks/useAuth';
+import { normalizeEmail } from '@/utils/helpers';
 
 // Input class generator (DRY)
 const getInputClass = (dark: boolean) => `block w-full rounded-lg ${dark ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border p-2.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40 focus:border-sky-500/40 transition-all text-sm`;
@@ -291,7 +292,7 @@ export default function AdminPage() {
       picture_url: formData.picture_url,
       linkedin_url: formData.linkedin_url,
       calendly_url: formData.calendly_url,
-      email: formData.email.trim().toLowerCase(),
+      email: normalizeEmail(formData.email),
       slug: formData.slug,
       languages: formData.languages,
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),

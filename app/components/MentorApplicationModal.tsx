@@ -5,6 +5,7 @@ import { supabase } from '@/utils/supabase';
 import { translations, Language } from '@/utils/i18n';
 import Image from 'next/image';
 import { X } from 'lucide-react';
+import { normalizeEmail } from '@/utils/helpers';
 
 interface MentorApplicationModalProps {
   isOpen: boolean;
@@ -133,7 +134,7 @@ export default function MentorApplicationModal({ isOpen, onClose, lang, darkMode
       picture_url: formData.picture_url,
       linkedin_url: formData.linkedin_url,
       calendly_url: formData.calendly_url,
-      email: formData.email.trim().toLowerCase(),
+      email: normalizeEmail(formData.email),
       languages: languagesArray,
       tags: tagsArray,
       is_active: false, // Explicitly set to false

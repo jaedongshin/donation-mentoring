@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { translations, Language } from '@/utils/i18n';
 import { Mail, ArrowLeft, Check } from 'lucide-react';
 import TopNav from '@/app/components/TopNav';
+import { normalizeEmail } from '@/utils/helpers';
 
 export default function ForgotPasswordPage() {
   const [lang, setLang] = useState<Language>(() => {
@@ -56,7 +57,7 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(true);
     setError(null);
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
 
     try {
       const response = await fetch('/api/auth/forgot-password', {

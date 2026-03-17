@@ -9,6 +9,7 @@ import { ProfileFormData } from '@/app/components/ProfileForm';
 import { BentoNav, BentoCardId, ProfileSection, ProfileFooter, PlaceholderSection, Toast } from '@/app/components/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/utils/supabase';
+import { normalizeEmail } from '@/utils/helpers';
 
 // Initial empty profile form
 const EMPTY_PROFILE: ProfileFormData = {
@@ -312,7 +313,7 @@ export default function DashboardPage() {
                 location_ko: profileForm.location_ko,
                 linkedin_url: profileForm.linkedin_url,
                 calendly_url: profileForm.calendly_url,
-                email: profileForm.email.trim().toLowerCase(),
+                email: normalizeEmail(profileForm.email),
                 slug: profileForm.slug,
                 languages: profileForm.languages,
                 session_time_minutes: profileForm.session_time_minutes,
@@ -381,11 +382,10 @@ export default function DashboardPage() {
         }
 
         try {
-            const normalizedEmail = user.email.trim().toLowerCase();
             const response = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: normalizedEmail, lang }),
+                body: JSON.stringify({ email: normalizeEmail(user.email), lang }),
             });
 
             if (response.ok) {
