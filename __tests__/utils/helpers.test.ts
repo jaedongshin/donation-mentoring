@@ -1,4 +1,4 @@
-import { ensureProtocol, getMentorDisplay, shuffleArray, getDailyMentor } from '@/utils/helpers';
+import { ensureProtocol, getMentorDisplay, shuffleArray, getDailyMentor, normalizeEmail } from '@/utils/helpers';
 import { Mentor } from '@/types/mentor';
 
 describe('helpers', () => {
@@ -119,6 +119,32 @@ describe('helpers', () => {
     it('should handle single element array', () => {
       const result = shuffleArray([42]);
       expect(result).toEqual([42]);
+    });
+  });
+
+  describe('normalizeEmail', () => {
+    it('should lowercase all characters', () => {
+      expect(normalizeEmail('John@Gmail.COM')).toBe('john@gmail.com');
+    });
+
+    it('should trim whitespace', () => {
+      expect(normalizeEmail('  john@gmail.com  ')).toBe('john@gmail.com');
+    });
+
+    it('should handle already lowercase email', () => {
+      expect(normalizeEmail('john@gmail.com')).toBe('john@gmail.com');
+    });
+
+    it('should handle ALL CAPS email', () => {
+      expect(normalizeEmail('JOHN@GMAIL.COM')).toBe('john@gmail.com');
+    });
+
+    it('should handle mixed case with spaces', () => {
+      expect(normalizeEmail(' John.Doe@Example.COM ')).toBe('john.doe@example.com');
+    });
+
+    it('should handle empty string', () => {
+      expect(normalizeEmail('')).toBe('');
     });
   });
 

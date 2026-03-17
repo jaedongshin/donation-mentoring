@@ -6,7 +6,10 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "supabase migration up 2>/dev/null || echo '⚠️  Supabase not running — run: supabase start'",
     "dev": "next dev",
+    "migrate:local": "supabase migration up",
+    "migrate:prod": "supabase migration up --linked",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

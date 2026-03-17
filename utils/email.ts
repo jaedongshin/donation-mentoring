@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 import type { RecipientFilter, EmailRecipient } from '@/types/email';
+import { normalizeEmail } from '@/utils/helpers';
 
 // Initialize Resend client
 export function getResendClient() {
@@ -44,7 +45,7 @@ export async function getRecipientsByFilter(
     const { data } = await supabase
       .from('mentors')
       .select('id, email, name_en, name_ko, role, email_subscribed, unsubscribed_at')
-      .in('email', customEmails)
+      .in('email', customEmails.map(e => normalizeEmail(e)))
       .eq('is_active', true);
     return (data || []) as EmailRecipient[];
   }

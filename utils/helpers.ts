@@ -43,6 +43,10 @@ export function scrollToElement(elementId: string) {
  * Shuffles an array using Fisher-Yates algorithm
  * Returns a new shuffled array without mutating the original
  */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 export function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
