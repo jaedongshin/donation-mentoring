@@ -57,13 +57,13 @@ supabase stop
 
 ## Test Accounts (Local)
 
-After running `supabase db reset`, these test accounts are available:
+After running `supabase db reset`, these test accounts are available (password: `password123`):
 
-| Email | Type | Notes |
-|-------|------|-------|
-| test.mentor@example.com | Test | Approved mentor |
-| test.pending@example.com | Test | Pending mentor |
-| test.admin@example.com | Test | Admin user |
+| Email | Role | is_active | Notes |
+|-------|------|-----------|-------|
+| test.mentor@example.com | mentor | true | Approved mentor |
+| test.pending@example.com | mentor | false | Pending approval |
+| test.admin@example.com | admin | true | Admin user |
 
 ## Common Commands
 

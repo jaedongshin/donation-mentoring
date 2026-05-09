@@ -66,12 +66,10 @@ CI workflows (`.github/workflows/`):
 
 | File | What it does |
 |---|---|
-| `20260106000000_init_schema.sql` | Extensions; `app_config`, `mentors`, `reviews` tables; all RPCs; RLS; grants |
-| `20260106000002_secure_mentor_auth.sql` | `login_mentor(email, password) → json` RPC |
-| `20260106000003_secure_password_reset.sql` | `reset_mentor_password(token, newPassword) → bool` RPC |
-| `20260106000004_allow_nullable_mentor_fields.sql` | Drops NOT NULL on the 6 core bilingual mentor fields |
-| `20260106000005_signup_mentor.sql` | `signup_mentor(email, password) → json` RPC + slug generation |
+| `20260106000000_init_schema.sql` | Extensions; `app_config`, `mentors`, `reviews` tables; all RPCs (`login_mentor`, `reset_mentor_password`, `signup_mentor`, legacy admin RPCs); RLS; grants |
 | `20260107000000_email_system.sql` | `email_logs` table; `email_subscribed`/`unsubscribed_at` columns on `mentors`; open/click RPCs |
+
+> **Note:** The four previously separate migration files (`20260106000002` through `20260106000005`) have been consolidated into `20260106000000_init_schema.sql`. The auth RPCs (`login_mentor`, `reset_mentor_password`, `signup_mentor`) and nullable bilingual field changes are now all part of the init schema.
 
 ### 3.2 Tables
 
@@ -82,9 +80,9 @@ Primary table. PK `uuid DEFAULT gen_random_uuid()`. Every credential and profile
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `name_en`, `name_ko` | varchar(255) | originally NOT NULL; made nullable by migration 4 |
-| `location_en`, `location_ko` | varchar(255) | same |
-| `description_en`, `description_ko` | text | same |
+| `name_en`, `name_ko` | varchar(255) | nullable |
+| `location_en`, `location_ko` | varchar(255) | nullable |
+| `description_en`, `description_ko` | text | nullable |
 | `position_en`, `position_ko` | text | nullable |
 | `company_en`, `company_ko` | text | nullable |
 | `picture_url` | text | Supabase storage URL |
@@ -101,9 +99,9 @@ Primary table. PK `uuid DEFAULT gen_random_uuid()`. Every credential and profile
 | `reset_token_expires_at` | timestamptz | |
 | `session_time_minutes` | integer | nullable |
 | `session_price_usd` | numeric(10,2) | nullable |
-| `email_subscribed` | boolean | default true (added migration 6) |
-| `unsubscribed_at` | timestamptz | (added migration 6) |
-| `slug` | text | referenced in RPC + TS type; **never added by ALTER TABLE in repo** |
+| `email_subscribed` | boolean | default true (added email_system migration) |
+| `unsubscribed_at` | timestamptz | (added email_system migration) |
+| `slug` | text | auto-generated on signup: `email_local_part-<6 hex chars>` |
 | `created_at`, `updated_at` | timestamptz | UTC default now |
 
 Indexes: `idx_mentors_active`, `idx_mentors_created_at DESC`, `idx_mentors_display_order`, `idx_mentors_reset_token`, partial `idx_mentors_email_subscribed WHERE email_subscribed = true`.
@@ -210,16 +208,17 @@ Fallback chain used everywhere in the UI: `preferred_lang_value || other_lang_va
 
 ### 3.6 Seed (`supabase/seed.sql`)
 
-Produced via `pg_dump`. Notable contents:
+Minimal local-dev seed. Real mentor data is **not** seeded. Notable contents:
 
-- `auth.audit_log_entries` dump with real login/signup events from actual users (dated 2026-01)
 - `app_config`: one row with the `API_SECRET`
-- `mentors`: ~14 real mentors with full bilingual profiles, `password = NULL`, `reset_token = NULL`
-- `reviews`: 2 Korean testimonials
 - `storage.buckets`: `mentor-pictures` (5 MB cap, public), `profile-photos` (no cap, public)
-- Post-load `UPDATE`: bootstraps `mulli2@gmail.com` password to `password123` for local dev
+- `mentors`: 3 test accounts only (no real mentor data):
+  - `test.mentor@example.com` — role `mentor`, `is_active=true`
+  - `test.pending@example.com` — role `mentor`, `is_active=false`
+  - `test.admin@example.com` — role `admin`, `is_active=true`
+- Post-load `UPDATE`: sets `password123` (bcrypt) for all 3 test accounts
 
-No seed data for `profiles`, `admins`, or `email_logs`.
+No seed data for `profiles`, `admins`, `email_logs`, or `reviews`.
 
 ---
 
@@ -328,7 +327,9 @@ The page's HTML ships to the browser before the redirect fires. API routes (`/ap
 
 **Bento dashboard tabs**: `profile | availability | calendar | stats | bookings` — only `profile` is implemented; the rest render a "Coming Soon" placeholder.
 
-**What is editable**: all bilingual fields, `slug` (auto-normalized: lowercase, spaces→hyphens, strip non-`[a-z0-9-]`), `linkedin_url`, `calendly_url`, `email`, `languages` (checkboxes), `session_time_minutes`, `session_price_usd`, `tags`, `picture_url`.
+**Active/Inactive toggle**: An instant toggle button (separate from the profile form save) lets mentors activate or deactivate their own listing. The toggle updates `is_active` directly via Supabase without a full form submission — same pattern as the admin mentors list toggle.
+
+**What is editable**: all bilingual fields, `slug` (auto-normalized: lowercase, spaces→hyphens, strip non-`[a-z0-9-]`), `linkedin_url`, `calendly_url`, `email` (saved trimmed + lowercased), `languages` (checkboxes), `session_time_minutes`, `session_price_usd`, `tags`, `picture_url`.
 
 **Profile image upload**: Supabase storage bucket `mentor-pictures`, key `{mentorId}-{Date.now()}.{ext}`, `upsert: true` (`page.tsx:264-289`).
 
@@ -575,8 +576,8 @@ Issues discovered during research, grouped by severity.
 **F1 — `profiles` and `admins` tables not in repo migrations.**
 `handle_new_user` (inserts `profiles`) and `update_admin_password`/`update_admin_reset_token` (read `admins`) reference tables created outside the migration history. `app/admin/profile/page.tsx:137` actively queries `profiles`. These must be manually created in the production Supabase project. `supabase db reset` locally will leave these functions broken.
 
-**F2 — `mentors.slug` referenced but never added via `ALTER TABLE`.**
-`signup_mentor` RPC writes to `slug` and `types/mentor.ts:19` declares it. No migration adds the column. Either it was added manually in production or signup RPCs currently error. (`supabase/migrations/20260106000005_signup_mentor.sql`)
+**F2 — ~~`mentors.slug` referenced but never added via `ALTER TABLE`~~ (resolved).**
+`signup_mentor` RPC now explicitly inserts into `slug` with an auto-generated value (`email_local_part-<6 hex chars>`). The column must still be added manually to production if not already present, but the RPC no longer silently fails.
 
 **F3 — Open RLS on `mentors`.**
 All four CRUD operations have `USING (true)` policies (`init_schema.sql:328-344`). Anyone with the anon key can read, insert, update, or delete any mentor row. Auth security relies entirely on SECURITY DEFINER RPCs being the only path — but open RLS means a direct `supabase.from('mentors').delete()` from the browser works too.
@@ -644,11 +645,11 @@ Custom bcrypt auth on `mentors.password` is live. The Supabase Auth path (`auth.
 |---|---|
 | `mentors` table schema | `supabase/migrations/20260106000000_init_schema.sql:237-267` |
 | `email_logs` table schema | `supabase/migrations/20260107000000_email_system.sql:10-44` |
-| `signup_mentor` RPC | `supabase/migrations/20260106000005_signup_mentor.sql` |
-| `login_mentor` RPC | `supabase/migrations/20260106000002_secure_mentor_auth.sql` |
-| `reset_mentor_password` RPC | `supabase/migrations/20260106000003_secure_password_reset.sql` |
+| `signup_mentor` RPC | `supabase/migrations/20260106000000_init_schema.sql:701` |
+| `login_mentor` RPC | `supabase/migrations/20260106000000_init_schema.sql:634` |
+| `reset_mentor_password` RPC | `supabase/migrations/20260106000000_init_schema.sql:670` |
 | `handle_new_user` trigger | `supabase/migrations/20260106000000_init_schema.sql:54-79` |
-| RLS policies | `supabase/migrations/20260106000000_init_schema.sql:328-344` |
+| RLS policies | `supabase/migrations/20260106000000_init_schema.sql:328-354` |
 | `useAuth` hook interface | `hooks/useAuth.ts:29-54` |
 | Admin guard pattern | `app/admin/mentors/page.tsx:64-68` |
 | Session storage key | `hooks/useAuth.ts:61-73` |
@@ -662,4 +663,5 @@ Custom bcrypt auth on `mentors.password` is live. The Supabase Auth path (`auth.
 | SEO config | `utils/seo.ts` |
 | AI crawler allowlist | `utils/seo.ts:97-115` |
 | `<html lang>` hard-coded | `app/layout.tsx:64` |
-| Seed password bootstrap | `supabase/seed.sql:568-572` |
+| Seed test accounts | `supabase/seed.sql:44-51` |
+| Active/inactive toggle (profile) | `app/admin/profile/page.tsx` (`handleToggleActive`) |

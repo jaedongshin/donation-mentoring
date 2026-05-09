@@ -236,12 +236,12 @@ ALTER TABLE "public"."app_config" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."mentors" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "name_en" character varying(255) NOT NULL,
-    "location_en" character varying(255) NOT NULL,
-    "description_en" "text" NOT NULL,
-    "name_ko" character varying(255) NOT NULL,
-    "location_ko" character varying(255) NOT NULL,
-    "description_ko" "text" NOT NULL,
+    "name_en" character varying(255),
+    "location_en" character varying(255),
+    "description_en" "text",
+    "name_ko" character varying(255),
+    "location_ko" character varying(255),
+    "description_ko" "text",
     "picture_url" "text",
     "tags" "jsonb" DEFAULT '[]'::"jsonb",
     "display_order" integer DEFAULT 0,
@@ -627,3 +627,130 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
+
+
+-- Mentor authentication functions
+
+CREATE OR REPLACE FUNCTION public.login_mentor(p_email text, p_password text)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+    v_mentor mentors;
+BEGIN
+    SELECT * INTO v_mentor
+    FROM mentors
+    WHERE email = p_email;
+
+    IF v_mentor.id IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    IF v_mentor.password = crypt(p_password, v_mentor.password) THEN
+        RETURN json_build_object(
+            'id', v_mentor.id,
+            'email', v_mentor.email,
+            'name_en', v_mentor.name_en,
+            'name_ko', v_mentor.name_ko,
+            'picture_url', v_mentor.picture_url,
+            'role', v_mentor.role,
+            'is_active', v_mentor.is_active
+        );
+    ELSE
+        RETURN NULL;
+    END IF;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.login_mentor(text, text) TO anon, authenticated, service_role;
+
+
+CREATE OR REPLACE FUNCTION public.reset_mentor_password(p_token text, p_new_password text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+    v_mentor_id uuid;
+BEGIN
+    SELECT id INTO v_mentor_id
+    FROM mentors
+    WHERE reset_token = p_token
+      AND reset_token_expires_at > now();
+
+    IF v_mentor_id IS NULL THEN
+        RETURN FALSE;
+    END IF;
+
+    UPDATE mentors
+    SET password = crypt(p_new_password, gen_salt('bf')),
+        reset_token = NULL,
+        reset_token_expires_at = NULL
+    WHERE id = v_mentor_id;
+
+    RETURN TRUE;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.reset_mentor_password(text, text) TO anon, authenticated, service_role;
+
+
+CREATE OR REPLACE FUNCTION public.signup_mentor(p_email text, p_password text)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+    v_mentor mentors;
+    v_id uuid;
+BEGIN
+    IF EXISTS (SELECT 1 FROM mentors WHERE email = p_email) THEN
+        RAISE EXCEPTION 'Email already registered';
+    END IF;
+
+    INSERT INTO mentors (
+        email,
+        password,
+        role,
+        is_active,
+        name_en,
+        name_ko,
+        location_en,
+        location_ko,
+        description_en,
+        description_ko,
+        slug,
+        created_at,
+        updated_at
+    ) VALUES (
+        p_email,
+        crypt(p_password, gen_salt('bf')),
+        'mentor',
+        false,
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        split_part(p_email, '@', 1) || '-' || substr(md5(random()::text), 1, 6),
+        now(),
+        now()
+    ) RETURNING id INTO v_id;
+
+    SELECT * INTO v_mentor FROM mentors WHERE id = v_id;
+
+    RETURN json_build_object(
+        'id', v_mentor.id,
+        'email', v_mentor.email,
+        'role', v_mentor.role,
+        'is_active', v_mentor.is_active
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.signup_mentor(text, text) TO anon, authenticated, service_role;
