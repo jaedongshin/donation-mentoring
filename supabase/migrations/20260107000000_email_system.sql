@@ -53,16 +53,20 @@ CREATE INDEX IF NOT EXISTS idx_mentors_email_subscribed ON public.mentors(email_
 -- 4. RLS policies
 ALTER TABLE public.email_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow read access for authenticated users" ON public.email_logs;
 CREATE POLICY "Allow read access for authenticated users" ON public.email_logs
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow insert for authenticated users" ON public.email_logs;
 CREATE POLICY "Allow insert for authenticated users" ON public.email_logs
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow update for authenticated users" ON public.email_logs;
 CREATE POLICY "Allow update for authenticated users" ON public.email_logs
   FOR UPDATE USING (true);
 
 -- 5. Updated_at trigger
+DROP TRIGGER IF EXISTS update_email_logs_updated_at ON public.email_logs;
 CREATE TRIGGER update_email_logs_updated_at
   BEFORE UPDATE ON public.email_logs
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

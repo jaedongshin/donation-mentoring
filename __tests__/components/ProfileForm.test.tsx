@@ -74,7 +74,7 @@ describe('ProfileForm', () => {
   });
 
   describe('tag parsing', () => {
-    it('should parse comma-separated tags', () => {
+    it('should parse comma-separated tags on blur', () => {
       render(
         <ProfileForm
           formData={defaultFormData}
@@ -88,13 +88,42 @@ describe('ProfileForm', () => {
       const tagsInput = screen.getByPlaceholderText(/Frontend, UX, AI/i);
       fireEvent.change(tagsInput, { target: { value: 'React, Node.js, TypeScript' } });
 
+      // onChange should NOT be called during typing (controlled input issue fix)
+      expect(mockOnChange).not.toHaveBeenCalled();
+
+      // Parse happens on blur
+      fireEvent.blur(tagsInput);
+
       expect(mockOnChange).toHaveBeenCalledWith({
         ...defaultFormData,
         tags: ['React', 'Node.js', 'TypeScript'],
       });
     });
 
-    it('should trim whitespace from tags', () => {
+    it('should allow typing spaces and commas without interference', () => {
+      render(
+        <ProfileForm
+          formData={defaultFormData}
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          darkMode={false}
+          lang="en"
+        />
+      );
+
+      const tagsInput = screen.getByPlaceholderText(/Frontend, UX, AI/i) as HTMLInputElement;
+
+      // Simulate user typing "React, " (note the trailing space)
+      fireEvent.change(tagsInput, { target: { value: 'React, ' } });
+
+      // The input should show exactly what the user typed
+      expect(tagsInput.value).toBe('React, ');
+
+      // No onChange to parent should have happened yet
+      expect(mockOnChange).not.toHaveBeenCalled();
+    });
+
+    it('should trim whitespace from tags on blur', () => {
       render(
         <ProfileForm
           formData={defaultFormData}
@@ -107,6 +136,7 @@ describe('ProfileForm', () => {
 
       const tagsInput = screen.getByPlaceholderText(/Frontend, UX, AI/i);
       fireEvent.change(tagsInput, { target: { value: ' React ,  Node.js  , TypeScript ' } });
+      fireEvent.blur(tagsInput);
 
       expect(mockOnChange).toHaveBeenCalledWith({
         ...defaultFormData,
@@ -114,7 +144,7 @@ describe('ProfileForm', () => {
       });
     });
 
-    it('should filter out empty tags', () => {
+    it('should filter out empty tags on blur', () => {
       render(
         <ProfileForm
           formData={defaultFormData}
@@ -127,11 +157,31 @@ describe('ProfileForm', () => {
 
       const tagsInput = screen.getByPlaceholderText(/Frontend, UX, AI/i);
       fireEvent.change(tagsInput, { target: { value: 'React, , Node.js,  , TypeScript' } });
+      fireEvent.blur(tagsInput);
 
       expect(mockOnChange).toHaveBeenCalledWith({
         ...defaultFormData,
         tags: ['React', 'Node.js', 'TypeScript'],
       });
+    });
+
+    it('should normalize display value after blur', () => {
+      render(
+        <ProfileForm
+          formData={defaultFormData}
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          darkMode={false}
+          lang="en"
+        />
+      );
+
+      const tagsInput = screen.getByPlaceholderText(/Frontend, UX, AI/i) as HTMLInputElement;
+      fireEvent.change(tagsInput, { target: { value: '  React  ,  Node.js  ' } });
+      fireEvent.blur(tagsInput);
+
+      // After blur, the display should be normalized
+      expect(tagsInput.value).toBe('React, Node.js');
     });
   });
 

@@ -99,9 +99,31 @@ export default function ProfileForm({
     onChange({ ...formData, email: value.replace(/\s+/g, '').toLowerCase() });
   };
 
+  // Use local state for tags input to avoid controlled input issues
+  const tagsString = formData.tags.join(', ');
+  const [tagsInputValue, setTagsInputValue] = useState(tagsString);
+  const [prevTagsString, setPrevTagsString] = useState(tagsString);
+  const [isTagsFocused, setIsTagsFocused] = useState(false);
+
+  // Sync local state when formData.tags changes from outside (but not while user is typing)
+  if (tagsString !== prevTagsString && !isTagsFocused) {
+    setPrevTagsString(tagsString);
+    setTagsInputValue(tagsString);
+  }
+
   const handleTagsChange = (value: string) => {
-    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+    setTagsInputValue(value);
+  };
+
+  const handleTagsFocus = () => {
+    setIsTagsFocused(true);
+  };
+
+  const handleTagsBlur = () => {
+    setIsTagsFocused(false);
+    const tags = tagsInputValue.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
     onChange({ ...formData, tags });
+    setTagsInputValue(tags.join(', ')); // Normalize display after blur
   };
 
   return (
@@ -363,8 +385,10 @@ export default function ProfileForm({
         <input
           type="text"
           className={getInputClass(darkMode)}
-          value={formData.tags.join(', ')}
+          value={tagsInputValue}
           onChange={e => handleTagsChange(e.target.value)}
+          onFocus={handleTagsFocus}
+          onBlur={handleTagsBlur}
           placeholder="Frontend, UX, AI, ..."
         />
       </div>
