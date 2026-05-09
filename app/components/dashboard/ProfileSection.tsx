@@ -24,6 +24,8 @@ interface ProfileSectionProps {
     selectedMentorPreview?: ProfileFormData | null;
     linkSubmitSuccess?: boolean;
     onLinkSubmit?: () => void;
+    isActive?: boolean | null;
+    onToggleActive?: () => void;
 }
 
 export default function ProfileSection({
@@ -41,6 +43,8 @@ export default function ProfileSection({
     selectedMentorPreview,
     linkSubmitSuccess = false,
     onLinkSubmit,
+    isActive,
+    onToggleActive,
 }: ProfileSectionProps) {
     const t = translations[lang];
 
@@ -132,16 +136,38 @@ export default function ProfileSection({
 
     // State: Editing - full editable form
     return (
-        <ProfileForm
-            formData={profileForm}
-            onChange={onProfileChange}
-            onSubmit={onProfileSubmit}
-            onImageUpload={onImageUpload}
-            darkMode={darkMode}
-            lang={lang}
-            showSubmitButton={false}
-            isUploading={isUploading}
-        />
+        <div className="space-y-4">
+            {isActive !== null && isActive !== undefined && onToggleActive && (
+                <div className={`flex items-center gap-3 pb-4 border-b ${dm.border}`}>
+                    <button
+                        type="button"
+                        onClick={onToggleActive}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-offset-1 ${darkMode ? 'hover:ring-offset-gray-800' : 'hover:ring-offset-white'} ${
+                            isActive ? 'bg-sky-600 hover:ring-sky-400' : darkMode ? 'bg-gray-600 hover:ring-gray-500' : 'bg-gray-300 hover:ring-gray-400'
+                        }`}
+                        role="switch"
+                        aria-checked={isActive}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                            isActive ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                    </button>
+                    <span className={`text-sm font-medium ${isActive ? 'text-sky-600' : dm.textMuted}`}>
+                        {isActive ? t.profileActive : t.profileInactive}
+                    </span>
+                </div>
+            )}
+            <ProfileForm
+                formData={profileForm}
+                onChange={onProfileChange}
+                onSubmit={onProfileSubmit}
+                onImageUpload={onImageUpload}
+                darkMode={darkMode}
+                lang={lang}
+                showSubmitButton={false}
+                isUploading={isUploading}
+            />
+        </div>
     );
 }
 

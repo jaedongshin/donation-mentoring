@@ -28,6 +28,10 @@ export const dashboard = {
     statsCardDesc: "View your mentoring statistics and impact",
     bookingsCardTitle: "Bookings",
     bookingsCardDesc: "View and manage your scheduled mentoring sessions",
+    // Profile active toggle
+    profileActive: "Profile public",
+    profileInactive: "Profile hidden",
+    toggleActiveError: "Failed to update status",
   },
   ko: {
     dashboardTitle: "내 프로필",
@@ -57,5 +61,9 @@ export const dashboard = {
     statsCardDesc: "멘토링 통계와 영향력을 확인하세요",
     bookingsCardTitle: "예정된 세션",
     bookingsCardDesc: "예정된 멘토링 세션을 확인하고 관리하세요",
+    // Profile active toggle
+    profileActive: "프로필 공개 중",
+    profileInactive: "프로필 비공개",
+    toggleActiveError: "상태 변경에 실패했습니다",
   },
 };

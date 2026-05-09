@@ -96,6 +96,9 @@ export default function DashboardPage() {
     const [linkSubmitSuccess, setLinkSubmitSuccess] = useState(false);
     const [selectedMentorPreview, setSelectedMentorPreview] = useState<ProfileFormData | null>(null);
 
+    // Active/inactive state (separate from form — instant toggle like /admin/mentors)
+    const [mentorIsActive, setMentorIsActive] = useState<boolean | null>(null);
+
     // Toast state
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -157,6 +160,7 @@ export default function DashboardPage() {
                     const formData = mentorToFormData(mentor);
                     setProfileForm(formData);
                     setInitialProfile(formData);
+                    setMentorIsActive(mentor.is_active as boolean);
                 }
                 setLinkSubmitSuccess(false);
             } else {
@@ -287,6 +291,21 @@ export default function DashboardPage() {
             setIsUploading(false);
         }
     }, [mentorId]);
+
+    // Active/inactive toggle handler (instant, no form submission)
+    const handleToggleActive = async () => {
+        if (!mentorId || mentorIsActive === null) return;
+        const newStatus = !mentorIsActive;
+        setMentorIsActive(newStatus);
+        const { error } = await supabase
+            .from('mentors')
+            .update({ is_active: newStatus })
+            .eq('id', mentorId);
+        if (error) {
+            setMentorIsActive(!newStatus);
+            setToast({ type: 'error', message: t.toggleActiveError });
+        }
+    };
 
     // Profile save handler
     const handleProfileSubmit = async (e?: React.FormEvent) => {
@@ -489,6 +508,8 @@ export default function DashboardPage() {
                                 selectedMentorPreview={selectedMentorPreview}
                                 linkSubmitSuccess={linkSubmitSuccess}
                                 onLinkSubmit={handleLinkSubmit}
+                                isActive={mentorIsActive}
+                                onToggleActive={handleToggleActive}
                             />
                         )}
 

@@ -569,4 +569,14 @@ UPDATE "public"."mentors"
 SET "password" = extensions.crypt('password123', extensions.gen_salt('bf'))
 WHERE "email" = 'mulli2@gmail.com';
 
+-- Test accounts for local development (password: password123)
+INSERT INTO "public"."mentors" ("id", "name_en", "location_en", "description_en", "name_ko", "location_ko", "description_ko", "picture_url", "tags", "display_order", "is_active", "created_at", "updated_at", "position_en", "position_ko", "linkedin_url", "calendly_url", "company_en", "company_ko", "email", "languages", "session_time_minutes", "session_price_usd", "password", "role", "reset_token", "reset_token_expires_at") VALUES
+	('00000000-0000-0000-0000-000000000001', 'Test Mentor', 'USA', 'Test mentor account for local development.', '테스트 멘토', '미국', '로컬 개발용 테스트 멘토 계정입니다.', '', '[]', 0, true, now(), now(), 'Software Engineer', 'Software Engineer', '', '', 'Acme Corp', 'Acme Corp', 'test.mentor@example.com', '{Korean}', 60, 15.00, NULL, 'mentor', NULL, NULL),
+	('00000000-0000-0000-0000-000000000002', 'Test Pending', 'USA', 'Test pending mentor account for local development.', '테스트 대기', '미국', '로컬 개발용 승인 대기 테스트 계정입니다.', '', '[]', 0, false, now(), now(), 'Software Engineer', 'Software Engineer', '', '', 'Acme Corp', 'Acme Corp', 'test.pending@example.com', '{Korean}', 60, 15.00, NULL, 'mentor', NULL, NULL),
+	('00000000-0000-0000-0000-000000000003', 'Test Admin', 'USA', 'Test admin account for local development.', '테스트 관리자', '미국', '로컬 개발용 테스트 관리자 계정입니다.', '', '[]', 0, true, now(), now(), 'Admin', 'Admin', '', '', 'Acme Corp', 'Acme Corp', 'test.admin@example.com', '{Korean}', NULL, NULL, NULL, 'admin', NULL, NULL);
+
+UPDATE "public"."mentors"
+SET "password" = extensions.crypt('password123', extensions.gen_salt('bf'))
+WHERE "email" IN ('test.mentor@example.com', 'test.pending@example.com', 'test.admin@example.com');
+
 RESET ALL;
